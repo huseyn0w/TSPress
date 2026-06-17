@@ -1,9 +1,91 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ---------------------------------------------------------------------------
+   Legacy tokens for the public site (always dark, editorial). Kept fixed so the
+   public pages render identically regardless of the admin theme toggle.
+--------------------------------------------------------------------------- */
 :root {
   --bg: #0b0b0c;
   --fg: #f5f5f4;
   --muted: #a1a1aa;
   --accent: #e8c372;
   --line: #26262a;
+
+  /* --- Admin design system (light) --- */
+  --background: #faf9f7;
+  --foreground: #1c1917;
+  --card: #ffffff;
+  --card-foreground: #1c1917;
+  --popover: #ffffff;
+  --popover-foreground: #1c1917;
+  --primary: #b8862f;
+  --primary-foreground: #fffdf7;
+  --secondary: #f0eee9;
+  --secondary-foreground: #1c1917;
+  --muted-surface: #f0eee9;
+  --muted-foreground: #78716c;
+  --accent-surface: #f3efe6;
+  --accent-foreground: #1c1917;
+  --destructive: #b4271f;
+  --destructive-foreground: #fffdf7;
+  --border: #e7e5e4;
+  --input: #e7e5e4;
+  --ring: #b8862f;
+  --radius: 0.625rem;
+}
+
+.dark {
+  --background: #0b0b0c;
+  --foreground: #f5f5f4;
+  --card: #161617;
+  --card-foreground: #f5f5f4;
+  --popover: #161617;
+  --popover-foreground: #f5f5f4;
+  --primary: #e8c372;
+  --primary-foreground: #1c1917;
+  --secondary: #26262a;
+  --secondary-foreground: #f5f5f4;
+  --muted-surface: #1c1c1f;
+  --muted-foreground: #a1a1aa;
+  --accent-surface: #26262a;
+  --accent-foreground: #f5f5f4;
+  --destructive: #ef4444;
+  --destructive-foreground: #fafafa;
+  --border: #26262a;
+  --input: #2a2a2e;
+  --ring: #e8c372;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted-surface);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent-surface);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
 * {
@@ -19,11 +101,89 @@ body {
 body {
   background: var(--bg);
   color: var(--fg);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   line-height: 1.5;
 }
 
 a {
   color: inherit;
+}
+
+/* Radix overlay/content animations (small, restrained). */
+@keyframes ts-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes ts-content-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+[data-state="open"].ts-overlay {
+  animation: ts-fade-in 150ms ease-out;
+}
+[data-state="open"].ts-content {
+  animation: ts-content-in 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-state="open"].ts-overlay,
+  [data-state="open"].ts-content {
+    animation: none;
+  }
+}
+
+/* Tiptap editor content */
+.tiptap:focus {
+  outline: none;
+}
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--muted-foreground);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Rendered post content (public + admin preview) */
+.prose :where(h2) {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 1.5rem 0 0.5rem;
+}
+.prose :where(h3) {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 1.25rem 0 0.5rem;
+}
+.prose :where(p) {
+  margin: 0 0 1rem;
+}
+.prose :where(ul) {
+  list-style: disc;
+  padding-left: 1.5rem;
+  margin: 0 0 1rem;
+}
+.prose :where(ol) {
+  list-style: decimal;
+  padding-left: 1.5rem;
+  margin: 0 0 1rem;
+}
+.prose :where(a) {
+  text-decoration: underline;
+}
+.prose :where(blockquote) {
+  border-left: 3px solid var(--border);
+  padding-left: 1rem;
+  color: var(--muted-foreground);
 }

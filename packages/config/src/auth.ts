@@ -74,3 +74,39 @@ export const authResultSchema = z.object({
   user: publicUserSchema,
 });
 export type AuthResult = z.infer<typeof authResultSchema>;
+
+// --- User administration -----------------------------------------------------
+
+export const roleSummarySchema = z.object({ id: z.string(), name: z.string() });
+export type RoleSummary = z.infer<typeof roleSummarySchema>;
+
+export const adminUserSchema = z.object({
+  id: z.string(),
+  email: z.string().email(),
+  name: z.string().nullable(),
+  image: z.string().nullable(),
+  role: roleSummarySchema.nullable(),
+  createdAt: z.string().datetime(),
+});
+export type AdminUser = z.infer<typeof adminUserSchema>;
+
+export const adminUserListSchema = z.object({
+  items: z.array(adminUserSchema),
+  total: z.number().int(),
+  page: z.number().int(),
+  perPage: z.number().int(),
+});
+export type AdminUserList = z.infer<typeof adminUserListSchema>;
+
+export const userListQuerySchema = z.object({
+  q: z.string().trim().max(200).optional(),
+  page: z.coerce.number().int().positive().default(1),
+  perPage: z.coerce.number().int().positive().max(100).default(20),
+});
+export type UserListQuery = z.infer<typeof userListQuerySchema>;
+
+export const updateUserSchema = z.object({
+  name: z.string().trim().min(1).max(120).nullable().optional(),
+  roleId: z.string().min(1).nullable().optional(),
+});
+export type UpdateUserInput = z.infer<typeof updateUserSchema>;

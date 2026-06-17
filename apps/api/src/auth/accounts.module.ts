@@ -8,6 +8,8 @@ import { AccountsService } from './accounts.service';
 import { InternalSecretGuard } from './internal-secret.guard';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { PasswordService } from './password.service';
+import { UsersController } from './users.controller';
+import { UsersService } from './users.service';
 
 @Module({
   imports: [
@@ -21,8 +23,15 @@ import { PasswordService } from './password.service';
       },
     }),
   ],
-  controllers: [AccountsController, AdminController],
-  providers: [AccountsService, PasswordService, JwtAuthGuard, PoliciesGuard, InternalSecretGuard],
+  controllers: [AccountsController, AdminController, UsersController],
+  providers: [
+    AccountsService,
+    UsersService,
+    PasswordService,
+    JwtAuthGuard,
+    PoliciesGuard,
+    InternalSecretGuard,
+  ],
   // Exported so other feature modules can reuse the auth guards (which depend on
   // JwtService + AccountsService) to protect their own routes.
   exports: [JwtModule, AccountsService, JwtAuthGuard, PoliciesGuard],

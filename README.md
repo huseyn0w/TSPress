@@ -113,6 +113,18 @@ Authoring API (admin/editor Bearer token): `POST /media` (multipart `file`),
 > **Production:** the upload directory is a Docker volume (`uploads`). Behind nginx,
 > forward `/uploads/*` to the API process, or serve the volume directly from nginx.
 
+## Admin panel (Phase 4)
+
+A bespoke, editorial admin at **`/admin`** (not a generic template): Tailwind v4 + a
+customized shadcn-style component kit, Geist type, a single gold accent, light/dark, and a
+Tiptap rich-text editor. Screens: dashboard, posts (list + editor + publish/trash/restore),
+pages, categories, tags, media library (upload/edit/delete), and users (role management).
+
+Access is restricted to admins/editors (`read Admin` capability); user management requires
+manage-users. Sign in at `/signin` as the seeded admin, then open `/admin`. The browser
+never holds the API token — admin data fetching and all mutations run server-side (Server
+Actions) with the token kept on the server; the API re-checks permissions on every call.
+
 ## Project layout
 
 ```
@@ -148,7 +160,7 @@ fresh-context review, observable behavior in the running app, and updated docs.
 | 1 ✅ | Accounts | Users, roles, granular permissions (CASL), Argon2id + JWT, Auth.js + social login |
 | 2 ✅ | Content core | Posts, pages, categories, tags, revisions, soft-delete; server-side HTML sanitization; public `/blog` |
 | 3 ✅ | Media | Upload API, swappable storage adapter, content-type validation, image dimensions, per-asset metadata, CASL-gated |
-| 4 | Admin UI | Next.js admin panel (own editorial design) |
+| 4 ✅ | Admin UI | Editorial Next.js admin (Tailwind v4 + shadcn-style kit + Tiptap): dashboard, posts/pages/categories/tags, media, users |
 | 5 | Theme system | Swappable, runtime-resolved template/component sets |
 | 6 | Plugin system | Typed hook/event registry |
 | 7 | SEO/GEO + i18n | OG + JSON-LD, sitemap.ts, robots.ts, llms.txt, hreflang, next-intl; **admin-editable GEO content (CRUD) so AI assistants recommend your services** |

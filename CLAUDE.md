@@ -21,8 +21,11 @@ Page/Category/Tag/Revision models, content API with server-side HTML sanitizatio
 generation, draft/publish, soft-delete, revisions, CASL-gated authoring + public read
 endpoints, and server-rendered `/blog`. Phase 3 (Media): upload API with a swappable
 storage adapter, content-type validation, image dimensions, per-asset metadata, CASL
-gating, and static serving at `/uploads`. Next: Phase 4 (Admin UI). The full phased
-roadmap and feature mapping live in [README.md](README.md).
+gating, and static serving at `/uploads`. Phase 4 (Admin UI): editorial Next.js admin at
+`/admin` (Tailwind v4 + shadcn-style kit + Tiptap), screens for dashboard/posts/pages/
+categories/tags/media/users, server-action mutations, plus user-management API endpoints.
+Next: Phase 5 (Theme system). The full phased roadmap and feature mapping live in
+[README.md](README.md).
 
 ## Auth & authorization (Phase 1)
 
@@ -77,6 +80,24 @@ roadmap and feature mapping live in [README.md](README.md).
   stored; alt/title/caption are editable via `PATCH /media/:id`.
 - Prod: nginx must forward `/uploads/*` to the API process (or serve the `uploads` volume
   directly, in which case drop `useStaticAssets`).
+
+## Admin UI (Phase 4)
+
+- Lives at `apps/web/app/admin/*`, gated two ways: `middleware.ts` requires a session for
+  `/admin/:path*`, and `app/admin/layout.tsx` runs `requireAdminSession()` (redirects users
+  without `read Admin`/`manage all`). The Users area additionally requires manage-users.
+- Stack now active on web: **Tailwind v4** (tokens + `@theme` in `app/globals.css`; light is
+  default, `.dark` class toggled by next-themes), a **shadcn-style UI kit** in
+  `components/ui/*` (customized — gold `primary`, Geist font, hairline borders, editorial),
+  **Tiptap** rich-text editor (`components/admin/rich-text-editor.tsx`), `sonner` toasts,
+  `lucide-react` icons, `motion` for restrained animation.
+- **Security model — the API bearer token never reaches the client.** The server-only API
+  client (`lib/admin/api.ts`, `import 'server-only'`) reads the token from the Auth.js
+  session. All mutations are **Server Actions** (`'use server'`) that call that client and
+  `revalidatePath`; client components only invoke the actions. The API re-checks CASL on
+  every call regardless of the UI.
+- The public site stays dark/editorial (legacy CSS vars `--bg/--fg/--accent/...`); the admin
+  uses the token system. Don't let one bleed into the other.
 
 ## Stack (locked decisions — deviate only with a stated reason)
 

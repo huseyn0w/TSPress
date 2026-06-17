@@ -18,6 +18,16 @@ export {
   publicUserSchema,
   type RegisterInput,
   registerSchema,
+  type RoleSummary,
+  roleSummarySchema,
+  type AdminUser,
+  adminUserSchema,
+  type AdminUserList,
+  adminUserListSchema,
+  type UserListQuery,
+  userListQuerySchema,
+  type UpdateUserInput,
+  updateUserSchema,
 } from './auth';
 export {
   contentStatusSchema,
