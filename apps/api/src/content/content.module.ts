@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AccountsModule } from '../auth/accounts.module';
+import { PluginsModule } from '../plugins/plugins.module';
 import { CategoriesController } from './categories.controller';
 import { CategoriesService } from './categories.service';
 import { HtmlSanitizerService } from './html-sanitizer.service';
@@ -13,8 +14,9 @@ import { TagsService } from './tags.service';
 
 @Module({
   // AccountsModule provides the JwtAuthGuard/PoliciesGuard (and their deps) used
-  // to protect the authoring controllers below.
-  imports: [AccountsModule],
+  // to protect the authoring controllers below. PluginsModule provides the
+  // HookRegistry the post service uses to run content filters / emit events.
+  imports: [AccountsModule, PluginsModule],
   controllers: [
     PostsController,
     PagesController,

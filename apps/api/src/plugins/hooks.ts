@@ -1,0 +1,30 @@
+import type { PostDetail } from '@typress/config';
+
+/**
+ * Typed hook catalogue. The plugin system exposes a fixed set of extension
+ * points (not arbitrary code injection): plugins may only register handlers for
+ * the hooks declared here, and their payload/return types are checked.
+ *
+ * - **Filters** transform a value and return it (the value threads through every
+ *   registered handler in priority order).
+ * - **Actions** are fire-and-forget events; handlers observe but don't return.
+ */
+
+/** Filter hooks: `name -> value type` (handler receives and returns this type). */
+export interface FilterMap {
+  /** The public post detail, just before it is returned to the site. */
+  'public.post.render': PostDetail;
+}
+
+/** Action hooks: `name -> payload type`. */
+export interface ActionMap {
+  /**
+   * Fired each time a post transitions *into* PUBLISHED (first publish and any
+   * later republish), not only the first time — mirrors WordPress's
+   * `transition_post_status`. Listeners that must run once should dedupe.
+   */
+  'post.published': { id: string; slug: string; title: string };
+}
+
+export type FilterName = keyof FilterMap;
+export type ActionName = keyof ActionMap;

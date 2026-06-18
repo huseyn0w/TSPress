@@ -14,6 +14,7 @@ import type {
   UpdatePostInput,
 } from '@typress/config';
 import { Prisma, type PrismaClient } from '@typress/db';
+import { HookRegistry } from '../plugins/hook-registry';
 import { PRISMA } from '../prisma/prisma.module';
 import { HtmlSanitizerService } from './html-sanitizer.service';
 import { slugify } from './slug';
@@ -38,6 +39,7 @@ export class PostsService {
   constructor(
     @Inject(PRISMA) private readonly prisma: PrismaClient,
     private readonly sanitizer: HtmlSanitizerService,
+    private readonly hooks: HookRegistry,
   ) {}
 
   async create(input: CreatePostInput, authorId: string): Promise<PostDetail> {
@@ -60,6 +62,13 @@ export class PostsService {
         },
         include: postInclude,
       });
+      if (status === 'PUBLISHED') {
+        await this.hooks.emit('post.published', {
+          id: post.id,
+          slug: post.slug,
+          title: post.title,
+        });
+      }
       return this.toDetail(post);
     } catch (error) {
       throw this.mapRelationError(error);
@@ -100,8 +109,17 @@ export class PostsService {
       data.tags = { set: input.tagIds.map((tid) => ({ id: tid })) };
     }
 
+    const becamePublished = input.status === 'PUBLISHED' && existing.status !== 'PUBLISHED';
+
     try {
       const post = await this.prisma.post.update({ where: { id }, data, include: postInclude });
+      if (becamePublished) {
+        await this.hooks.emit('post.published', {
+          id: post.id,
+          slug: post.slug,
+          title: post.title,
+        });
+      }
       return this.toDetail(post);
     } catch (error) {
       throw this.mapRelationError(error);
@@ -152,7 +170,8 @@ export class PostsService {
       include: postInclude,
     });
     if (!post) throw new NotFoundException('Post not found.');
-    return this.toDetail(post);
+    // Let plugins transform the public post just before it is returned.
+    return this.hooks.applyFilters('public.post.render', this.toDetail(post));
   }
 
   async softDelete(id: string): Promise<void> {

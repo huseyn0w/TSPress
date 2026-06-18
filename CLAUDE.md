@@ -13,7 +13,7 @@ Reference implementations by the same author (study for feature parity, not code
 
 - Laravel: https://github.com/huseyn0w/Laravella-CMS
 
-**Status:** Phases 0–5 shipped. Phase 0: pnpm monorepo, Docker compose (web/api/db),
+**Status:** Phases 0–6 shipped. Phase 0: pnpm monorepo, Docker compose (web/api/db),
 Prisma + Postgres, Biome, Vitest, Playwright, CI. Phase 1 (Accounts): User/Role/Permission
 models, Argon2id passwords, JWT auth, CASL authorization (PoliciesGuard), Auth.js v5 on
 web (credentials + optional Google/GitHub) consuming the API. Phase 2 (Content): Post/
@@ -26,8 +26,11 @@ gating, and static serving at `/uploads`. Phase 4 (Admin UI): editorial Next.js 
 categories/tags/media/users, server-action mutations, plus user-management API endpoints.
 Phase 5 (Theme system): runtime-resolved, swappable public themes selected by an
 `activeTheme` setting (API source of truth); the public site renders through the active
-theme; Administrator-only switching from `/admin/appearance`. Next: Phase 6 (Plugin
-system). The full phased roadmap and feature mapping live in [README.md](README.md).
+theme; Administrator-only switching from `/admin/appearance`. Phase 6 (Plugin system): a
+typed hook/event registry on the API (filters transform values, actions fire events),
+plugins as in-repo modules with a constrained `PluginApi` (not arbitrary code injection),
+plus a sample `reading-time` plugin. Next: Phase 7 (SEO/GEO + i18n). The full phased
+roadmap and feature mapping live in [README.md](README.md).
 
 ## Auth & authorization (Phase 1)
 
@@ -129,6 +132,30 @@ system). The full phased roadmap and feature mapping live in [README.md](README.
 - Adding a theme: drop a folder in `apps/web/themes/<id>/`, export a `Theme`, register it in
   `registry.ts`. The API/seed default (`'editorial'`) and `DEFAULT_THEME_ID` must stay in
   sync, but the resolver makes drift safe (falls back to default).
+
+## Plugin system (Phase 6)
+
+- A **typed hook/event registry** on the API (`apps/api/src/plugins/`): plugins extend the
+  app through declared extension points, **not arbitrary code injection**.
+- Two hook kinds, both typed by a fixed catalogue in `hooks.ts`:
+  **filters** (`applyFilters(name, value)` — value threads through every handler, in ascending
+  `priority`, default 10) and **actions** (`emit(name, payload)` — fire-and-forget events).
+  `FilterMap`/`ActionMap` give each hook a typed payload; no `any`.
+- `HookRegistry` (provided + exported by `PluginsModule`) implements the **`PluginApi`** — the
+  only surface a plugin gets (`addFilter`/`addAction`). Plugins never receive Prisma, the Nest
+  container, or request objects. A plugin is a `TypressPlugin` (`{ name, register(api) }`); the
+  enabled set is an explicit in-repo list (`enabled-plugins.ts`) registered once in
+  `onModuleInit`.
+- **`emit` is fault-isolated**: a throwing action listener is logged and swallowed so it can
+  neither fail an already-committed write nor stop other listeners. Filters are *not* swallowed
+  (a bad transform should surface).
+- Wired in `PostsService`: `findPublicBySlug` returns `applyFilters('public.post.render', …)`
+  so plugins can transform public post output; `create`/`update` `emit('post.published', …)`
+  on each transition into PUBLISHED. Sample plugin `samples/reading-time.plugin.ts` injects a
+  reading-time badge (a fixed-shape, integer-only HTML snippet — safe to render next to the
+  write-time-sanitized content) and logs on publish.
+- Add a plugin: implement `TypressPlugin`, add it to `enabled-plugins.ts`. New extension points
+  = add a hook to `FilterMap`/`ActionMap` and call `applyFilters`/`emit` at the right spot.
 
 ## Stack (locked decisions — deviate only with a stated reason)
 

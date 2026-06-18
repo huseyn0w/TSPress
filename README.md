@@ -3,8 +3,9 @@
 A WordPress-style CMS built entirely in TypeScript — lighter, faster, SEO-first, and
 easy to read, understand, and extend.
 
-> **Status:** Phases 0–5 are complete — foundation, accounts, content, media, the admin UI,
-> and a runtime theme system. Remaining feature phases follow the roadmap below.
+> **Status:** Phases 0–6 are complete — foundation, accounts, content, media, the admin UI,
+> a runtime theme system, and a typed plugin/hook system. Remaining feature phases follow the
+> roadmap below.
 
 ## Stack
 
@@ -140,6 +141,24 @@ theme re-skins the whole public site (`/`, `/blog`, `/blog/<slug>`) immediately.
 - **Add a theme:** drop a folder in `apps/web/themes/<id>/` exporting a `Theme`
   (`Layout` + `Home`/`BlogIndex`/`BlogPost`), then register it in `themes/registry.ts`.
 
+## Plugin system (Phase 6)
+
+Typress is extensible through a **typed hook/event registry** on the API — extension points,
+not arbitrary code injection. There are two kinds of hooks:
+
+- **Filters** transform a value (e.g. `public.post.render` lets a plugin alter a post just
+  before it's returned to the site), running through every handler in priority order.
+- **Actions** are fire-and-forget events (e.g. `post.published` fires when a post is published).
+
+Plugins are explicit in-repo modules implementing a small typed contract (`TypressPlugin`);
+they receive only a constrained `PluginApi` (`addFilter` / `addAction`) — never the database
+or request. The enabled set lives in `apps/api/src/plugins/enabled-plugins.ts`.
+
+A sample **`reading-time`** plugin ships enabled: it injects an estimated "N min read" badge at
+the top of every public post (visible on `/blog/<slug>` after `pnpm db:seed`) and logs a line
+whenever a post is published. **Add a plugin:** implement `TypressPlugin`, register a handler on
+a hook, and add it to `enabled-plugins.ts`.
+
 ## Project layout
 
 ```
@@ -177,7 +196,7 @@ fresh-context review, observable behavior in the running app, and updated docs.
 | 3 ✅ | Media | Upload API, swappable storage adapter, content-type validation, image dimensions, per-asset metadata, CASL-gated |
 | 4 ✅ | Admin UI | Editorial Next.js admin (Tailwind v4 + shadcn-style kit + Tiptap): dashboard, posts/pages/categories/tags, media, users |
 | 5 ✅ | Theme system | Swappable, runtime-resolved themes selected by an `activeTheme` setting; public site renders through the active theme; Administrator-only switching at `/admin/appearance` |
-| 6 | Plugin system | Typed hook/event registry |
+| 6 ✅ | Plugin system | Typed hook/event registry (filters + actions); plugins as constrained in-repo modules; sample reading-time plugin |
 | 7 | SEO/GEO + i18n | OG + JSON-LD, sitemap.ts, robots.ts, llms.txt, hreflang, next-intl; **admin-editable GEO content (CRUD) so AI assistants recommend your services** |
 | 8 | Comments, search, spam | Threaded comments, Postgres FTS, reCAPTCHA v3 + rate limiting |
 | 9 | Public site | Server-rendered editorial frontend, profiles, likes |
