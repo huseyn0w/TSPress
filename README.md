@@ -3,9 +3,10 @@
 A WordPress-style CMS built entirely in TypeScript — lighter, faster, SEO-first, and
 easy to read, understand, and extend.
 
-> **Status:** Phases 0–8 are complete — foundation, accounts, content, media, the admin UI,
-> a runtime theme system, a typed plugin/hook system, SEO/GEO, and comments + full-text search +
-> spam protection. Remaining feature phases follow the roadmap below.
+> **Status:** Phases 0–9 are complete — foundation, accounts, content, media, the admin UI,
+> a runtime theme system, a typed plugin/hook system, SEO/GEO, comments + full-text search +
+> spam protection, and the polished public site (author profiles + post likes). Remaining
+> feature phases follow the roadmap below.
 
 ## Stack
 
@@ -189,6 +190,17 @@ reaches JSON-LD, so it can't inject markup.
   `RECAPTCHA_SECRET_KEY` to enable it; left blank, comments still work and verification is skipped.
   Sign-in, sign-up, and comment submission are **rate-limited** regardless.
 
+## Public site (Phase 9)
+
+The reader-facing site is the editorial frontend rendered through the active theme, with:
+
+- **Author profiles** at `/authors/<id>` — avatar, an editable bio, and the author's published
+  posts. Author bylines on posts link to them. Each user can edit their own **name and bio** on
+  the `/account` page (a short bio shows on their public profile).
+- **Post likes** — signed-in readers can like a post (one like per person) with a live count;
+  visitors who aren't signed in see a prompt to sign in. After `pnpm db:seed`, sign in and open
+  any post to try it.
+
 ## Project layout
 
 ```
@@ -230,7 +242,7 @@ fresh-context review, observable behavior in the running app, and updated docs.
 | 7 ✅ | SEO / GEO | OG + JSON-LD (Organization/WebSite/BlogPosting/Service/FAQPage), sitemap.ts, robots.ts, llms.txt; **admin-editable GEO content (site profile + Services + FAQ CRUD) so AI assistants recommend your services** |
 | 7b | i18n / multilingual | next-intl + translated Prisma fields + hreflang (split out of Phase 7 as its own phase) |
 | 8 ✅ | Comments, search, spam | Threaded comments + moderation queue, Postgres full-text search, reCAPTCHA v3 (optional) + rate limiting on auth/comments |
-| 9 | Public site | Server-rendered editorial frontend, profiles, likes |
+| 9 ✅ | Public site | Polished server-rendered editorial frontend, public author profiles (editable bio), signed-in post likes |
 | 10 | AI integration | MCP server with scoped, validated, authenticated tools |
 | 11 | Deploy + demo | VPS guide (Docker/PM2 + nginx) + shared-hosting guide, seed data |
 

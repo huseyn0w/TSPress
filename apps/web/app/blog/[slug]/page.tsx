@@ -1,4 +1,5 @@
 import { Comments } from '@/components/blog/comments';
+import { LikeButton } from '@/components/blog/like-button';
 import { getSeoContent } from '@/lib/seo/fetch';
 import { JsonLd } from '@/lib/seo/json-ld';
 import { blogPostingJsonLd } from '@/lib/seo/jsonld';
@@ -8,6 +9,7 @@ import { type CommentThread, commentThreadSchema, postDetailSchema } from '@typr
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { apiBaseUrl } from '../../lib/api';
+import { getLikeState } from './like-actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -64,11 +66,12 @@ export async function generateMetadata({
 
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [post, { Layout, BlogPost }, { profile }, thread] = await Promise.all([
+  const [post, { Layout, BlogPost }, { profile }, thread, like] = await Promise.all([
     getPost(slug),
     getActiveTheme(),
     getSeoContent(),
     getComments(slug),
+    getLikeState(slug),
   ]);
   if (!post) notFound();
 
@@ -90,6 +93,12 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       <Layout>
         <BlogPost post={post} />
         <div style={{ maxWidth: 680, margin: '0 auto', padding: '0 1.5rem 4rem' }}>
+          <LikeButton
+            slug={post.slug}
+            initialLikes={like.state.likes}
+            initialLiked={like.state.liked}
+            signedIn={like.signedIn}
+          />
           <Comments slug={post.slug} initialThread={thread} />
         </div>
       </Layout>

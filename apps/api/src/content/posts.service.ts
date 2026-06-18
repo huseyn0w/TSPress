@@ -164,6 +164,16 @@ export class PostsService {
     return this.toDetail(post);
   }
 
+  /** Published posts by a given author (newest first), as summaries. */
+  async publicByAuthor(authorId: string): Promise<PostSummary[]> {
+    const posts = await this.prisma.post.findMany({
+      where: { authorId, status: 'PUBLISHED', deletedAt: null },
+      include: postInclude,
+      orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
+    });
+    return posts.map((p) => this.toSummary(p));
+  }
+
   async findPublicBySlug(slug: string): Promise<PostDetail> {
     const post = await this.prisma.post.findFirst({
       where: { slug, status: 'PUBLISHED', deletedAt: null },

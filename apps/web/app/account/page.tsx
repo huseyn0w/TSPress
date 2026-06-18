@@ -1,7 +1,9 @@
-import { publicUserSchema } from '@typress/config';
+import { authorProfileSchema, publicUserSchema } from '@typress/config';
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { auth } from '../../auth';
 import { apiBaseUrl } from '../lib/api';
+import { ProfileEditor } from './profile-editor';
 import { SignOutButton } from './sign-out-button';
 
 export const dynamic = 'force-dynamic';
@@ -45,6 +47,18 @@ export default async function AccountPage() {
   }
 
   const user = meData.data;
+
+  // The public profile carries the editable bio (publicUser does not).
+  let bio = '';
+  try {
+    const profRes = await fetch(`${apiBaseUrl}/public/authors/${user.id}`, { cache: 'no-store' });
+    if (profRes.ok) {
+      const parsed = authorProfileSchema.safeParse(await profRes.json());
+      if (parsed.success) bio = parsed.data.bio ?? '';
+    }
+  } catch {
+    // bio stays empty
+  }
 
   return (
     <main
@@ -94,7 +108,18 @@ export default async function AccountPage() {
             Profile
           </h2>
           <Row label="Email" value={user.email} />
-          <Row label="Name" value={user.name ?? '—'} />
+          <Row label="Name" value={user.name ?? 'Not set'} />
+          <div style={{ marginTop: '1rem' }}>
+            <ProfileEditor initialName={user.name ?? ''} initialBio={bio} />
+          </div>
+          <p style={{ marginTop: '0.75rem' }}>
+            <Link
+              href={`/authors/${user.id}`}
+              style={{ color: 'var(--accent)', fontSize: 13, textDecoration: 'none' }}
+            >
+              View public profile →
+            </Link>
+          </p>
         </section>
 
         {user.role && (

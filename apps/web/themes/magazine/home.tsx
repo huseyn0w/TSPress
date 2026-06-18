@@ -37,7 +37,7 @@ export function MagazineHome() {
           fontStyle: 'italic',
         }}
       >
-        Light, fast, SEO-first — and a pleasure to read, understand, and extend.
+        Light, fast, SEO-first, and a pleasure to read, understand, and extend.
       </p>
       <Link
         href="/blog"

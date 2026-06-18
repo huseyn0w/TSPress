@@ -21,6 +21,8 @@ model User {
   /// Argon2id hash. Null for users who only sign in via an OAuth provider.
   passwordHash String?
   image        String?
+  /// Public author bio, shown on the author profile page.
+  bio          String?
   emailVerified DateTime?
   roleId       String?
   role         Role?     @relation(fields: [roleId], references: [id], onDelete: SetNull)
@@ -30,6 +32,7 @@ model User {
   revisions    Revision[]
   media        Media[]
   comments     Comment[]
+  likes        PostLike[]
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
@@ -91,6 +94,7 @@ model Post {
   tags        Tag[]         @relation("PostTags")
   revisions   Revision[]
   comments    Comment[]
+  likes       PostLike[]
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   /// Soft delete: non-null means trashed.
@@ -98,6 +102,19 @@ model Post {
 
   @@index([status, publishedAt])
   @@index([authorId])
+}
+
+/// A like on a post by a signed-in user (one per user per post).
+model PostLike {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+  @@index([postId])
 }
 
 model Page {

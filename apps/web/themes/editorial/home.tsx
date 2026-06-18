@@ -3,7 +3,7 @@ import Link from 'next/link';
 export function EditorialHome() {
   return (
     <section style={{ display: 'grid', placeItems: 'center', padding: '6rem 2rem' }}>
-      <div style={{ maxWidth: 640, textAlign: 'center' }}>
+      <div data-animate="rise" style={{ maxWidth: 640, textAlign: 'center' }}>
         <p
           style={{
             margin: 0,
@@ -24,6 +24,7 @@ export function EditorialHome() {
         <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
           <Link
             href="/blog"
+            className="ts-cta"
             style={{
               display: 'inline-block',
               padding: '0.7rem 1.4rem',

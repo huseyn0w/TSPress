@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Patch, Post, UseGuards } from '@nestjs/common';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import {
   type AuthResult,
@@ -6,9 +6,11 @@ import {
   type OAuthInput,
   type PublicUser,
   type RegisterInput,
+  type UpdateAccountInput,
   loginSchema,
   oauthSchema,
   registerSchema,
+  updateAccountSchema,
 } from '@typress/config';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { AccountsService } from './accounts.service';
@@ -49,5 +51,15 @@ export class AccountsController {
   @UseGuards(JwtAuthGuard)
   me(@CurrentUser() user: AuthenticatedUser): PublicUser {
     return { id: user.id, email: user.email, name: user.name, image: user.image, role: user.role };
+  }
+
+  // Self-service profile edit (name / bio / avatar) for the signed-in user.
+  @Patch('me')
+  @UseGuards(JwtAuthGuard)
+  updateMe(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body(new ZodValidationPipe(updateAccountSchema)) body: UpdateAccountInput,
+  ) {
+    return this.accounts.updateProfile(user.id, body);
   }
 }

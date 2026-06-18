@@ -46,7 +46,17 @@ export function MagazineBlogPost({ post }: { post: PostDetail }) {
             borderBottom: '3px double var(--line)',
           }}
         >
-          By {post.author?.name ?? 'Unknown author'}
+          By{' '}
+          {post.author ? (
+            <Link
+              href={`/authors/${post.author.id}`}
+              style={{ color: 'var(--fg)', textDecoration: 'none' }}
+            >
+              {post.author.name ?? 'Unknown author'}
+            </Link>
+          ) : (
+            'Unknown author'
+          )}
           {published && ` · ${published.toLocaleDateString('en-US', { dateStyle: 'long' })}`}
         </p>
         {/* content is sanitized server-side by the API before storage. */}

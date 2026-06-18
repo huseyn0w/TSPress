@@ -116,6 +116,14 @@ export {
   type SearchResponse,
 } from './search';
 export {
+  updateAccountSchema,
+  type UpdateAccountInput,
+  authorProfileSchema,
+  type AuthorProfile,
+  likeStateSchema,
+  type LikeState,
+} from './profile';
+export {
   ALLOWED_MEDIA_MIME_TYPES,
   updateMediaSchema,
   type UpdateMediaInput,

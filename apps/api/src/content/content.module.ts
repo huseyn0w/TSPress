@@ -1,13 +1,17 @@
 import { Module } from '@nestjs/common';
 import { AccountsModule } from '../auth/accounts.module';
 import { PluginsModule } from '../plugins/plugins.module';
+import { AuthorsService } from './authors.service';
 import { CategoriesController } from './categories.controller';
 import { CategoriesService } from './categories.service';
 import { HtmlSanitizerService } from './html-sanitizer.service';
+import { LikesController, PublicLikesController } from './likes.controller';
+import { LikesService } from './likes.service';
 import { PagesController } from './pages.controller';
 import { PagesService } from './pages.service';
 import { PostsController } from './posts.controller';
 import { PostsService } from './posts.service';
+import { PublicAuthorsController } from './public-authors.controller';
 import { PublicContentController } from './public-content.controller';
 import { SearchController } from './search.controller';
 import { SearchService } from './search.service';
@@ -26,6 +30,9 @@ import { TagsService } from './tags.service';
     TagsController,
     PublicContentController,
     SearchController,
+    PublicAuthorsController,
+    LikesController,
+    PublicLikesController,
   ],
   providers: [
     PostsService,
@@ -34,6 +41,8 @@ import { TagsService } from './tags.service';
     TagsService,
     HtmlSanitizerService,
     SearchService,
+    AuthorsService,
+    LikesService,
   ],
 })
 export class ContentModule {}

@@ -21,7 +21,16 @@ export function EditorialBlogPost({ post }: { post: PostDetail }) {
           {post.title}
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: 14, margin: '0 0 2.5rem' }}>
-          {post.author?.name ?? 'Unknown author'}
+          {post.author ? (
+            <Link
+              href={`/authors/${post.author.id}`}
+              style={{ color: 'var(--fg)', textDecoration: 'none' }}
+            >
+              {post.author.name ?? 'Unknown author'}
+            </Link>
+          ) : (
+            'Unknown author'
+          )}
           {published && ` · ${published.toLocaleDateString('en-US', { dateStyle: 'long' })}`}
         </p>
         {/* content is sanitized server-side by the API before storage. */}

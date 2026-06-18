@@ -13,7 +13,7 @@ Reference implementations by the same author (study for feature parity, not code
 
 - Laravel: https://github.com/huseyn0w/Laravella-CMS
 
-**Status:** Phases 0–8 shipped. Phase 0: pnpm monorepo, Docker compose (web/api/db),
+**Status:** Phases 0–9 shipped. Phase 0: pnpm monorepo, Docker compose (web/api/db),
 Prisma + Postgres, Biome, Vitest, Playwright, CI. Phase 1 (Accounts): User/Role/Permission
 models, Argon2id passwords, JWT auth, CASL authorization (PoliciesGuard), Auth.js v5 on
 web (credentials + optional Google/GitHub) consuming the API. Phase 2 (Content): Post/
@@ -35,8 +35,9 @@ plus a sample `reading-time` plugin. Phase 7 (SEO/GEO): sitemap/robots/llms.txt,
 server-rendered `/services` page. **i18n/multilingual was split out into its own later phase.**
 Phase 8 (Comments, search, spam): threaded guest/auth comments with a moderation queue,
 Postgres full-text search, reCAPTCHA v3 (optional) + rate limiting on auth + comment submit.
-Next: Phase 9 (Public site). The full phased roadmap and feature mapping live in
-[README.md](README.md).
+Phase 9 (Public site): the polished editorial frontend, public author profiles (with an
+editable bio), and signed-in post likes. Next: Phase 10 (AI integration / MCP). The full
+phased roadmap and feature mapping live in [README.md](README.md).
 
 ## Auth & authorization (Phase 1)
 
@@ -205,6 +206,23 @@ Next: Phase 9 (Public site). The full phased roadmap and feature mapping live in
   `RECAPTCHA_MIN_SCORE`. Rate limiting via `@nestjs/throttler` (`ThrottlerModule.forRoot`, applied per-route
   with `@UseGuards(ThrottlerGuard)+@Throttle` on auth `login`/`register` (10/min) and comment submit (8/min)).
   `main.ts` sets `trust proxy` so `req.ip` is the real client behind nginx.
+
+## Public site (Phase 9)
+
+- The public frontend is the editorial site rendered **through the active theme** (Phase 5),
+  elevated with refined rhythm and restrained, reduced-motion-gated CSS motion
+  (`[data-animate="rise"]`, `.ts-cta` in `globals.css`). Public copy avoids em-dashes.
+- **Author profiles**: `GET /public/authors/:id` returns `{ id, name, image, bio, posts }`
+  (only public fields are selected — never email/role/hash). Page at `/authors/[id]` (avatar,
+  bio, their posts). Author bylines on posts link there. Each user has an editable `bio`.
+- **Self-service profile**: `PATCH /auth/me` (JWT; identity from the token, never the body)
+  updates name/bio/avatar; the `/account` page has a `ProfileEditor` (Server Action). Bio is
+  plain text rendered escaped.
+- **Likes are signed-in only**, one per user (`PostLike`, `@@unique([postId,userId])`).
+  `GET/POST /posts/:slug/like` (JWT, no CASL — any signed-in user); public count at
+  `GET /public/posts/:slug/likes`. Toggle is race-resilient (ignores concurrent P2002/P2025
+  and recomputes state). Web `LikeButton` toggles via a **Server Action** (the API bearer
+  token stays server-side); anonymous visitors see a "Sign in to like" link.
 
 ## Stack (locked decisions — deviate only with a stated reason)
 

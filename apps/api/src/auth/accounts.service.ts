@@ -8,6 +8,7 @@ import type {
   Permission,
   PublicUser,
   RegisterInput,
+  UpdateAccountInput,
 } from '@typress/config';
 import { Prisma, type PrismaClient } from '@typress/db';
 import { PRISMA } from '../prisma/prisma.module';
@@ -132,6 +133,23 @@ export class AccountsService {
       return null;
     }
     return { ...this.toPublicUser(user), permissions: this.flattenPermissions(user) };
+  }
+
+  /** Self-service profile update for the signed-in user (name / bio / avatar). */
+  async updateProfile(
+    userId: string,
+    input: UpdateAccountInput,
+  ): Promise<{ id: string; name: string | null; image: string | null; bio: string | null }> {
+    const data: Prisma.UserUpdateInput = {};
+    if (input.name !== undefined) data.name = input.name;
+    if (input.bio !== undefined) data.bio = input.bio;
+    if (input.image !== undefined) data.image = input.image === '' ? null : input.image;
+
+    return this.prisma.user.update({
+      where: { id: userId },
+      data,
+      select: { id: true, name: true, image: true, bio: true },
+    });
   }
 
   private async buildAuthResult(user: UserWithRole): Promise<AuthResult> {
