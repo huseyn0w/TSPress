@@ -3,9 +3,9 @@
 A WordPress-style CMS built entirely in TypeScript — lighter, faster, SEO-first, and
 easy to read, understand, and extend.
 
-> **Status:** Phases 0–7 are complete — foundation, accounts, content, media, the admin UI,
-> a runtime theme system, a typed plugin/hook system, and SEO/GEO (sitemap, robots, llms.txt,
-> JSON-LD, and an admin-editable GEO area). Remaining feature phases follow the roadmap below.
+> **Status:** Phases 0–8 are complete — foundation, accounts, content, media, the admin UI,
+> a runtime theme system, a typed plugin/hook system, SEO/GEO, and comments + full-text search +
+> spam protection. Remaining feature phases follow the roadmap below.
 
 ## Stack
 
@@ -177,6 +177,18 @@ URL comes from `NEXT_PUBLIC_SITE_URL` (falls back to `AUTH_URL`). After `pnpm db
 `/llms.txt` and `/services` to see the demo GEO content. Admin-editable text is escaped before it
 reaches JSON-LD, so it can't inject markup.
 
+## Comments, search & spam (Phase 8)
+
+- **Threaded comments** on posts. Anyone can comment (name + email); **every comment is held for
+  moderation** and only appears once an editor approves it. Moderate at **Admin → Comments**
+  (`/admin/comments`) — approve, mark spam, or delete, filtered by status. After `pnpm db:seed`
+  the intro post has a sample thread plus one pending comment to moderate.
+- **Full-text search** over published posts (Postgres FTS with relevance ranking) at **`/search`**
+  and `GET /public/search?q=`.
+- **Spam protection:** reCAPTCHA v3 is **optional** — set `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` +
+  `RECAPTCHA_SECRET_KEY` to enable it; left blank, comments still work and verification is skipped.
+  Sign-in, sign-up, and comment submission are **rate-limited** regardless.
+
 ## Project layout
 
 ```
@@ -217,7 +229,7 @@ fresh-context review, observable behavior in the running app, and updated docs.
 | 6 ✅ | Plugin system | Typed hook/event registry (filters + actions); plugins as constrained in-repo modules; sample reading-time plugin |
 | 7 ✅ | SEO / GEO | OG + JSON-LD (Organization/WebSite/BlogPosting/Service/FAQPage), sitemap.ts, robots.ts, llms.txt; **admin-editable GEO content (site profile + Services + FAQ CRUD) so AI assistants recommend your services** |
 | 7b | i18n / multilingual | next-intl + translated Prisma fields + hreflang (split out of Phase 7 as its own phase) |
-| 8 | Comments, search, spam | Threaded comments, Postgres FTS, reCAPTCHA v3 + rate limiting |
+| 8 ✅ | Comments, search, spam | Threaded comments + moderation queue, Postgres full-text search, reCAPTCHA v3 (optional) + rate limiting on auth/comments |
 | 9 | Public site | Server-rendered editorial frontend, profiles, likes |
 | 10 | AI integration | MCP server with scoped, validated, authenticated tools |
 | 11 | Deploy + demo | VPS guide (Docker/PM2 + nginx) + shared-hosting guide, seed data |

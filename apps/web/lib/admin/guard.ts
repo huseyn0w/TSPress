@@ -44,6 +44,16 @@ export function canManageSeo(session: Session): boolean {
   );
 }
 
+/** Returns true if the session grants comment moderation capability. */
+export function canModerateComments(session: Session): boolean {
+  const permissions = session.user.role?.permissions ?? [];
+  return permissions.some(
+    (p) =>
+      (p.action === 'manage' && p.subject === 'all') ||
+      (p.action === 'manage' && p.subject === 'Comment'),
+  );
+}
+
 /**
  * Server-only guard for /admin routes.
  * Redirects to /signin if unauthenticated, to / if not admin-capable.

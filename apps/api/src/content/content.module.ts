@@ -9,6 +9,8 @@ import { PagesService } from './pages.service';
 import { PostsController } from './posts.controller';
 import { PostsService } from './posts.service';
 import { PublicContentController } from './public-content.controller';
+import { SearchController } from './search.controller';
+import { SearchService } from './search.service';
 import { TagsController } from './tags.controller';
 import { TagsService } from './tags.service';
 
@@ -23,7 +25,15 @@ import { TagsService } from './tags.service';
     CategoriesController,
     TagsController,
     PublicContentController,
+    SearchController,
   ],
-  providers: [PostsService, PagesService, CategoriesService, TagsService, HtmlSanitizerService],
+  providers: [
+    PostsService,
+    PagesService,
+    CategoriesService,
+    TagsService,
+    HtmlSanitizerService,
+    SearchService,
+  ],
 })
 export class ContentModule {}

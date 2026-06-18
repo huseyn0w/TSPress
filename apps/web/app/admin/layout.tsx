@@ -4,6 +4,7 @@ import {
   canManageSeo,
   canManageSettings,
   canManageUsers,
+  canModerateComments,
   requireAdminSession,
 } from '@/lib/admin/guard';
 import type { ReactNode } from 'react';
@@ -19,6 +20,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           canManageUsers={canManageUsers(session)}
           canManageSettings={canManageSettings(session)}
           canManageSeo={canManageSeo(session)}
+          canModerateComments={canModerateComments(session)}
         >
           {children}
         </AdminShell>

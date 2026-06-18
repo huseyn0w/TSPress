@@ -90,6 +90,32 @@ export {
   type SeoContent,
 } from './seo';
 export {
+  commentStatusSchema,
+  type CommentStatus,
+  createCommentSchema,
+  type CreateCommentInput,
+  moderateCommentSchema,
+  type ModerateCommentInput,
+  type CommentNode,
+  commentNodeSchema,
+  commentThreadSchema,
+  type CommentThread,
+  adminCommentSchema,
+  type AdminComment,
+  adminCommentListQuerySchema,
+  type AdminCommentListQuery,
+  adminCommentListSchema,
+  type AdminCommentList,
+} from './comments';
+export {
+  searchQuerySchema,
+  type SearchQuery,
+  searchResultSchema,
+  type SearchResult,
+  searchResponseSchema,
+  type SearchResponse,
+} from './search';
+export {
   ALLOWED_MEDIA_MIME_TYPES,
   updateMediaSchema,
   type UpdateMediaInput,

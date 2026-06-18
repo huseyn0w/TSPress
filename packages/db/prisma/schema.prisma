@@ -29,6 +29,7 @@ model User {
   pages        Page[]
   revisions    Revision[]
   media        Media[]
+  comments     Comment[]
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
@@ -89,6 +90,7 @@ model Post {
   categories  Category[]    @relation("PostCategories")
   tags        Tag[]         @relation("PostTags")
   revisions   Revision[]
+  comments    Comment[]
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   /// Soft delete: non-null means trashed.
@@ -229,4 +231,40 @@ model FaqItem {
   updatedAt DateTime @updatedAt
 
   @@index([order])
+}
+
+// --- Comments (Phase 8) ------------------------------------------------------
+
+enum CommentStatus {
+  PENDING
+  APPROVED
+  SPAM
+  TRASH
+}
+
+/// A threaded comment on a post. Guests comment with name+email; signed-in users
+/// are linked via userId. New comments start PENDING and need moderation.
+model Comment {
+  id          String        @id @default(cuid())
+  postId      String
+  post        Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  /// Self-reference for threading. Replies are removed with their parent.
+  parentId    String?
+  parent      Comment?      @relation("CommentThread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies     Comment[]     @relation("CommentThread")
+  /// Display name + email snapshot (from the user for signed-in authors).
+  authorName  String
+  authorEmail String
+  /// Set when an authenticated user authored the comment.
+  userId      String?
+  user        User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  /// Plain text (rendered escaped).
+  content     String
+  status      CommentStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([postId, status])
+  @@index([parentId])
+  @@index([status])
 }

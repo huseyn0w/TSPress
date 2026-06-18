@@ -9,6 +9,10 @@ async function bootstrap() {
   const env = parseEnv();
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  // Trust the first reverse-proxy hop (nginx in prod) so `req.ip` is the real
+  // client address — required for correct per-client rate limiting (Phase 8).
+  app.set('trust proxy', 1);
+
   // Only the web app's origin may call the API from the browser.
   app.enableCors({ origin: env.WEB_ORIGIN });
 

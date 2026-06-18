@@ -1,14 +1,17 @@
+import { Comments } from '@/components/blog/comments';
 import { getSeoContent } from '@/lib/seo/fetch';
 import { JsonLd } from '@/lib/seo/json-ld';
 import { blogPostingJsonLd } from '@/lib/seo/jsonld';
 import { siteUrl } from '@/lib/seo/site';
 import { getActiveTheme } from '@/themes/active-theme';
-import { postDetailSchema } from '@typress/config';
+import { type CommentThread, commentThreadSchema, postDetailSchema } from '@typress/config';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { apiBaseUrl } from '../../lib/api';
 
 export const dynamic = 'force-dynamic';
+
+const EMPTY_THREAD: CommentThread = { items: [], total: 0 };
 
 async function getPost(slug: string) {
   try {
@@ -20,6 +23,19 @@ async function getPost(slug: string) {
     return parsed.success ? parsed.data : null;
   } catch {
     return null;
+  }
+}
+
+async function getComments(slug: string): Promise<CommentThread> {
+  try {
+    const res = await fetch(`${apiBaseUrl}/public/posts/${encodeURIComponent(slug)}/comments`, {
+      cache: 'no-store',
+    });
+    if (!res.ok) return EMPTY_THREAD;
+    const parsed = commentThreadSchema.safeParse(await res.json());
+    return parsed.success ? parsed.data : EMPTY_THREAD;
+  } catch {
+    return EMPTY_THREAD;
   }
 }
 
@@ -48,10 +64,11 @@ export async function generateMetadata({
 
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [post, { Layout, BlogPost }, { profile }] = await Promise.all([
+  const [post, { Layout, BlogPost }, { profile }, thread] = await Promise.all([
     getPost(slug),
     getActiveTheme(),
     getSeoContent(),
+    getComments(slug),
   ]);
   if (!post) notFound();
 
@@ -72,6 +89,9 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       />
       <Layout>
         <BlogPost post={post} />
+        <div style={{ maxWidth: 680, margin: '0 auto', padding: '0 1.5rem 4rem' }}>
+          <Comments slug={post.slug} initialThread={thread} />
+        </div>
       </Layout>
     </>
   );

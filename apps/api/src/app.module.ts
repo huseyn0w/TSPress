@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AccountsModule } from './auth/accounts.module';
+import { CommentsModule } from './comments/comments.module';
 import { ContentModule } from './content/content.module';
 import { HealthModule } from './health/health.module';
 import { MediaModule } from './media/media.module';
@@ -7,9 +9,13 @@ import { PluginsModule } from './plugins/plugins.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { SeoModule } from './seo/seo.module';
 import { SettingsModule } from './settings/settings.module';
+import { SpamModule } from './spam/spam.module';
 
 @Module({
   imports: [
+    // Rate-limiting config; ThrottlerGuard is applied per-route on the
+    // spam-sensitive endpoints (auth + comment submission).
+    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
     PrismaModule,
     HealthModule,
     AccountsModule,
@@ -18,6 +24,8 @@ import { SettingsModule } from './settings/settings.module';
     SettingsModule,
     PluginsModule,
     SeoModule,
+    SpamModule,
+    CommentsModule,
   ],
 })
 export class AppModule {}

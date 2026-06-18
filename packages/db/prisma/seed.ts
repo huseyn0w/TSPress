@@ -21,6 +21,7 @@ const PERMISSIONS = [
   { action: 'manage', subject: 'Media' },
   { action: 'manage', subject: 'Setting' },
   { action: 'manage', subject: 'Seo' },
+  { action: 'manage', subject: 'Comment' },
 ] as const;
 
 // Roles and the permissions they grant. `Member` is the safe default for new
@@ -43,6 +44,7 @@ const ROLES: Record<
       { action: 'manage', subject: 'Tag' },
       { action: 'manage', subject: 'Media' },
       { action: 'manage', subject: 'Seo' },
+      { action: 'manage', subject: 'Comment' },
     ],
   },
   Member: {
@@ -151,6 +153,42 @@ const FAQS = [
     order: 2,
   },
 ];
+
+// Demo comments on the intro post: a thread + one pending (for the mod queue).
+async function seedComments() {
+  const post = await prisma.post.findUnique({ where: { slug: 'introducing-typress' } });
+  if (!post) return;
+  if ((await prisma.comment.count({ where: { postId: post.id } })) > 0) return;
+
+  const top = await prisma.comment.create({
+    data: {
+      postId: post.id,
+      authorName: 'Ada Lovelace',
+      authorEmail: 'ada@example.com',
+      content: 'Love seeing a TypeScript-native CMS. Congratulations on the launch!',
+      status: 'APPROVED',
+    },
+  });
+  await prisma.comment.create({
+    data: {
+      postId: post.id,
+      parentId: top.id,
+      authorName: 'Administrator',
+      authorEmail: ADMIN_EMAIL,
+      content: 'Thank you! Plenty more to come.',
+      status: 'APPROVED',
+    },
+  });
+  await prisma.comment.create({
+    data: {
+      postId: post.id,
+      authorName: 'Grace Hopper',
+      authorEmail: 'grace@example.com',
+      content: 'Is there a roadmap for multilingual support?',
+      status: 'PENDING',
+    },
+  });
+}
 
 async function seedSeo() {
   await prisma.siteProfile.upsert({
@@ -262,6 +300,7 @@ async function main() {
   });
 
   await seedSeo();
+  await seedComments();
 
   console.log(`✓ Seeded ${PERMISSIONS.length} permissions, ${Object.keys(ROLES).length} roles.`);
   console.log(`✓ Admin user: ${ADMIN_EMAIL}. Password comes from SEED_ADMIN_PASSWORD`);

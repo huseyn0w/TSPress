@@ -29,6 +29,12 @@ export const envSchema = z.object({
   NEXT_PUBLIC_API_URL: z.string().url().default('http://localhost:4000'),
   // Origin allowed to call the API from the browser (CORS).
   WEB_ORIGIN: z.string().url().default('http://localhost:3000'),
+
+  // Spam protection (Phase 8) — reCAPTCHA v3. Optional: when the secret is unset,
+  // verification is skipped (so the local/demo stack runs without Google keys).
+  RECAPTCHA_SECRET_KEY: z.string().optional(),
+  // Minimum acceptable v3 score (0..1) when reCAPTCHA is configured.
+  RECAPTCHA_MIN_SCORE: z.coerce.number().min(0).max(1).default(0.5),
 });
 
 export type Env = z.infer<typeof envSchema>;

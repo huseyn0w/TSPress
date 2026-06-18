@@ -21,6 +21,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  MessageSquare,
   Palette,
   Search,
   Tag,
@@ -42,6 +43,7 @@ interface AdminShellProps {
   canManageUsers: boolean;
   canManageSettings: boolean;
   canManageSeo: boolean;
+  canModerateComments: boolean;
 }
 
 interface NavItem {
@@ -59,6 +61,7 @@ function buildNavGroups(
   canManageUsers: boolean,
   canManageSettings: boolean,
   canManageSeo: boolean,
+  canModerateComments: boolean,
 ): NavGroup[] {
   const groups: NavGroup[] = [
     {
@@ -107,6 +110,19 @@ function buildNavGroups(
       ],
     },
   ];
+
+  if (canModerateComments) {
+    groups.push({
+      heading: 'Moderation',
+      items: [
+        {
+          label: 'Comments',
+          href: '/admin/comments',
+          icon: <MessageSquare className="h-4 w-4" />,
+        },
+      ],
+    });
+  }
 
   if (canManageUsers) {
     groups.push({
@@ -163,6 +179,7 @@ function getSectionLabel(pathname: string): string {
   if (pathname.startsWith('/admin/users')) return 'Users';
   if (pathname.startsWith('/admin/appearance')) return 'Appearance';
   if (pathname.startsWith('/admin/seo')) return 'SEO & GEO';
+  if (pathname.startsWith('/admin/comments')) return 'Comments';
   return 'Admin';
 }
 
@@ -206,15 +223,22 @@ function Sidebar({
   canManageUsers,
   canManageSettings,
   canManageSeo,
+  canModerateComments,
   onClose,
 }: {
   user: User;
   canManageUsers: boolean;
   canManageSettings: boolean;
   canManageSeo: boolean;
+  canModerateComments: boolean;
   onClose?: () => void;
 }) {
-  const navGroups = buildNavGroups(canManageUsers, canManageSettings, canManageSeo);
+  const navGroups = buildNavGroups(
+    canManageUsers,
+    canManageSettings,
+    canManageSeo,
+    canModerateComments,
+  );
 
   return (
     <div className="flex flex-col h-full">
@@ -274,6 +298,7 @@ export function AdminShell({
   canManageUsers,
   canManageSettings,
   canManageSeo,
+  canModerateComments,
 }: AdminShellProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -289,6 +314,7 @@ export function AdminShell({
           canManageUsers={canManageUsers}
           canManageSettings={canManageSettings}
           canManageSeo={canManageSeo}
+          canModerateComments={canModerateComments}
         />
       </aside>
 
@@ -304,6 +330,7 @@ export function AdminShell({
               canManageUsers={canManageUsers}
               canManageSettings={canManageSettings}
               canManageSeo={canManageSeo}
+              canModerateComments={canModerateComments}
               onClose={() => setMobileOpen(false)}
             />
           </div>

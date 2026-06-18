@@ -13,7 +13,7 @@ Reference implementations by the same author (study for feature parity, not code
 
 - Laravel: https://github.com/huseyn0w/Laravella-CMS
 
-**Status:** Phases 0–7 shipped. Phase 0: pnpm monorepo, Docker compose (web/api/db),
+**Status:** Phases 0–8 shipped. Phase 0: pnpm monorepo, Docker compose (web/api/db),
 Prisma + Postgres, Biome, Vitest, Playwright, CI. Phase 1 (Accounts): User/Role/Permission
 models, Argon2id passwords, JWT auth, CASL authorization (PoliciesGuard), Auth.js v5 on
 web (credentials + optional Google/GitHub) consuming the API. Phase 2 (Content): Post/
@@ -33,7 +33,9 @@ plus a sample `reading-time` plugin. Phase 7 (SEO/GEO): sitemap/robots/llms.txt,
 + JSON-LD (Organization/WebSite/BlogPosting/Service/FAQPage), and an admin-editable GEO area
 (site profile + Services + FAQ CRUD) surfaced to AI assistants via llms.txt, JSON-LD, and a
 server-rendered `/services` page. **i18n/multilingual was split out into its own later phase.**
-Next: Phase 8 (Comments, search, spam). The full phased roadmap and feature mapping live in
+Phase 8 (Comments, search, spam): threaded guest/auth comments with a moderation queue,
+Postgres full-text search, reCAPTCHA v3 (optional) + rate limiting on auth + comment submit.
+Next: Phase 9 (Public site). The full phased roadmap and feature mapping live in
 [README.md](README.md).
 
 ## Auth & authorization (Phase 1)
@@ -182,6 +184,27 @@ Next: Phase 8 (Comments, search, spam). The full phased roadmap and feature mapp
 - **GEO feature**: the admin **SEO & GEO** screen (`/admin/seo`, gated by `canManageSeo`) edits
   the profile/`geoStatement` + Services + FAQ via Server Actions; the public `/services` page
   (rendered through the active theme) + llms.txt + JSON-LD surface them to AI assistants.
+
+## Comments, search, spam (Phase 8)
+
+- **Comments** (`comments` module): `Comment` model (self-referential `parentId` threading,
+  `CommentStatus` PENDING→APPROVED/SPAM/TRASH). Guests comment with name+email; signed-in users
+  are pre-filled. **All comments start PENDING and are public only once APPROVED.**
+  - Public `GET/POST /public/posts/:slug/comments`: GET returns the APPROVED, threaded tree
+    (`buildCommentThread`, pure + unit-tested; never exposes `authorEmail`); POST is unauthenticated,
+    **rate-limited** and spam-checked, validates the parent is APPROVED on the same post, and stores
+    PENDING. Admin `GET/PATCH/DELETE /comments` is CASL-gated on subject **`Comment`** (Editor + Admin).
+  - The web **submits comments client-side directly to the API** (`NEXT_PUBLIC_API_URL`) so the
+    rate-limiter sees the real client IP; comment content is plain text rendered as escaped React text
+    (no `dangerouslySetInnerHTML`). Admin moderation at `/admin/comments` (gated `canModerateComments`).
+- **Search**: Postgres full-text (`SearchService`, `$queryRaw` with `to_tsvector` + `websearch_to_tsquery`
+  + `ts_rank`; the user query is always a **bound parameter**). Public `GET /public/search` + a `/search`
+  page. Postgres-specific by design ("Postgres full-text first").
+- **Spam**: `RecaptchaService` is **optional** — when `RECAPTCHA_SECRET_KEY` is unset it skips
+  verification (local/demo runs without Google keys); when set it requires a token meeting
+  `RECAPTCHA_MIN_SCORE`. Rate limiting via `@nestjs/throttler` (`ThrottlerModule.forRoot`, applied per-route
+  with `@UseGuards(ThrottlerGuard)+@Throttle` on auth `login`/`register` (10/min) and comment submit (8/min)).
+  `main.ts` sets `trust proxy` so `req.ip` is the real client behind nginx.
 
 ## Stack (locked decisions — deviate only with a stated reason)
 

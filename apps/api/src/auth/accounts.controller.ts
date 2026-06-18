@@ -1,4 +1,5 @@
 import { Body, Controller, Get, HttpCode, Post, UseGuards } from '@nestjs/common';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import {
   type AuthResult,
   type LoginInput,
@@ -20,13 +21,18 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 export class AccountsController {
   constructor(private readonly accounts: AccountsService) {}
 
+  // Rate-limited to blunt credential-stuffing and signup abuse.
   @Post('register')
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   register(@Body(new ZodValidationPipe(registerSchema)) body: RegisterInput): Promise<AuthResult> {
     return this.accounts.register(body);
   }
 
   @Post('login')
   @HttpCode(200)
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   login(@Body(new ZodValidationPipe(loginSchema)) body: LoginInput): Promise<AuthResult> {
     return this.accounts.login(body);
   }
