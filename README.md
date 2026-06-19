@@ -3,10 +3,10 @@
 A WordPress-style CMS built entirely in TypeScript — lighter, faster, SEO-first, and
 easy to read, understand, and extend.
 
-> **Status:** Phases 0–9 are complete — foundation, accounts, content, media, the admin UI,
+> **Status:** Phases 0–10 are complete — foundation, accounts, content, media, the admin UI,
 > a runtime theme system, a typed plugin/hook system, SEO/GEO, comments + full-text search +
-> spam protection, and the polished public site (author profiles + post likes). Remaining
-> feature phases follow the roadmap below.
+> spam protection, the polished public site (author profiles + post likes), and an MCP server
+> for AI-driven management. Remaining feature phases follow the roadmap below.
 
 ## Stack
 
@@ -201,6 +201,57 @@ The reader-facing site is the editorial frontend rendered through the active the
   visitors who aren't signed in see a prompt to sign in. After `pnpm db:seed`, sign in and open
   any post to try it.
 
+## AI integration / MCP (Phase 10)
+
+Typress ships an **MCP server** (`apps/mcp`) so AI clients (Claude CLI, Claude in VS Code,
+Claude Desktop) can manage the CMS through tools instead of raw API calls. It is a thin,
+**authenticated client of the API**: it logs in with a service account and every tool call
+rides that bearer token, so the **API re-checks CASL** on each request. The server's
+capabilities are bounded by the account's role. It performs **only data operations through
+the REST API** — no filesystem, no shell, no plugin/theme code execution.
+
+- **Tools (48):** posts (list/get/revisions/create/update/publish/unpublish/delete/restore),
+  pages (list/get/create/update/delete/restore), categories & tags (list/create/update/delete),
+  media (list/get/update-metadata/delete — binary upload is intentionally not exposed),
+  comments (list/approve/spam/trash/delete), settings (get/set active theme), SEO/GEO (site
+  profile + Services + FAQ CRUD), and users (list/roles/get/update — user deletion is not
+  exposed). Inputs are validated with the shared `@typress/config` Zod schemas; API 4xx/403
+  errors surface as clear tool errors (a 403 explains it's a CASL permission boundary).
+- **Required env:** `MCP_API_URL`, `MCP_API_EMAIL`, `MCP_API_PASSWORD` (see `.env.example`).
+- **Build & run:** `pnpm --filter @typress/mcp build` then `node apps/mcp/dist/index.js`
+  (stdio transport; logs go to stderr).
+
+**Connect it to Claude (CLI):**
+
+```bash
+claude mcp add typress \
+  --env MCP_API_URL=http://localhost:4000 \
+  --env MCP_API_EMAIL=admin@typress.local \
+  --env MCP_API_PASSWORD=admin12345 \
+  -- node /absolute/path/to/typress/apps/mcp/dist/index.js
+```
+
+**Connect it from VS Code** — add to `.vscode/mcp.json` (or your user MCP config):
+
+```jsonc
+{
+  "servers": {
+    "typress": {
+      "command": "node",
+      "args": ["/absolute/path/to/typress/apps/mcp/dist/index.js"],
+      "env": {
+        "MCP_API_URL": "http://localhost:4000",
+        "MCP_API_EMAIL": "admin@typress.local",
+        "MCP_API_PASSWORD": "admin12345"
+      }
+    }
+  }
+}
+```
+
+Then ask the assistant to, e.g., "create a draft post titled … and publish it" — it round-trips
+through the API with CASL enforced. Use `typress_ping` to confirm the server is reachable.
+
 ## Project layout
 
 ```
@@ -243,7 +294,7 @@ fresh-context review, observable behavior in the running app, and updated docs.
 | 7b | i18n / multilingual | next-intl + translated Prisma fields + hreflang (split out of Phase 7 as its own phase) |
 | 8 ✅ | Comments, search, spam | Threaded comments + moderation queue, Postgres full-text search, reCAPTCHA v3 (optional) + rate limiting on auth/comments |
 | 9 ✅ | Public site | Polished server-rendered editorial frontend, public author profiles (editable bio), signed-in post likes |
-| 10 | AI integration | MCP server with scoped, validated, authenticated tools |
+| 10 ✅ | AI integration | MCP server (`apps/mcp`) with scoped, validated, authenticated tools (content/media/comments/settings/SEO/users) over the API; CASL re-checked per call |
 | 11 | Deploy + demo | VPS guide (Docker/PM2 + nginx) + shared-hosting guide, seed data |
 
 ### Feature mapping (reference → Typress)

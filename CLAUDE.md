@@ -13,7 +13,7 @@ Reference implementations by the same author (study for feature parity, not code
 
 - Laravel: https://github.com/huseyn0w/Laravella-CMS
 
-**Status:** Phases 0–9 shipped. Phase 0: pnpm monorepo, Docker compose (web/api/db),
+**Status:** Phases 0–10 shipped. Phase 0: pnpm monorepo, Docker compose (web/api/db),
 Prisma + Postgres, Biome, Vitest, Playwright, CI. Phase 1 (Accounts): User/Role/Permission
 models, Argon2id passwords, JWT auth, CASL authorization (PoliciesGuard), Auth.js v5 on
 web (credentials + optional Google/GitHub) consuming the API. Phase 2 (Content): Post/
@@ -36,7 +36,10 @@ server-rendered `/services` page. **i18n/multilingual was split out into its own
 Phase 8 (Comments, search, spam): threaded guest/auth comments with a moderation queue,
 Postgres full-text search, reCAPTCHA v3 (optional) + rate limiting on auth + comment submit.
 Phase 9 (Public site): the polished editorial frontend, public author profiles (with an
-editable bio), and signed-in post likes. Next: Phase 10 (AI integration / MCP). The full
+editable bio), and signed-in post likes. Phase 10 (AI integration / MCP): `apps/mcp` built
+into a real MCP server exposing 48 scoped, Zod-validated, authenticated tools (content/media/
+comments/settings/SEO/users) that call the existing API with a service-account bearer token,
+so the API re-checks CASL per call. Next: Phase 11 (Deployment + demo). The full
 phased roadmap and feature mapping live in [README.md](README.md).
 
 ## Auth & authorization (Phase 1)
@@ -224,6 +227,35 @@ phased roadmap and feature mapping live in [README.md](README.md).
   and recomputes state). Web `LikeButton` toggles via a **Server Action** (the API bearer
   token stays server-side); anonymous visitors see a "Sign in to like" link.
 
+## AI integration / MCP (Phase 10)
+
+- `apps/mcp` (MCP TypeScript SDK, **ESM**) is a **thin, authenticated client of the API**, not a
+  second source of truth. It logs in once with a service account (`MCP_API_EMAIL`/
+  `MCP_API_PASSWORD` → `POST /auth/login`), caches the bearer token, and **re-logs in once on a
+  401** (expiry). Every tool call hits an existing REST endpoint with that token, so the **API
+  re-checks CASL** and the MCP server inherits all authorization for free — it carries none of
+  its own. Tools are only as powerful as the configured account's role.
+- **Config**: `loadConfig()` validates `MCP_API_URL`/`MCP_API_EMAIL`/`MCP_API_PASSWORD` (Zod) and
+  throws an actionable error if unset. `ApiClient` (`src/api-client.ts`) takes an injectable
+  `fetch` (so the login/retry/error-mapping logic is unit-tested without a network). Tool inputs
+  are validated by the **shared `@typress/config` schemas** (e.g. `createPostSchema`,
+  `postListQuerySchema`), composed with `.extend({ id })` where a route param is needed — never
+  redefined. The bearer token lives only in `ApiClient` + the `authorization` header; it is
+  **never logged or returned** (startup logs only `apiUrl`).
+- **Tools (48)**, one module per concern under `src/tools/*`, registered via the modern
+  `server.registerTool` with `title`/`description`/shared `inputSchema`/`annotations`
+  (readOnly/destructive/idempotent hints): posts (incl. publish/unpublish = `PATCH status`,
+  delete/restore), pages, categories, tags, media (list/get/update-meta/delete — **no binary
+  upload over MCP**), comments (approve/spam/trash/delete = `PATCH /comments/:id`), settings
+  (get/set active theme), SEO/GEO (profile + Services + FAQ CRUD), users (list/roles/get/update —
+  **no user delete over MCP**). Results are JSON via a shared `tool-kit` (`respond`/`toolResult`,
+  25k-char truncation guidance); API 4xx/403 surface as clear tool errors (`errors.ts` —
+  403 explicitly names the CASL boundary). **No filesystem, shell, or plugin/theme code execution.**
+- **Build/run**: `pnpm --filter @typress/mcp build` → `node apps/mcp/dist/index.js` (stdio; logs to
+  stderr). Connecting from Claude (CLI `claude mcp add` / VS Code `mcp.json`) is documented in
+  README. Add a tool: add a module fn or entry calling `client.request(method, path, { query, body,
+  schema })` and register it in `src/tools/index.ts`.
+
 ## Stack (locked decisions — deviate only with a stated reason)
 
 - TypeScript everywhere. Monorepo with **pnpm workspaces** (Turborepo deferred until
@@ -273,6 +305,9 @@ phased roadmap and feature mapping live in [README.md](README.md).
 - Tests: `pnpm test` (single: `pnpm vitest run <path> -t "name"`). E2E: `pnpm e2e`.
 - Lint/format: `pnpm lint` (check) / `pnpm format` (write). Typecheck: `pnpm typecheck`.
 - Build: `pnpm build` (topological: packages → apps).
+- MCP server: build `pnpm --filter @typress/mcp build`, run `node apps/mcp/dist/index.js`
+  (needs `MCP_API_URL`/`MCP_API_EMAIL`/`MCP_API_PASSWORD`); connect from Claude via
+  `claude mcp add` or a VS Code `mcp.json` (see README).
 
 Notes:
 - Biome needs `javascript.parser.unsafeParameterDecoratorsEnabled: true` for NestJS
