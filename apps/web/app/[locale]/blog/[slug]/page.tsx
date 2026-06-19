@@ -1,5 +1,7 @@
+import { apiBaseUrl } from '@/app/lib/api';
 import { Comments } from '@/components/blog/comments';
 import { LikeButton } from '@/components/blog/like-button';
+import { alternatesFor } from '@/lib/i18n/metadata';
 import { getSeoContent } from '@/lib/seo/fetch';
 import { JsonLd } from '@/lib/seo/json-ld';
 import { blogPostingJsonLd } from '@/lib/seo/jsonld';
@@ -8,7 +10,6 @@ import { getActiveTheme } from '@/themes/active-theme';
 import { type CommentThread, commentThreadSchema, postDetailSchema } from '@typress/config';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { apiBaseUrl } from '../../lib/api';
 import { getLikeState } from './like-actions';
 
 export const dynamic = 'force-dynamic';
@@ -44,16 +45,16 @@ async function getComments(slug: string): Promise<CommentThread> {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
-  const { slug } = await params;
+  const { locale, slug } = await params;
   const post = await getPost(slug);
   if (!post) return {};
 
   return {
     title: post.title,
     description: post.excerpt ?? undefined,
-    alternates: { canonical: `/blog/${post.slug}` },
+    alternates: alternatesFor(locale, `/blog/${post.slug}`),
     openGraph: {
       type: 'article',
       title: post.title,

@@ -1,7 +1,11 @@
+import { Link } from '@/i18n/navigation';
 import type { PostDetail } from '@typress/config';
-import Link from 'next/link';
+import { getFormatter, getTranslations } from 'next-intl/server';
 
-export function MagazineBlogPost({ post }: { post: PostDetail }) {
+export async function MagazineBlogPost({ post }: { post: PostDetail }) {
+  const t = await getTranslations('post');
+  const tb = await getTranslations('blog');
+  const format = await getFormatter();
   const published = post.publishedAt ? new Date(post.publishedAt) : null;
 
   return (
@@ -46,18 +50,18 @@ export function MagazineBlogPost({ post }: { post: PostDetail }) {
             borderBottom: '3px double var(--line)',
           }}
         >
-          By{' '}
+          {t('by')}{' '}
           {post.author ? (
             <Link
               href={`/authors/${post.author.id}`}
               style={{ color: 'var(--fg)', textDecoration: 'none' }}
             >
-              {post.author.name ?? 'Unknown author'}
+              {post.author.name ?? t('unknownAuthor')}
             </Link>
           ) : (
-            'Unknown author'
+            t('unknownAuthor')
           )}
-          {published && ` · ${published.toLocaleDateString('en-US', { dateStyle: 'long' })}`}
+          {published && ` · ${format.dateTime(published, { dateStyle: 'long' })}`}
         </p>
         {/* content is sanitized server-side by the API before storage. */}
         {/* biome-ignore lint/security/noDangerouslySetInnerHtml: content is sanitized by the API. */}
@@ -66,7 +70,7 @@ export function MagazineBlogPost({ post }: { post: PostDetail }) {
 
       <p style={{ marginTop: '3rem', textAlign: 'center', fontFamily: 'var(--font-sans)' }}>
         <Link href="/blog" style={{ color: 'var(--accent)', fontSize: 13, textDecoration: 'none' }}>
-          ← All stories
+          {tb('allStories')}
         </Link>
       </p>
     </div>

@@ -1,18 +1,26 @@
+import { alternatesFor } from '@/lib/i18n/metadata';
 import { getSeoContent } from '@/lib/seo/fetch';
 import { JsonLd } from '@/lib/seo/json-ld';
 import { faqPageJsonLd, servicesJsonLd } from '@/lib/seo/jsonld';
 import { getActiveTheme } from '@/themes/active-theme';
 import type { Metadata } from 'next';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
-  title: 'Services',
-  description: 'What we offer and answers to common questions.',
-  alternates: { canonical: '/services' },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations('services');
+  return { title: t('title'), alternates: alternatesFor(locale, '/services') };
+}
 
 export default async function ServicesPage() {
+  const t = await getTranslations('services');
   const [{ Layout }, { profile, services, faqs }] = await Promise.all([
     getActiveTheme(),
     getSeoContent(),
@@ -24,7 +32,7 @@ export default async function ServicesPage() {
       {faqs.length > 0 && <JsonLd data={faqPageJsonLd(faqs)} />}
       <Layout>
         <div style={{ maxWidth: 720, margin: '0 auto', padding: '4rem 1.5rem' }}>
-          <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', margin: '0 0 1rem' }}>Services</h1>
+          <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', margin: '0 0 1rem' }}>{t('title')}</h1>
           {profile.geoStatement && (
             <p
               style={{ color: 'var(--muted)', fontSize: 18, lineHeight: 1.6, margin: '0 0 2.5rem' }}
@@ -34,7 +42,7 @@ export default async function ServicesPage() {
           )}
 
           {services.length === 0 ? (
-            <p style={{ color: 'var(--muted)' }}>No services listed yet.</p>
+            <p style={{ color: 'var(--muted)' }}>{t('empty')}</p>
           ) : (
             <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 3rem' }}>
               {services.map((service) => (
@@ -55,7 +63,7 @@ export default async function ServicesPage() {
 
           {faqs.length > 0 && (
             <section>
-              <h2 style={{ fontSize: 24, margin: '0 0 1.5rem' }}>Frequently asked questions</h2>
+              <h2 style={{ fontSize: 24, margin: '0 0 1.5rem' }}>{t('faqHeading')}</h2>
               <dl style={{ margin: 0 }}>
                 {faqs.map((faq) => (
                   <div key={faq.id} style={{ marginBottom: '1.5rem' }}>

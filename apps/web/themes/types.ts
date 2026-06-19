@@ -1,5 +1,8 @@
 import type { PostDetail, PostSummary } from '@typress/config';
-import type { ComponentType, ReactNode } from 'react';
+import type { ReactNode } from 'react';
+
+/** A theme surface; may be an async Server Component (e.g. to read translations). */
+type ThemeComponent<P = Record<never, never>> = (props: P) => ReactNode | Promise<ReactNode>;
 
 /**
  * Theme contract (Phase 5). A theme is a swappable set of templates for the
@@ -21,11 +24,11 @@ export interface ThemeMeta {
 export interface Theme {
   meta: ThemeMeta;
   /** Page chrome (header/footer + themed wrapper) wrapping every surface. */
-  Layout: ComponentType<{ children: ReactNode }>;
+  Layout: ThemeComponent<{ children: ReactNode }>;
   /** Home surface (`/`). */
-  Home: ComponentType;
+  Home: ThemeComponent;
   /** Blog index surface (`/blog`). */
-  BlogIndex: ComponentType<{ posts: PostSummary[] }>;
+  BlogIndex: ThemeComponent<{ posts: PostSummary[] }>;
   /** Single post surface (`/blog/[slug]`). */
-  BlogPost: ComponentType<{ post: PostDetail }>;
+  BlogPost: ThemeComponent<{ post: PostDetail }>;
 }

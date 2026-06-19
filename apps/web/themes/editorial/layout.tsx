@@ -1,8 +1,13 @@
-import Link from 'next/link';
+import { LocaleSwitcher } from '@/components/i18n/locale-switcher';
+import { Link } from '@/i18n/navigation';
+import { getTranslations } from 'next-intl/server';
 import type { ReactNode } from 'react';
 
 /** Editorial theme chrome: dark, restrained, hairline rules. */
-export function EditorialLayout({ children }: { children: ReactNode }) {
+export async function EditorialLayout({ children }: { children: ReactNode }) {
+  const t = await getTranslations('nav');
+  const tf = await getTranslations('footer');
+
   return (
     <div
       className="theme-editorial"
@@ -36,22 +41,23 @@ export function EditorialLayout({ children }: { children: ReactNode }) {
         >
           Typress
         </Link>
-        <nav style={{ display: 'flex', gap: '1.25rem', fontSize: 14 }}>
+        <nav style={{ display: 'flex', gap: '1.25rem', fontSize: 14, alignItems: 'center' }}>
           <Link href="/blog" style={{ color: 'var(--muted)', textDecoration: 'none' }}>
-            Blog
+            {t('blog')}
           </Link>
           <Link href="/services" style={{ color: 'var(--muted)', textDecoration: 'none' }}>
-            Services
+            {t('services')}
           </Link>
           <Link href="/search" style={{ color: 'var(--muted)', textDecoration: 'none' }}>
-            Search
+            {t('search')}
           </Link>
           <Link href="/signin" style={{ color: 'var(--muted)', textDecoration: 'none' }}>
-            Sign in
+            {t('signIn')}
           </Link>
           <Link href="/account" style={{ color: 'var(--fg)', textDecoration: 'none' }}>
-            Account
+            {t('account')}
           </Link>
+          <LocaleSwitcher />
         </nav>
       </header>
 
@@ -67,7 +73,7 @@ export function EditorialLayout({ children }: { children: ReactNode }) {
           textAlign: 'center',
         }}
       >
-        © {new Date().getFullYear()} Typress · Editorial theme
+        © {new Date().getFullYear()} Typress · {tf('editorial')}
       </footer>
     </div>
   );

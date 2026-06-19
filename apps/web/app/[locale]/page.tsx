@@ -1,3 +1,4 @@
+import { alternatesFor } from '@/lib/i18n/metadata';
 import { getSeoContent } from '@/lib/seo/fetch';
 import { JsonLd } from '@/lib/seo/json-ld';
 import { organizationJsonLd, webSiteJsonLd } from '@/lib/seo/jsonld';
@@ -7,9 +8,14 @@ import type { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
-  alternates: { canonical: '/' },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return { alternates: alternatesFor(locale, '/') };
+}
 
 export default async function HomePage() {
   const [{ Layout, Home }, { profile }] = await Promise.all([getActiveTheme(), getSeoContent()]);

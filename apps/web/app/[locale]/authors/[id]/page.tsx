@@ -1,9 +1,11 @@
+import { apiBaseUrl } from '@/app/lib/api';
+import { Link } from '@/i18n/navigation';
+import { alternatesFor } from '@/lib/i18n/metadata';
 import { getActiveTheme } from '@/themes/active-theme';
 import { authorProfileSchema } from '@typress/config';
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import { apiBaseUrl } from '../../lib/api';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,22 +31,30 @@ function initials(name: string | null): string {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ locale: string; id: string }>;
 }): Promise<Metadata> {
-  const { id } = await params;
+  const { locale, id } = await params;
   const author = await getAuthor(id);
   if (!author) return {};
   const name = author.name ?? 'Author';
   return {
     title: name,
     description: author.bio ?? `Posts by ${name}.`,
-    alternates: { canonical: `/authors/${author.id}` },
+    alternates: alternatesFor(locale, `/authors/${author.id}`),
   };
 }
 
-export default async function AuthorPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function AuthorPage({
+  params,
+}: {
+  params: Promise<{ locale: string; id: string }>;
+}) {
   const { id } = await params;
-  const [author, { Layout }] = await Promise.all([getAuthor(id), getActiveTheme()]);
+  const [author, { Layout }, t] = await Promise.all([
+    getAuthor(id),
+    getActiveTheme(),
+    getTranslations('author'),
+  ]);
   if (!author) notFound();
 
   return (
@@ -88,10 +98,10 @@ export default async function AuthorPage({ params }: { params: Promise<{ id: str
                 color: 'var(--accent)',
               }}
             >
-              Author
+              {t('kicker')}
             </p>
             <h1 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', margin: '0.3rem 0 0' }}>
-              {author.name ?? 'Unknown author'}
+              {author.name ?? t('unknownAuthor')}
             </h1>
           </div>
         </header>
@@ -119,7 +129,7 @@ export default async function AuthorPage({ params }: { params: Promise<{ id: str
             margin: '0 0 1.25rem',
           }}
         >
-          {author.posts.length > 0 ? 'Published posts' : 'No published posts yet'}
+          {author.posts.length > 0 ? t('published') : t('noPosts')}
         </h2>
         <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
           {author.posts.map((post) => (

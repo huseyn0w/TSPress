@@ -1,6 +1,9 @@
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
+import { getTranslations } from 'next-intl/server';
 
-export function EditorialHome() {
+export async function EditorialHome() {
+  const t = await getTranslations('home.editorial');
+
   return (
     <section style={{ display: 'grid', placeItems: 'center', padding: '6rem 2rem' }}>
       <div data-animate="rise" style={{ maxWidth: 640, textAlign: 'center' }}>
@@ -16,11 +19,9 @@ export function EditorialHome() {
           Typress
         </p>
         <h1 style={{ fontSize: 'clamp(2rem, 6vw, 3.5rem)', lineHeight: 1.05, margin: '1rem 0' }}>
-          A WordPress-style CMS, built entirely in TypeScript.
+          {t('title')}
         </h1>
-        <p style={{ color: 'var(--muted)', fontSize: 18, margin: '0 0 2rem' }}>
-          Light, fast, SEO-first, and easy to read, understand, and extend.
-        </p>
+        <p style={{ color: 'var(--muted)', fontSize: 18, margin: '0 0 2rem' }}>{t('subtitle')}</p>
         <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
           <Link
             href="/blog"
@@ -34,7 +35,7 @@ export function EditorialHome() {
               textDecoration: 'none',
             }}
           >
-            Read the blog →
+            {t('readBlog')}
           </Link>
           <Link
             href="/health"
@@ -45,7 +46,7 @@ export function EditorialHome() {
               textDecoration: 'none',
             }}
           >
-            System status
+            {t('systemStatus')}
           </Link>
         </div>
       </div>

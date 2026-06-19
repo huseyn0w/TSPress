@@ -1,0 +1,67 @@
+{
+  "nav": {
+    "blog": "Blog",
+    "services": "Leistungen",
+    "search": "Suche",
+    "signIn": "Anmelden",
+    "account": "Konto"
+  },
+  "site": {
+    "masthead": "Das TypeScript-CMS-Magazin"
+  },
+  "localeSwitcher": {
+    "label": "Sprache",
+    "en": "English",
+    "de": "Deutsch",
+    "ru": "Русский"
+  },
+  "home": {
+    "editorial": {
+      "title": "Ein CMS im WordPress-Stil, vollständig in TypeScript gebaut.",
+      "subtitle": "Leicht, schnell, SEO-first und einfach zu lesen, zu verstehen und zu erweitern.",
+      "readBlog": "Zum Blog →",
+      "systemStatus": "Systemstatus"
+    },
+    "magazine": {
+      "kicker": "Ausgabe 1 · Die Titelseite",
+      "title": "Ein CMS im WordPress-Stil, ganz in TypeScript gesetzt.",
+      "subtitle": "Leicht, schnell, SEO-first und ein Vergnügen zu lesen, zu verstehen und zu erweitern.",
+      "readLatest": "Das Neueste lesen"
+    }
+  },
+  "blog": {
+    "title": "Blog",
+    "empty": "Noch keine veröffentlichten Beiträge.",
+    "allPosts": "← Alle Beiträge",
+    "magazineTitle": "Neueste Beiträge",
+    "magazineSubtitle": "Berichte aus der Typress-Redaktion",
+    "magazineEmpty": "Noch keine veröffentlichten Beiträge.",
+    "allStories": "← Alle Beiträge"
+  },
+  "post": {
+    "by": "Von",
+    "unknownAuthor": "Unbekannter Autor"
+  },
+  "services": {
+    "title": "Leistungen",
+    "empty": "Noch keine Leistungen aufgeführt.",
+    "faqHeading": "Häufig gestellte Fragen"
+  },
+  "search": {
+    "title": "Suche",
+    "placeholder": "Artikel suchen…",
+    "submit": "Suchen",
+    "noResults": "Keine Ergebnisse für „{query}“.",
+    "results": "{count, plural, one {# Ergebnis} other {# Ergebnisse}} für „{query}“"
+  },
+  "author": {
+    "kicker": "Autor",
+    "unknownAuthor": "Unbekannter Autor",
+    "published": "Veröffentlichte Beiträge",
+    "noPosts": "Noch keine veröffentlichten Beiträge"
+  },
+  "footer": {
+    "editorial": "Editorial-Theme",
+    "magazine": "Magazine-Theme"
+  }
+}

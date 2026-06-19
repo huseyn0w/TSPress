@@ -13,7 +13,7 @@ Reference implementations by the same author (study for feature parity, not code
 
 - Laravel: https://github.com/huseyn0w/Laravella-CMS
 
-**Status:** Phases 0–11 shipped. Phase 0: pnpm monorepo, Docker compose (web/api/db),
+**Status:** Phases 0–11 shipped, plus the i18n foundation. Phase 0: pnpm monorepo, Docker compose (web/api/db),
 Prisma + Postgres, Biome, Vitest, Playwright, CI. Phase 1 (Accounts): User/Role/Permission
 models, Argon2id passwords, JWT auth, CASL authorization (PoliciesGuard), Auth.js v5 on
 web (credentials + optional Google/GitHub) consuming the API. Phase 2 (Content): Post/
@@ -43,7 +43,9 @@ so the API re-checks CASL per call. Phase 11 (Deployment + demo): production
 `docker-compose.prod.yml` (db/api/web behind nginx, only nginx published) + `nginx/typress.conf`
 (web on the domain, api on an `api.` subdomain, `/uploads` proxied to the API), web Dockerfile
 build args for `NEXT_PUBLIC_*`, VPS + shared-hosting guides under `docs/deployment/`, and an
-enriched demo seed. Remaining: the deferred i18n/multilingual phase. The full
+enriched demo seed. **i18n foundation** (next-intl): the public site is localized in en/de/ru with
+locale routing, a translated UI + locale switcher, and hreflang; the admin stays English. Remaining
+(optional): per-locale **content** translation. The full
 phased roadmap and feature mapping live in [README.md](README.md).
 
 ## Auth & authorization (Phase 1)
@@ -285,6 +287,31 @@ phased roadmap and feature mapping live in [README.md](README.md).
   Announcements/Guides/Engineering + About/Contact pages + GEO + a comments thread. Public copy avoids
   em-dashes.
 
+## i18n / multilingual (foundation)
+
+- **next-intl** localizes the **public site only** in **en (default) + de + ru**. Config in
+  `apps/web/i18n/` (`routing.ts` `localePrefix: 'as-needed'` → default unprefixed, others `/de`,
+  `/ru`; `navigation.ts` exports the locale-aware `Link`/`useRouter`/`usePathname`; `request.ts`
+  loads `messages/<locale>.json`). Plugin wired in `next.config.mjs` (`createNextIntlPlugin('./i18n/request.ts')`).
+- **Route structure**: public routes live under `apps/web/app/[locale]/` (home, blog, authors,
+  search, services). The **panel + auth pages stay at the app root** (`admin`, `account`, `signin`,
+  `signup`, `health`) and are **English, outside locale routing**. `api/`, `sitemap.ts`, `robots.ts`,
+  `llms.txt/`, `globals.css` also stay at root. There is a **single root layout** (`app/layout.tsx`)
+  that sets `<html lang>` via `getLocale()` and wraps children in `NextIntlClientProvider`;
+  `app/[locale]/layout.tsx` validates the locale (`notFound`) and calls `setRequestLocale`.
+- **Middleware** (`middleware.ts`) composes next-intl's middleware (public) with Auth.js `auth()`:
+  `auth()` wraps everything; panel prefixes skip locale rewriting and gate `/admin`+`/account`. The
+  matcher excludes `api`, Next internals, and any path with a dot (so sitemap/robots/llms.txt pass through).
+- **Strings**: theme components are **async server components** using `getTranslations`/`getFormatter`
+  (dates localized); `themes/types.ts` allows async components. Messages keys must stay in parity across
+  the three files. The **locale switcher** is `components/i18n/locale-switcher.tsx`.
+- **SEO**: per-locale `canonical` + `hreflang` alternates via the pure `lib/i18n/alternates.ts`
+  (`languageAlternates`, unit-tested) + `lib/i18n/metadata.ts` (`alternatesFor(locale, path)`), applied
+  in each page's `generateMetadata` and in `sitemap.ts` (incl. `x-default`).
+- **Scope boundary**: post/page **content is not per-locale** (foundation only); the Comments form and
+  LikeButton are not yet localized. Public copy avoids em-dashes. Add a language: add it to
+  `i18n/routing.ts` + a `messages/<locale>.json`.
+
 ## Stack (locked decisions — deviate only with a stated reason)
 
 - TypeScript everywhere. Monorepo with **pnpm workspaces** (Turborepo deferred until
@@ -306,7 +333,9 @@ phased roadmap and feature mapping live in [README.md](README.md).
   authorization, so Auth.js's batteries-included social providers win.)
 - Validation: Zod (forms, API boundaries, env). Rich text: Tiptap (sanitized).
 - UI: Tailwind CSS + shadcn/ui + Framer Motion (restrained animation only).
-- i18n / multilingual: next-intl + translated fields in Prisma (hreflang).
+- i18n / multilingual: **next-intl** (foundation shipped — public locale routing en/de/ru +
+  translated UI + hreflang; admin stays English). Per-locale content (translated Prisma fields +
+  hreflang per content) is an optional follow-up.
 - Spam: reCAPTCHA v3 + rate limiting. Search: Postgres full-text first.
 - Tests: Vitest (unit/integration) + Playwright (e2e). Lint/format: Biome.
 - Local infra: Docker + docker compose. Prod: Node on a VPS (Docker or PM2) behind
@@ -340,6 +369,8 @@ phased roadmap and feature mapping live in [README.md](README.md).
 - Prod (Docker + nginx): `docker compose -f docker-compose.prod.yml up -d --build`, then
   `docker compose -f docker-compose.prod.yml exec api pnpm --filter @typress/db seed` (first boot).
   Full guide: `docs/deployment/vps.md`.
+- i18n: locales/config in `apps/web/i18n/`, UI strings in `apps/web/messages/{en,de,ru}.json`
+  (keep keys in parity). Public site only; admin stays English.
 
 Notes:
 - Biome needs `javascript.parser.unsafeParameterDecoratorsEnabled: true` for NestJS

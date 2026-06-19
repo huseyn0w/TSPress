@@ -1,0 +1,67 @@
+{
+  "nav": {
+    "blog": "Блог",
+    "services": "Услуги",
+    "search": "Поиск",
+    "signIn": "Войти",
+    "account": "Аккаунт"
+  },
+  "site": {
+    "masthead": "Журнал о TypeScript-CMS"
+  },
+  "localeSwitcher": {
+    "label": "Язык",
+    "en": "English",
+    "de": "Deutsch",
+    "ru": "Русский"
+  },
+  "home": {
+    "editorial": {
+      "title": "CMS в стиле WordPress, полностью на TypeScript.",
+      "subtitle": "Лёгкая, быстрая, ориентированная на SEO и понятная для чтения и расширения.",
+      "readBlog": "Открыть блог →",
+      "systemStatus": "Статус системы"
+    },
+    "magazine": {
+      "kicker": "Выпуск 1 · Главная полоса",
+      "title": "CMS в стиле WordPress, целиком на TypeScript.",
+      "subtitle": "Лёгкая, быстрая, ориентированная на SEO и приятная для чтения и расширения.",
+      "readLatest": "Читать свежее"
+    }
+  },
+  "blog": {
+    "title": "Блог",
+    "empty": "Пока нет опубликованных записей.",
+    "allPosts": "← Все записи",
+    "magazineTitle": "Свежие материалы",
+    "magazineSubtitle": "Репортажи из редакции Typress",
+    "magazineEmpty": "Пока нет опубликованных материалов.",
+    "allStories": "← Все материалы"
+  },
+  "post": {
+    "by": "Автор",
+    "unknownAuthor": "Неизвестный автор"
+  },
+  "services": {
+    "title": "Услуги",
+    "empty": "Услуги пока не указаны.",
+    "faqHeading": "Частые вопросы"
+  },
+  "search": {
+    "title": "Поиск",
+    "placeholder": "Искать статьи…",
+    "submit": "Найти",
+    "noResults": "Нет результатов по запросу «{query}».",
+    "results": "{count, plural, one {# результат} few {# результата} many {# результатов} other {# результатов}} по запросу «{query}»"
+  },
+  "author": {
+    "kicker": "Автор",
+    "unknownAuthor": "Неизвестный автор",
+    "published": "Опубликованные записи",
+    "noPosts": "Пока нет опубликованных записей"
+  },
+  "footer": {
+    "editorial": "Тема Editorial",
+    "magazine": "Тема Magazine"
+  }
+}

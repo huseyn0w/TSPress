@@ -1,15 +1,22 @@
+import { apiBaseUrl } from '@/app/lib/api';
+import { alternatesFor } from '@/lib/i18n/metadata';
 import { getActiveTheme } from '@/themes/active-theme';
 import { postListSchema } from '@typress/config';
 import type { Metadata } from 'next';
-import { apiBaseUrl } from '../lib/api';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
-  title: 'Blog',
-  description: 'Articles, guides, and announcements.',
-  alternates: { canonical: '/blog' },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations('blog');
+  return { title: t('title'), alternates: alternatesFor(locale, '/blog') };
+}
 
 const EMPTY = { items: [], total: 0, page: 1, perPage: 20 };
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { toggleLike } from '@/app/blog/[slug]/like-actions';
+import { toggleLike } from '@/app/[locale]/blog/[slug]/like-actions';
 import Link from 'next/link';
 import { useState, useTransition } from 'react';
 

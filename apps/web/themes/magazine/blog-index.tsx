@@ -1,7 +1,10 @@
+import { Link } from '@/i18n/navigation';
 import type { PostSummary } from '@typress/config';
-import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 
-export function MagazineBlogIndex({ posts }: { posts: PostSummary[] }) {
+export async function MagazineBlogIndex({ posts }: { posts: PostSummary[] }) {
+  const t = await getTranslations('blog');
+
   return (
     <div style={{ maxWidth: 760, margin: '0 auto', padding: '3.5rem 1.5rem' }}>
       <h1
@@ -12,7 +15,7 @@ export function MagazineBlogIndex({ posts }: { posts: PostSummary[] }) {
           fontWeight: 700,
         }}
       >
-        Latest Stories
+        {t('magazineTitle')}
       </h1>
       <p
         style={{
@@ -27,11 +30,11 @@ export function MagazineBlogIndex({ posts }: { posts: PostSummary[] }) {
           borderBottom: '3px double var(--line)',
         }}
       >
-        Reporting from the Typress newsroom
+        {t('magazineSubtitle')}
       </p>
 
       {posts.length === 0 ? (
-        <p style={{ color: 'var(--muted)', textAlign: 'center' }}>No published stories yet.</p>
+        <p style={{ color: 'var(--muted)', textAlign: 'center' }}>{t('magazineEmpty')}</p>
       ) : (
         <div style={{ display: 'grid', gap: '2.25rem' }}>
           {posts.map((post) => (

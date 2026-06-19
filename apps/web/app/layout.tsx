@@ -3,6 +3,8 @@ import { siteUrl } from '@/lib/seo/site';
 import { GeistMono } from 'geist/font/mono';
 import { GeistSans } from 'geist/font/sans';
 import type { Metadata } from 'next';
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale } from 'next-intl/server';
 import type { ReactNode } from 'react';
 import './globals.css';
 
@@ -28,10 +30,16 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  // The active locale is set by the next-intl middleware for public routes and
+  // falls back to the default elsewhere (admin/account stay English).
+  const locale = await getLocale();
+
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${GeistSans.variable} ${GeistMono.variable}`}>{children}</body>
+    <html lang={locale} suppressHydrationWarning>
+      <body className={`${GeistSans.variable} ${GeistMono.variable}`}>
+        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+      </body>
     </html>
   );
 }

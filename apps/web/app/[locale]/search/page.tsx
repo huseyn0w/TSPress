@@ -1,16 +1,25 @@
+import { apiBaseUrl } from '@/app/lib/api';
+import { Link } from '@/i18n/navigation';
+import { routing } from '@/i18n/routing';
+import { localizedPath } from '@/lib/i18n/alternates';
+import { alternatesFor } from '@/lib/i18n/metadata';
 import { getActiveTheme } from '@/themes/active-theme';
 import { searchResponseSchema } from '@typress/config';
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { apiBaseUrl } from '../lib/api';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
-  title: 'Search',
-  description: 'Search published articles.',
-  alternates: { canonical: '/search' },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations('search');
+  return { title: t('title'), alternates: alternatesFor(locale, '/search') };
+}
 
 async function runSearch(q: string) {
   if (!q) return null;
@@ -27,25 +36,31 @@ async function runSearch(q: string) {
 }
 
 export default async function SearchPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ locale: string }>;
   searchParams: Promise<{ q?: string }>;
 }) {
+  const { locale } = await params;
   const { q = '' } = await searchParams;
   const query = q.trim();
+  const t = await getTranslations('search');
   const [{ Layout }, results] = await Promise.all([getActiveTheme(), runSearch(query)]);
+  // Keep the form on the active locale's search path (no prefix for the default).
+  const action = localizedPath(locale, '/search', routing.defaultLocale);
 
   return (
     <Layout>
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '4rem 1.5rem' }}>
-        <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', margin: '0 0 1.5rem' }}>Search</h1>
+        <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', margin: '0 0 1.5rem' }}>{t('title')}</h1>
 
-        <form action="/search" method="get" style={{ display: 'flex', gap: '0.6rem' }}>
+        <form action={action} method="get" style={{ display: 'flex', gap: '0.6rem' }}>
           <input
             name="q"
             defaultValue={query}
-            placeholder="Search articles…"
-            aria-label="Search query"
+            placeholder={t('placeholder')}
+            aria-label={t('title')}
             style={{
               flex: 1,
               padding: '0.7rem 0.9rem',
@@ -68,18 +83,18 @@ export default async function SearchPage({
               cursor: 'pointer',
             }}
           >
-            Search
+            {t('submit')}
           </button>
         </form>
 
         {query && (
           <div style={{ marginTop: '2.5rem' }}>
             {!results || results.items.length === 0 ? (
-              <p style={{ color: 'var(--muted)' }}>No results for “{query}”.</p>
+              <p style={{ color: 'var(--muted)' }}>{t('noResults', { query })}</p>
             ) : (
               <>
                 <p style={{ color: 'var(--muted)', fontSize: 13, margin: '0 0 1.5rem' }}>
-                  {results.total} result{results.total !== 1 ? 's' : ''} for “{query}”
+                  {t('results', { count: results.total, query })}
                 </p>
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                   {results.items.map((item) => (

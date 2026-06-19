@@ -7,7 +7,8 @@ easy to read, understand, and extend.
 > a runtime theme system, a typed plugin/hook system, SEO/GEO, comments + full-text search +
 > spam protection, the polished public site (author profiles + post likes), an MCP server for
 > AI-driven management, and production deployment (Docker + nginx, with a shared-hosting guide).
-> The one remaining item is the deferred **i18n / multilingual** phase (see the roadmap).
+> The **i18n foundation** (next-intl locale routing + translated UI + hreflang for en/de/ru) has
+> also shipped; per-locale content translation is the remaining optional follow-up.
 
 ## Stack
 
@@ -277,6 +278,24 @@ packages/
 | `pnpm typecheck` | Type-check every package |
 | `pnpm db:generate` / `db:migrate` / `db:seed` | Prisma client / migrations / seed |
 
+## Internationalization (i18n foundation)
+
+The public site is localized with **next-intl** in **English (default), German, and Russian**.
+
+- **Locale routing** with an `as-needed` prefix: the default locale stays unprefixed (`/blog`)
+  while others are prefixed (`/de/blog`, `/ru/blog`), so existing URLs and canonicals are stable.
+- **Translated UI**: the theme chrome and public surfaces (home, blog, services, search, author)
+  read strings from `apps/web/messages/{en,de,ru}.json`; a **locale switcher** lives in the site
+  nav. Dates are formatted per-locale.
+- **SEO**: every public page emits per-locale `canonical` + `hreflang` alternates (incl.
+  `x-default`), and `sitemap.xml` carries the same alternates.
+- **The admin panel stays English** and is outside locale routing. Add a language by adding a
+  locale to `apps/web/i18n/routing.ts` and a `messages/<locale>.json` file.
+
+> Scope note: this is the **foundation** — UI chrome is translated; post/page **content** is not
+> yet per-locale (translated Prisma fields + an admin translation UI are an optional follow-up).
+> The comment form and like button are also not yet localized.
+
 ## Deployment
 
 Typress is built to deploy cleanly to a VPS or shared hosting.
@@ -321,7 +340,7 @@ fresh-context review, observable behavior in the running app, and updated docs.
 | 9 ✅ | Public site | Polished server-rendered editorial frontend, public author profiles (editable bio), signed-in post likes |
 | 10 ✅ | AI integration | MCP server (`apps/mcp`) with scoped, validated, authenticated tools (content/media/comments/settings/SEO/users) over the API; CASL re-checked per call |
 | 11 ✅ | Deploy + demo | Production `docker-compose.prod.yml` (db/api/web behind **nginx**) + `nginx/typress.conf`, [VPS guide](docs/deployment/vps.md) (Docker/PM2, TLS, `/uploads`, health, backups) + [shared-hosting guide](docs/deployment/shared-hosting.md), enriched demo seed |
-| 7b / later | i18n / multilingual | next-intl + translated Prisma fields + hreflang (deferred standalone phase) |
+| 7b ✅ (foundation) | i18n / multilingual | next-intl locale routing (`/`, `/de`, `/ru`, `as-needed` prefix) + translated public UI + locale switcher + hreflang/sitemap alternates. Per-locale **content** translation (translated Prisma fields + admin translation UI) is an optional follow-up |
 
 ### Feature mapping (reference → Typress)
 

@@ -1,10 +1,16 @@
-import Link from 'next/link';
+import { LocaleSwitcher } from '@/components/i18n/locale-switcher';
+import { Link } from '@/i18n/navigation';
+import { getTranslations } from 'next-intl/server';
 import type { ReactNode } from 'react';
 
 export const MAGAZINE_SERIF = 'Georgia, "Times New Roman", Times, serif';
 
 /** Magazine theme chrome: light, serif masthead with double rules. */
-export function MagazineLayout({ children }: { children: ReactNode }) {
+export async function MagazineLayout({ children }: { children: ReactNode }) {
+  const t = await getTranslations('nav');
+  const ts = await getTranslations('site');
+  const tf = await getTranslations('footer');
+
   return (
     <div
       className="theme-magazine"
@@ -42,13 +48,14 @@ export function MagazineLayout({ children }: { children: ReactNode }) {
               fontFamily: 'var(--font-sans)',
             }}
           >
-            The TypeScript CMS Review
+            {ts('masthead')}
           </p>
         </div>
         <nav
           style={{
             display: 'flex',
             justifyContent: 'center',
+            alignItems: 'center',
             gap: '1.75rem',
             padding: '0.6rem',
             borderTop: '1px solid var(--line)',
@@ -59,20 +66,21 @@ export function MagazineLayout({ children }: { children: ReactNode }) {
           }}
         >
           <Link href="/blog" style={{ color: 'var(--fg)', textDecoration: 'none' }}>
-            Blog
+            {t('blog')}
           </Link>
           <Link href="/services" style={{ color: 'var(--fg)', textDecoration: 'none' }}>
-            Services
+            {t('services')}
           </Link>
           <Link href="/search" style={{ color: 'var(--fg)', textDecoration: 'none' }}>
-            Search
+            {t('search')}
           </Link>
           <Link href="/signin" style={{ color: 'var(--muted)', textDecoration: 'none' }}>
-            Sign in
+            {t('signIn')}
           </Link>
           <Link href="/account" style={{ color: 'var(--muted)', textDecoration: 'none' }}>
-            Account
+            {t('account')}
           </Link>
+          <LocaleSwitcher />
         </nav>
       </header>
 
@@ -89,7 +97,7 @@ export function MagazineLayout({ children }: { children: ReactNode }) {
           fontFamily: 'var(--font-sans)',
         }}
       >
-        © {new Date().getFullYear()} Typress · Magazine theme
+        © {new Date().getFullYear()} Typress · {tf('magazine')}
       </footer>
     </div>
   );

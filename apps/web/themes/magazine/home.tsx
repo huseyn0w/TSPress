@@ -1,6 +1,9 @@
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
+import { getTranslations } from 'next-intl/server';
 
-export function MagazineHome() {
+export async function MagazineHome() {
+  const t = await getTranslations('home.magazine');
+
   return (
     <section
       style={{ maxWidth: 820, margin: '0 auto', padding: '4rem 1.5rem', textAlign: 'center' }}
@@ -15,7 +18,7 @@ export function MagazineHome() {
           fontFamily: 'var(--font-sans)',
         }}
       >
-        Vol. 1 · The Front Page
+        {t('kicker')}
       </p>
       <h1
         style={{
@@ -25,7 +28,7 @@ export function MagazineHome() {
           fontWeight: 700,
         }}
       >
-        A WordPress-style CMS, set entirely in TypeScript.
+        {t('title')}
       </h1>
       <p
         style={{
@@ -37,7 +40,7 @@ export function MagazineHome() {
           fontStyle: 'italic',
         }}
       >
-        Light, fast, SEO-first, and a pleasure to read, understand, and extend.
+        {t('subtitle')}
       </p>
       <Link
         href="/blog"
@@ -53,7 +56,7 @@ export function MagazineHome() {
           textTransform: 'uppercase',
         }}
       >
-        Read the latest
+        {t('readLatest')}
       </Link>
     </section>
   );

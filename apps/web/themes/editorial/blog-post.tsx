@@ -1,7 +1,11 @@
+import { Link } from '@/i18n/navigation';
 import type { PostDetail } from '@typress/config';
-import Link from 'next/link';
+import { getFormatter, getTranslations } from 'next-intl/server';
 
-export function EditorialBlogPost({ post }: { post: PostDetail }) {
+export async function EditorialBlogPost({ post }: { post: PostDetail }) {
+  const t = await getTranslations('post');
+  const tb = await getTranslations('blog');
+  const format = await getFormatter();
   const published = post.publishedAt ? new Date(post.publishedAt) : null;
 
   return (
@@ -26,12 +30,12 @@ export function EditorialBlogPost({ post }: { post: PostDetail }) {
               href={`/authors/${post.author.id}`}
               style={{ color: 'var(--fg)', textDecoration: 'none' }}
             >
-              {post.author.name ?? 'Unknown author'}
+              {post.author.name ?? t('unknownAuthor')}
             </Link>
           ) : (
-            'Unknown author'
+            t('unknownAuthor')
           )}
-          {published && ` · ${published.toLocaleDateString('en-US', { dateStyle: 'long' })}`}
+          {published && ` · ${format.dateTime(published, { dateStyle: 'long' })}`}
         </p>
         {/* content is sanitized server-side by the API before storage. */}
         {/* biome-ignore lint/security/noDangerouslySetInnerHtml: content is sanitized by the API. */}
@@ -40,7 +44,7 @@ export function EditorialBlogPost({ post }: { post: PostDetail }) {
 
       <p style={{ marginTop: '3rem' }}>
         <Link href="/blog" style={{ color: 'var(--muted)', fontSize: 13, textDecoration: 'none' }}>
-          ← All posts
+          {tb('allPosts')}
         </Link>
       </p>
     </div>
