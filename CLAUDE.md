@@ -13,7 +13,7 @@ Reference implementations by the same author (study for feature parity, not code
 
 - Laravel: https://github.com/huseyn0w/Laravella-CMS
 
-**Status:** Phases 0–10 shipped. Phase 0: pnpm monorepo, Docker compose (web/api/db),
+**Status:** Phases 0–11 shipped. Phase 0: pnpm monorepo, Docker compose (web/api/db),
 Prisma + Postgres, Biome, Vitest, Playwright, CI. Phase 1 (Accounts): User/Role/Permission
 models, Argon2id passwords, JWT auth, CASL authorization (PoliciesGuard), Auth.js v5 on
 web (credentials + optional Google/GitHub) consuming the API. Phase 2 (Content): Post/
@@ -39,7 +39,11 @@ Phase 9 (Public site): the polished editorial frontend, public author profiles (
 editable bio), and signed-in post likes. Phase 10 (AI integration / MCP): `apps/mcp` built
 into a real MCP server exposing 48 scoped, Zod-validated, authenticated tools (content/media/
 comments/settings/SEO/users) that call the existing API with a service-account bearer token,
-so the API re-checks CASL per call. Next: Phase 11 (Deployment + demo). The full
+so the API re-checks CASL per call. Phase 11 (Deployment + demo): production
+`docker-compose.prod.yml` (db/api/web behind nginx, only nginx published) + `nginx/typress.conf`
+(web on the domain, api on an `api.` subdomain, `/uploads` proxied to the API), web Dockerfile
+build args for `NEXT_PUBLIC_*`, VPS + shared-hosting guides under `docs/deployment/`, and an
+enriched demo seed. Remaining: the deferred i18n/multilingual phase. The full
 phased roadmap and feature mapping live in [README.md](README.md).
 
 ## Auth & authorization (Phase 1)
@@ -256,6 +260,31 @@ phased roadmap and feature mapping live in [README.md](README.md).
   README. Add a tool: add a module fn or entry calling `client.request(method, path, { query, body,
   schema })` and register it in `src/tools/index.ts`.
 
+## Deployment (Phase 11)
+
+- **Prod stack**: `docker-compose.prod.yml` (standalone — run with `-f docker-compose.prod.yml`,
+  not merged with the dev compose). db + api + web on the internal Docker network; **only nginx is
+  published** (80/443) — the app containers use `expose`, not host `ports`. `AUTH_SECRET` /
+  `INTERNAL_API_SECRET` are `${VAR:?}`-guarded (fail fast). The api has a Docker healthcheck on
+  `/health/ready` (**use `127.0.0.1`, not `localhost` — the API listens on IPv4 `0.0.0.0` and Alpine
+  `localhost` can resolve to IPv6 `::1`**); web waits for api `service_healthy`. The api image's CMD
+  runs `prisma migrate deploy` then starts, so migrations apply on every deploy.
+- **nginx** (`nginx/typress.conf`): the public site is served from the domain and the **API from an
+  `api.` subdomain** (its root routes `/auth`,`/public`,`/posts`,`/uploads` would otherwise collide
+  with Next's own `/api/auth/*`). Forwards `Host`/`X-Forwarded-For`/`X-Forwarded-Proto` (needed for the
+  API's `trust proxy` + rate limiting), gzip, security headers, `client_max_body_size 12m` (keep above
+  `MEDIA_MAX_SIZE_MB`); `/uploads/*` proxied to the API. TLS (certbot) blocks are shipped commented.
+- **`NEXT_PUBLIC_*` are inlined at web BUILD time** — the web Dockerfile takes `NEXT_PUBLIC_API_URL` /
+  `NEXT_PUBLIC_SITE_URL` build args (compose passes `PUBLIC_API_URL` / `PUBLIC_WEB_URL`); changing them
+  needs a web image rebuild, not just a restart. `PUBLIC_*` default to localhost for a zero-config local
+  dry-run but are mandatory for any real deploy.
+- **Guides**: `docs/deployment/vps.md` (Docker + PM2, env table, TLS, `/uploads`, health, backups) and
+  `docs/deployment/shared-hosting.md` (Passenger; **Postgres required for the FTS search** — MySQL drops
+  `/search`). The prod path was dry-run locally (homepage SSR, API health, `/uploads` round-trip).
+- **Demo seed** (`packages/db/prisma/seed.ts`): idempotent (upsert by slug); 6 posts across
+  Announcements/Guides/Engineering + About/Contact pages + GEO + a comments thread. Public copy avoids
+  em-dashes.
+
 ## Stack (locked decisions — deviate only with a stated reason)
 
 - TypeScript everywhere. Monorepo with **pnpm workspaces** (Turborepo deferred until
@@ -308,6 +337,9 @@ phased roadmap and feature mapping live in [README.md](README.md).
 - MCP server: build `pnpm --filter @typress/mcp build`, run `node apps/mcp/dist/index.js`
   (needs `MCP_API_URL`/`MCP_API_EMAIL`/`MCP_API_PASSWORD`); connect from Claude via
   `claude mcp add` or a VS Code `mcp.json` (see README).
+- Prod (Docker + nginx): `docker compose -f docker-compose.prod.yml up -d --build`, then
+  `docker compose -f docker-compose.prod.yml exec api pnpm --filter @typress/db seed` (first boot).
+  Full guide: `docs/deployment/vps.md`.
 
 Notes:
 - Biome needs `javascript.parser.unsafeParameterDecoratorsEnabled: true` for NestJS

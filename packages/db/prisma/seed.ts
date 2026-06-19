@@ -65,12 +65,16 @@ const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD ?? 'admin12345';
 const CATEGORIES = [
   { name: 'Announcements', slug: 'announcements', description: 'Product news and releases.' },
   { name: 'Guides', slug: 'guides', description: 'How-tos and tutorials.' },
+  { name: 'Engineering', slug: 'engineering', description: 'How Typress is built under the hood.' },
 ];
 
 const TAGS = [
   { name: 'TypeScript', slug: 'typescript' },
   { name: 'SEO', slug: 'seo' },
   { name: 'CMS', slug: 'cms' },
+  { name: 'Themes', slug: 'themes' },
+  { name: 'Plugins', slug: 'plugins' },
+  { name: 'AI', slug: 'ai' },
 ];
 
 const POSTS = [
@@ -95,13 +99,77 @@ const POSTS = [
     categorySlugs: ['guides'],
     tagSlugs: ['seo'],
   },
+  {
+    title: 'Build your first Typress theme',
+    slug: 'build-your-first-theme',
+    excerpt:
+      'Themes are swappable React component sets resolved at runtime. Here is how to add one.',
+    content:
+      '<p>A Typress theme is a small set of React components resolved at runtime from the ' +
+      'active-theme setting, so switching the look of the whole public site is a single click ' +
+      'in the admin.</p><h2>Anatomy of a theme</h2><p>Drop a folder in <code>apps/web/themes/</code> ' +
+      'that exports a <code>Layout</code> plus <code>Home</code>, <code>BlogIndex</code>, and ' +
+      '<code>BlogPost</code> surfaces, then register it in the catalogue. Each theme scopes its own ' +
+      'CSS variables, so it never touches the admin styling.</p>',
+    categorySlugs: ['guides'],
+    tagSlugs: ['themes', 'typescript'],
+  },
+  {
+    title: 'Extending Typress with plugins',
+    slug: 'extending-with-plugins',
+    excerpt: 'A typed hook and event registry lets you extend the CMS without forking it.',
+    content:
+      '<p>Typress is extensible through a typed hook and event registry rather than arbitrary ' +
+      'code injection. Plugins receive a small, constrained API.</p><h2>Filters and actions</h2>' +
+      '<p>Filters transform a value as it passes through (for example, the HTML of a post before ' +
+      'it renders), while actions are fire-and-forget events such as "a post was published". The ' +
+      'bundled reading-time plugin adds an estimated read time to every post.</p>',
+    categorySlugs: ['engineering'],
+    tagSlugs: ['plugins', 'cms'],
+  },
+  {
+    title: 'Manage your CMS with AI over MCP',
+    slug: 'manage-with-ai-over-mcp',
+    excerpt: 'Connect an AI assistant to Typress through scoped, permission-checked MCP tools.',
+    content:
+      '<p>Typress ships a Model Context Protocol server so assistants like Claude can manage your ' +
+      'content through tools instead of guesswork.</p><h2>Safe by design</h2><p>Every tool calls ' +
+      'the same REST API a human would, authenticated as a service account, so the same permission ' +
+      'checks apply. There is no raw database access and no code execution: an assistant can draft, ' +
+      'publish, and moderate, but only within the role you give it.</p>',
+    categorySlugs: ['announcements'],
+    tagSlugs: ['ai', 'typescript'],
+  },
+  {
+    title: 'Moderating comments and fighting spam',
+    slug: 'comments-and-spam',
+    excerpt: 'Threaded comments with a moderation queue, rate limiting, and optional reCAPTCHA.',
+    content:
+      '<p>Readers can leave threaded comments, but nothing appears publicly until an editor ' +
+      'approves it.</p><h2>Layers of defense</h2><p>Submissions are rate limited per client, and ' +
+      'reCAPTCHA v3 can be switched on with a single pair of keys. The moderation queue in the admin ' +
+      'lets you approve, mark as spam, or trash each comment.</p>',
+    categorySlugs: ['engineering'],
+    tagSlugs: ['cms'],
+  },
 ];
 
 const PAGES = [
   {
     title: 'About',
     slug: 'about',
-    content: '<p>Typress is an open-source, TypeScript-native CMS. This is a seeded demo page.</p>',
+    content:
+      '<p>Typress is an open-source, WordPress-style CMS built entirely in TypeScript: light, ' +
+      'fast, SEO-first, and easy to read and extend.</p><p>It pairs a NestJS API with a ' +
+      'server-rendered Next.js front end, a runtime theme system, a typed plugin registry, and ' +
+      'first-class SEO and GEO so both search engines and AI assistants can find your content.</p>',
+  },
+  {
+    title: 'Contact',
+    slug: 'contact',
+    content:
+      '<p>Want to get in touch? This is a seeded demo page. Replace it with your own contact ' +
+      'details, a form, or links to your channels from the admin panel.</p>',
   },
 ];
 

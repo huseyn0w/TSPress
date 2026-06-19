@@ -3,10 +3,11 @@
 A WordPress-style CMS built entirely in TypeScript — lighter, faster, SEO-first, and
 easy to read, understand, and extend.
 
-> **Status:** Phases 0–10 are complete — foundation, accounts, content, media, the admin UI,
+> **Status:** Phases 0–11 are complete — foundation, accounts, content, media, the admin UI,
 > a runtime theme system, a typed plugin/hook system, SEO/GEO, comments + full-text search +
-> spam protection, the polished public site (author profiles + post likes), and an MCP server
-> for AI-driven management. Remaining feature phases follow the roadmap below.
+> spam protection, the polished public site (author profiles + post likes), an MCP server for
+> AI-driven management, and production deployment (Docker + nginx, with a shared-hosting guide).
+> The one remaining item is the deferred **i18n / multilingual** phase (see the roadmap).
 
 ## Stack
 
@@ -276,6 +277,30 @@ packages/
 | `pnpm typecheck` | Type-check every package |
 | `pnpm db:generate` / `db:migrate` / `db:seed` | Prisma client / migrations / seed |
 
+## Deployment
+
+Typress is built to deploy cleanly to a VPS or shared hosting.
+
+- **VPS (recommended)** — db + api + web behind **nginx**, via Docker or PM2:
+
+  ```bash
+  cp .env.example .env   # set AUTH_SECRET, INTERNAL_API_SECRET, PUBLIC_WEB_URL, PUBLIC_API_URL, …
+  docker compose -f docker-compose.prod.yml up -d --build
+  docker compose -f docker-compose.prod.yml exec api pnpm --filter @typress/db seed   # first boot
+  ```
+
+  Only nginx is published on the host; the app containers stay on the internal
+  network. The public site is served from your domain and the API from an `api.`
+  subdomain. Full walkthrough (TLS, `/uploads`, health checks, migrations on
+  deploy, backups, and a non-Docker PM2 path): **[docs/deployment/vps.md](docs/deployment/vps.md)**.
+
+- **Shared hosting (Hostinger / cPanel / Passenger)** — build locally, run the
+  API and web as two Passenger Node apps. Note the **PostgreSQL requirement for
+  full-text search**. Guide: **[docs/deployment/shared-hosting.md](docs/deployment/shared-hosting.md)**.
+
+> `NEXT_PUBLIC_*` values (the browser-facing API/site URLs) are inlined into the
+> web bundle **at build time** — rebuild the web image when they change.
+
 ## Roadmap
 
 Small, shippable phases. Each ends with Vitest + Playwright green, Biome clean, a
@@ -295,7 +320,8 @@ fresh-context review, observable behavior in the running app, and updated docs.
 | 8 ✅ | Comments, search, spam | Threaded comments + moderation queue, Postgres full-text search, reCAPTCHA v3 (optional) + rate limiting on auth/comments |
 | 9 ✅ | Public site | Polished server-rendered editorial frontend, public author profiles (editable bio), signed-in post likes |
 | 10 ✅ | AI integration | MCP server (`apps/mcp`) with scoped, validated, authenticated tools (content/media/comments/settings/SEO/users) over the API; CASL re-checked per call |
-| 11 | Deploy + demo | VPS guide (Docker/PM2 + nginx) + shared-hosting guide, seed data |
+| 11 ✅ | Deploy + demo | Production `docker-compose.prod.yml` (db/api/web behind **nginx**) + `nginx/typress.conf`, [VPS guide](docs/deployment/vps.md) (Docker/PM2, TLS, `/uploads`, health, backups) + [shared-hosting guide](docs/deployment/shared-hosting.md), enriched demo seed |
+| 7b / later | i18n / multilingual | next-intl + translated Prisma fields + hreflang (deferred standalone phase) |
 
 ### Feature mapping (reference → Typress)
 

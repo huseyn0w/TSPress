@@ -15,6 +15,15 @@ RUN pnpm install --frozen-lockfile
 # --- Build the web app and its workspace dependencies ---
 FROM deps AS build
 ENV NEXT_TELEMETRY_DISABLED=1
+# Next.js inlines NEXT_PUBLIC_* at BUILD time, so the browser-facing API URL and
+# canonical site URL must be passed as build args for a production deploy
+# (otherwise the bundle would target the localhost defaults). Pass them with
+# `--build-arg` / the compose `build.args` block; they default to localhost for
+# the dev build.
+ARG NEXT_PUBLIC_API_URL=http://localhost:4000
+ARG NEXT_PUBLIC_SITE_URL=http://localhost:3000
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+ENV NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
 COPY tsconfig.base.json ./
 COPY packages/config ./packages/config
 COPY apps/web ./apps/web
