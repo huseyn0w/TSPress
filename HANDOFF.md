@@ -1,7 +1,7 @@
 # cmstack-ts — HANDOFF
 
-**Updated:** 2026-06-24 (7/12 service domains refactored) · **Branch:** `refactor/repository-layer` (off `main`)
-**Phase:** Task 2 (architecture refactor) + Task 4 (tests) — *architecture-first per operator decision.*
+**Updated:** 2026-06-24 — **Task 2 (architecture) + Task 4 (tests) COMPLETE.** · **Branch:** `refactor/repository-layer` (off `main`)
+**Next phases:** Task 1 (feature parity) and Task 3 (UI) — not started (architecture-first per operator decision).
 
 ---
 
@@ -57,22 +57,43 @@ effects) → repository (data access, framework-free, returns Prisma payloads)`.
      reuses `PostRepository.findPublishedIdBySlug`.
 - **Adversarial review** of the simple-CRUD batch (Settings/SEO/Tags/Categories): two
   independent skeptics — behaviour-preservation found **0** issues; correctness found only
-  minors (one type-honesty nit fixed). Tests now **212 passing** (was 134 baseline).
+  minors (one type-honesty nit fixed).
+- **ALL 12 service domains now refactored** (added after the 7-domain checkpoint):
+  Media, Likes, Comments, Search, Pages, Posts (+Revisions), and Auth (Users/Accounts/
+  Roles). The **one genuine fat controller** (`admin.controller.ts`) was fixed via a new
+  `AdminService` + `UserRepository.count()`/`RoleRepository.count()`.
+- **Verified end state:** `grep` confirms **no `this.prisma` / `@Inject(PRISMA)` in any
+  service or controller** (only the allowed `health` `DATABASE_PINGER` + the repo DI
+  factory use the singleton). Controllers are all thin.
+- **Adversarial reviews** run per high-risk domain (Posts/Pages, Auth security + behaviour):
+  **0 behaviour-preservation findings**; only minors, accepted/fixed.
+- **Coverage gate** (V8): services + repositories **86.2% statements / 86.2% lines /
+  86.2% branches / 80.9% functions** — `vitest.config.ts` now enforces an 80% threshold
+  (the run fails below it). Critical paths covered.
+- **Quality gates green:** `pnpm test` = **48 files / 268 tests**, `pnpm typecheck` clean,
+  `pnpm lint` clean (whole repo), `pnpm vitest run --coverage` exits 0.
+- A **completeness-critic** pass found no blockers; its two SHOULD-FIX items (enforce the
+  coverage threshold; refresh this HANDOFF) are resolved here.
 
-## PENDING (ordered — resume here)
-1. **Revisions** (§4.6) + **Search** (§4.7, raw SQL one-unit, bound `${q}` param, keep
-   `ORDER BY ts_rank DESC, "publishedAt" DESC NULLS LAST`, bigint→`Number(... ?? 0)` §10.6).
-2. **Pages** (§4.2) → **Posts** (§4.1 — create→`connect` vs update→`set` §10.1, publish/
-   revision order §10.9, `post.published` observer event stays). `PostRepository` already
-   exists with `findPublishedIdBySlug` — GROW it (don't recreate). Full adversarial pass.
-3. **Auth**: Users/Accounts/Roles (§4.10–4.12, 4 user shapes §10.7, oauth writes §10.8b)
-   + **Admin fat-controller fix** (§4.10b — `admin.controller.ts` is the one real fat
-   controller). Security-focused adversarial pass. Rewrite the two specs that construct
-   services with a PrismaClient and WILL break: `auth/users.service.spec.ts`,
-   `auth/accounts.service.spec.ts`.
-4. **Coverage gate**: enable V8 coverage in `vitest.config.ts`, hit ≥80% services+repos
-   / 100% critical paths; **completeness-critic** pass.
-5. Then **Task 1 (feature parity)** + **Task 3 (UI)** — plan §7/§8.
+## PENDING (Task 2 + Task 4 are DONE — these are the remaining engagement tasks)
+1. **Task 1 — feature parity** (`REFACTOR_PLAN.md` §7): per-locale content translation,
+   per-content SEO meta, password reset + transactional email, menu builder, contact form,
+   GA4/GTM, auto thumbnails, plugin admin UI, Redis cache, and the shared net-new
+   (revision-restore UI, scheduled publishing, RSS, comment-notification email). These bring
+   DB migrations (ship reversible) and will attach side-effects to the observer per §2.7.
+2. **Task 3 — UI** (`REFACTOR_PLAN.md` §8): conform public site + admin to
+   `../DESIGN_SYSTEM.md`; Lighthouse ≥95 mobile + WCAG AA, measured.
+3. **Task 5 — README**: rewrite to match the other two stacks' READMEs (architecture now
+   includes the repository layer — a short note was added; a fuller rewrite belongs with
+   Task 1/3 when the feature set settles).
+4. **E2E (Playwright)**: re-run `pnpm e2e` against a running stack to confirm the refactor
+   is black-box-invariant (needs a DB + web/api up; not run in this unit-only pass).
+
+### Carry-over notes
+- Pre-existing biome debt in 13 unrelated files was format-only cleaned in the coverage
+  commit so the lint gate is green; no behaviour touched.
+- Two accepted minors (not regressions): `RevisionCreateData` permits both postId+pageId
+  (callers never do); `recaptcha.service.ts` low coverage is pre-existing/out-of-scope.
 
 **Conventions established (reuse for remaining domains):**
 - Repo file exports `interface`, `X_REPOSITORY` Symbol, `PrismaXRepository`; trivial repos

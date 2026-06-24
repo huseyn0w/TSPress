@@ -24,6 +24,8 @@ export default defineConfig({
       // service layer and the repository layer.
       include: ['apps/api/src/**/*.service.ts', 'packages/db/src/repositories/**/*.ts'],
       exclude: ['**/*.spec.ts', '**/*.test.ts', 'packages/db/src/repositories/index.ts'],
+      // Enforce the gate: the run fails if service/repository coverage regresses.
+      thresholds: { statements: 80, branches: 80, functions: 80, lines: 80 },
     },
   },
 });

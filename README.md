@@ -264,7 +264,18 @@ apps/
 packages/
   config/   Shared Zod schemas: env validation + API contracts (CommonJS → dist)
   db/       Prisma schema, client singleton, migrations, seed (CommonJS → dist)
+            repositories/  Per-aggregate repository layer (interfaces + DI tokens + Prisma impls)
 ```
+
+### Layering (apps/api)
+
+`controller (thin: validate → delegate → map) → service (business logic + domain
+events via the plugin hook registry) → repository (all data access)`. Services never
+touch Prisma directly: every query lives behind a repository interface in
+`packages/db/src/repositories` and is wired into NestJS via constructor injection
+(`provideRepository(TOKEN, PrismaImpl)`). This keeps services unit-testable against a
+fake repository and confines the ORM to one layer. Run `pnpm test:coverage` for the
+service/repository coverage gate (≥80%, enforced).
 
 ## Commands
 
@@ -273,6 +284,7 @@ packages/
 | `pnpm dev`                                    | Run all apps + package watchers                 |
 | `pnpm build`                                  | Build everything (packages → apps, topological) |
 | `pnpm test`                                   | Vitest unit/integration tests                   |
+| `pnpm test:coverage`                          | Vitest with the service/repository coverage gate |
 | `pnpm e2e`                                    | Playwright end-to-end tests                     |
 | `pnpm lint` / `pnpm format`                   | Biome check / write                             |
 | `pnpm typecheck`                              | Type-check every package                        |

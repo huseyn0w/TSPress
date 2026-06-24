@@ -468,7 +468,15 @@ repository** — it is a liveness probe, not data access. Noted for audit comple
 
 ## 6. Execution sequence
 
-Each domain is an independently testable, committable unit. After each:
+**Status: COMPLETE.** All 12 service domains were refactored domain-by-domain (one
+commit each), the Admin fat controller was fixed, every high-risk domain passed an
+independent adversarial pass (0 behaviour-preservation findings), and the coverage gate
+is enforced at ≥80% (actual ~86% statements/lines on services+repositories). `pnpm test`
+(268), `pnpm typecheck`, `pnpm lint`, and `pnpm vitest run --coverage` all pass. See
+`HANDOFF.md` for the finished-state summary. The remaining engagement work is Task 1
+(feature parity, §7) and Task 3 (UI, §8).
+
+Each domain was an independently testable, committable unit. After each:
 `pnpm test` green, `pnpm lint`, `pnpm typecheck`, a check that the controller stays
 logic-free and the service holds no Prisma shape (§2.0), then **2–3 independent
 adversarial Opus skeptics** (behaviour / correctness / security / performance) before
