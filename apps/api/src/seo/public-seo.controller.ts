@@ -1,5 +1,5 @@
-import { Controller, Get } from '@nestjs/common';
 import type { SeoContent } from '@cmstack-ts/config';
+import { Controller, Get } from '@nestjs/common';
 import { SeoService } from './seo.service';
 
 /**

@@ -1,16 +1,4 @@
 import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  Param,
-  Patch,
-  Post,
-  Put,
-  UseGuards,
-} from '@nestjs/common';
-import {
   type CreateFaqInput,
   type CreateServiceInput,
   type Faq,
@@ -25,6 +13,18 @@ import {
   updateServiceSchema,
   updateSiteProfileSchema,
 } from '@cmstack-ts/config';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Patch,
+  Post,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CheckPolicies } from '../authz/check-policies.decorator';
 import { PoliciesGuard } from '../authz/policies.guard';
