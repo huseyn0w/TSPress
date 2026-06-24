@@ -1,3 +1,4 @@
+import { DEFAULT_LOCALE, LOCALES } from '@cmstack-ts/config';
 import { defineRouting } from 'next-intl/routing';
 
 /**
@@ -6,12 +7,14 @@ import { defineRouting } from 'next-intl/routing';
  * others are prefixed (`/de/blog`, `/ru/blog`) via `localePrefix: 'as-needed'`,
  * which keeps existing URLs and canonicals stable for SEO.
  *
- * Content (posts/pages) is NOT translated in this phase — only the UI chrome.
- * The admin panel stays English and lives outside locale routing.
+ * The locale catalogue is owned by `@cmstack-ts/config` (`LOCALES`/
+ * `DEFAULT_LOCALE`) so the public routing and the API content-translation layer
+ * can never drift. Per-locale content translation lives in the translation
+ * tables; the admin panel stays English and outside locale routing.
  */
 export const routing = defineRouting({
-  locales: ['en', 'de', 'ru'],
-  defaultLocale: 'en',
+  locales: [...LOCALES],
+  defaultLocale: DEFAULT_LOCALE,
   localePrefix: 'as-needed',
 });
 

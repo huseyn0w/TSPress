@@ -27,6 +27,8 @@ export const createPostSchema = z.object({
   excerpt: z.string().trim().max(500).optional(),
   content: z.string().default(''),
   status: contentStatusSchema.optional(),
+  metaTitle: z.string().trim().max(200).optional(),
+  metaDescription: z.string().trim().max(300).optional(),
   categoryIds: idList.optional(),
   tagIds: idList.optional(),
 });
@@ -53,6 +55,8 @@ export const createPageSchema = z.object({
   slug: slugSchema.optional(),
   content: z.string().default(''),
   status: contentStatusSchema.optional(),
+  metaTitle: z.string().trim().max(200).optional(),
+  metaDescription: z.string().trim().max(300).optional(),
 });
 export type CreatePageInput = z.infer<typeof createPageSchema>;
 
@@ -82,6 +86,38 @@ export type CreateTagInput = z.infer<typeof createTagSchema>;
 
 export const updateTagSchema = createTagSchema.partial();
 export type UpdateTagInput = z.infer<typeof updateTagSchema>;
+
+// --- Translations ------------------------------------------------------------
+
+/**
+ * A per-locale override. Every field is optional: an absent/empty field falls
+ * back to the base (default-locale) value at read time. An entirely empty input
+ * clears the translation (the service deletes the row).
+ */
+export const postTranslationInputSchema = z.object({
+  title: z.string().trim().min(1).max(200).optional(),
+  excerpt: z.string().trim().max(500).optional(),
+  content: z.string().optional(),
+  metaTitle: z.string().trim().max(200).optional(),
+  metaDescription: z.string().trim().max(300).optional(),
+});
+export type PostTranslationInput = z.infer<typeof postTranslationInputSchema>;
+
+export const pageTranslationInputSchema = postTranslationInputSchema.omit({ excerpt: true });
+export type PageTranslationInput = z.infer<typeof pageTranslationInputSchema>;
+
+export const postTranslationSchema = z.object({
+  locale: z.string(),
+  title: z.string().nullable(),
+  excerpt: z.string().nullable(),
+  content: z.string().nullable(),
+  metaTitle: z.string().nullable(),
+  metaDescription: z.string().nullable(),
+});
+export type PostTranslation = z.infer<typeof postTranslationSchema>;
+
+export const pageTranslationSchema = postTranslationSchema.omit({ excerpt: true });
+export type PageTranslation = z.infer<typeof pageTranslationSchema>;
 
 // --- Output shapes (consumed by the web app) --------------------------------
 
@@ -114,6 +150,9 @@ export type PostSummary = z.infer<typeof postSummarySchema>;
 
 export const postDetailSchema = postSummarySchema.extend({
   content: z.string(),
+  metaTitle: z.string().nullable(),
+  metaDescription: z.string().nullable(),
+  translations: z.array(postTranslationSchema),
 });
 export type PostDetail = z.infer<typeof postDetailSchema>;
 
@@ -131,7 +170,10 @@ export const pageDetailSchema = z.object({
   slug: z.string(),
   content: z.string(),
   status: contentStatusSchema,
+  metaTitle: z.string().nullable(),
+  metaDescription: z.string().nullable(),
   author: contentAuthorSchema.nullable(),
+  translations: z.array(pageTranslationSchema),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });

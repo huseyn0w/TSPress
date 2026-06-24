@@ -1,4 +1,5 @@
 export { type Env, envSchema, parseEnv } from './env';
+export { LOCALES, DEFAULT_LOCALE, type Locale, localeSchema } from './locale';
 export { type HealthResponse, healthResponseSchema } from './contracts';
 export {
   CASL_ACTIONS,
@@ -51,6 +52,14 @@ export {
   type CreateTagInput,
   updateTagSchema,
   type UpdateTagInput,
+  postTranslationInputSchema,
+  type PostTranslationInput,
+  pageTranslationInputSchema,
+  type PageTranslationInput,
+  postTranslationSchema,
+  type PostTranslation,
+  pageTranslationSchema,
+  type PageTranslation,
   contentAuthorSchema,
   termSchema,
   postSummarySchema,
