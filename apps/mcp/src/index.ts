@@ -5,7 +5,7 @@ import { loadConfig } from './config.js';
 import { registerAllTools } from './tools/index.js';
 
 /**
- * Typress MCP server. A thin, authenticated client of the Typress API: it logs
+ * Cmstack-TS MCP server. A thin, authenticated client of the Cmstack-TS API: it logs
  * in with a service account (MCP_API_EMAIL / MCP_API_PASSWORD) and every tool
  * call rides that bearer token, so the API re-checks CASL on each request.
  * It performs only data operations through the REST API — no filesystem, no
@@ -15,11 +15,11 @@ async function main(): Promise<void> {
   const config = loadConfig();
   const client = new ApiClient(config);
 
-  const server = new McpServer({ name: 'typress-mcp-server', version: '0.1.0' });
+  const server = new McpServer({ name: 'cmstack-ts-mcp-server', version: '0.1.0' });
 
   // Diagnostic reachability probe (no API call).
   server.registerTool(
-    'typress_ping',
+    'cmstack_ts_ping',
     {
       title: 'Ping',
       description:
@@ -42,12 +42,12 @@ async function main(): Promise<void> {
   const transport = new StdioServerTransport();
   await server.connect(transport);
   // Logs go to stderr so they never corrupt the stdio JSON-RPC stream.
-  console.error(`Typress MCP server running on stdio (API: ${config.apiUrl}).`);
+  console.error(`Cmstack-TS MCP server running on stdio (API: ${config.apiUrl}).`);
 }
 
 main().catch((error: unknown) => {
   console.error(
-    'Typress MCP server failed to start:',
+    'Cmstack-TS MCP server failed to start:',
     error instanceof Error ? error.message : error,
   );
   process.exit(1);

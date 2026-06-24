@@ -8,7 +8,7 @@ import {
   updateFaqSchema,
   updateServiceSchema,
   updateSiteProfileSchema,
-} from '@typress/config';
+} from '@cmstack-ts/config';
 import { z } from 'zod';
 import type { ApiClient } from '../api-client.js';
 import { CREATE, DESTRUCTIVE, READ, UPDATE, respond } from '../tool-kit.js';
@@ -24,7 +24,7 @@ export function registerSeoTools(server: McpServer, client: ApiClient): void {
   // --- Site profile ----------------------------------------------------------
 
   server.registerTool(
-    'typress_get_site_profile',
+    'cmstack_ts_get_site_profile',
     {
       title: 'Get the site profile',
       description:
@@ -36,7 +36,7 @@ export function registerSeoTools(server: McpServer, client: ApiClient): void {
   );
 
   server.registerTool(
-    'typress_update_site_profile',
+    'cmstack_ts_update_site_profile',
     {
       title: 'Update the site profile',
       description:
@@ -53,7 +53,7 @@ export function registerSeoTools(server: McpServer, client: ApiClient): void {
   // --- Services --------------------------------------------------------------
 
   server.registerTool(
-    'typress_list_services',
+    'cmstack_ts_list_services',
     {
       title: 'List services',
       description:
@@ -65,7 +65,7 @@ export function registerSeoTools(server: McpServer, client: ApiClient): void {
   );
 
   server.registerTool(
-    'typress_create_service',
+    'cmstack_ts_create_service',
     {
       title: 'Create a service',
       description: 'Create a Service entry. Returns the created service.',
@@ -79,7 +79,7 @@ export function registerSeoTools(server: McpServer, client: ApiClient): void {
   );
 
   server.registerTool(
-    'typress_update_service',
+    'cmstack_ts_update_service',
     {
       title: 'Update a service',
       description: 'Update a Service entry by id. Returns the updated service.',
@@ -93,7 +93,7 @@ export function registerSeoTools(server: McpServer, client: ApiClient): void {
   );
 
   server.registerTool(
-    'typress_delete_service',
+    'cmstack_ts_delete_service',
     {
       title: 'Delete a service',
       description: 'Delete a Service entry by id.',
@@ -106,7 +106,7 @@ export function registerSeoTools(server: McpServer, client: ApiClient): void {
   // --- FAQ -------------------------------------------------------------------
 
   server.registerTool(
-    'typress_list_faqs',
+    'cmstack_ts_list_faqs',
     {
       title: 'List FAQ items',
       description:
@@ -118,7 +118,7 @@ export function registerSeoTools(server: McpServer, client: ApiClient): void {
   );
 
   server.registerTool(
-    'typress_create_faq',
+    'cmstack_ts_create_faq',
     {
       title: 'Create an FAQ item',
       description: 'Create an FAQ item (question + answer). Returns the created item.',
@@ -130,7 +130,7 @@ export function registerSeoTools(server: McpServer, client: ApiClient): void {
   );
 
   server.registerTool(
-    'typress_update_faq',
+    'cmstack_ts_update_faq',
     {
       title: 'Update an FAQ item',
       description: 'Update an FAQ item by id. Returns the updated item.',
@@ -142,7 +142,7 @@ export function registerSeoTools(server: McpServer, client: ApiClient): void {
   );
 
   server.registerTool(
-    'typress_delete_faq',
+    'cmstack_ts_delete_faq',
     {
       title: 'Delete an FAQ item',
       description: 'Delete an FAQ item by id.',

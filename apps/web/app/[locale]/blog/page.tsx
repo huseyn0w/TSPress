@@ -1,7 +1,7 @@
 import { apiBaseUrl } from '@/app/lib/api';
 import { alternatesFor } from '@/lib/i18n/metadata';
 import { getActiveTheme } from '@/themes/active-theme';
-import { postListSchema } from '@typress/config';
+import { postListSchema } from '@cmstack-ts/config';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 

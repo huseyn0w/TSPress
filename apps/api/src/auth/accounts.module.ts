@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { parseEnv } from '@typress/config';
+import { parseEnv } from '@cmstack-ts/config';
 import { AdminController } from '../admin/admin.controller';
 import { PoliciesGuard } from '../authz/policies.guard';
 import { AccountsController } from './accounts.controller';

@@ -12,7 +12,7 @@ import {
   updatePageSchema,
   updatePostSchema,
   updateTagSchema,
-} from '@typress/config';
+} from '@cmstack-ts/config';
 import { z } from 'zod';
 import type { ApiClient } from '../api-client.js';
 import { CREATE, DESTRUCTIVE, READ, UPDATE, respond } from '../tool-kit.js';
@@ -31,7 +31,7 @@ export function registerContentTools(server: McpServer, client: ApiClient): void
   // --- Posts -----------------------------------------------------------------
 
   server.registerTool(
-    'typress_list_posts',
+    'cmstack_ts_list_posts',
     {
       title: 'List posts',
       description:
@@ -44,7 +44,7 @@ export function registerContentTools(server: McpServer, client: ApiClient): void
   );
 
   server.registerTool(
-    'typress_get_post',
+    'cmstack_ts_get_post',
     {
       title: 'Get a post',
       description: 'Fetch a single post by id, including its full content, categories, and tags.',
@@ -55,7 +55,7 @@ export function registerContentTools(server: McpServer, client: ApiClient): void
   );
 
   server.registerTool(
-    'typress_get_post_revisions',
+    'cmstack_ts_get_post_revisions',
     {
       title: 'Get post revisions',
       description:
@@ -67,7 +67,7 @@ export function registerContentTools(server: McpServer, client: ApiClient): void
   );
 
   server.registerTool(
-    'typress_create_post',
+    'cmstack_ts_create_post',
     {
       title: 'Create a post',
       description:
@@ -80,7 +80,7 @@ export function registerContentTools(server: McpServer, client: ApiClient): void
   );
 
   server.registerTool(
-    'typress_update_post',
+    'cmstack_ts_update_post',
     {
       title: 'Update a post',
       description:
@@ -93,7 +93,7 @@ export function registerContentTools(server: McpServer, client: ApiClient): void
   );
 
   server.registerTool(
-    'typress_publish_post',
+    'cmstack_ts_publish_post',
     {
       title: 'Publish a post',
       description: 'Publish a post by id (sets status to PUBLISHED). Returns the updated post.',
@@ -110,7 +110,7 @@ export function registerContentTools(server: McpServer, client: ApiClient): void
   );
 
   server.registerTool(
-    'typress_unpublish_post',
+    'cmstack_ts_unpublish_post',
     {
       title: 'Unpublish a post',
       description:
@@ -128,11 +128,11 @@ export function registerContentTools(server: McpServer, client: ApiClient): void
   );
 
   server.registerTool(
-    'typress_delete_post',
+    'cmstack_ts_delete_post',
     {
       title: 'Delete a post',
       description:
-        'Soft-delete a post by id (moves it to trash; restorable with typress_restore_post).',
+        'Soft-delete a post by id (moves it to trash; restorable with cmstack_ts_restore_post).',
       inputSchema: byId,
       annotations: DESTRUCTIVE,
     },
@@ -140,7 +140,7 @@ export function registerContentTools(server: McpServer, client: ApiClient): void
   );
 
   server.registerTool(
-    'typress_restore_post',
+    'cmstack_ts_restore_post',
     {
       title: 'Restore a post',
       description: 'Restore a soft-deleted (trashed) post by id. Returns the restored post.',
@@ -154,7 +154,7 @@ export function registerContentTools(server: McpServer, client: ApiClient): void
   // --- Pages -----------------------------------------------------------------
 
   server.registerTool(
-    'typress_list_pages',
+    'cmstack_ts_list_pages',
     {
       title: 'List pages',
       description: 'List all pages. Set includeTrashed to also return soft-deleted pages.',
@@ -165,7 +165,7 @@ export function registerContentTools(server: McpServer, client: ApiClient): void
   );
 
   server.registerTool(
-    'typress_get_page',
+    'cmstack_ts_get_page',
     {
       title: 'Get a page',
       description: 'Fetch a single page by id, including its full content.',
@@ -176,7 +176,7 @@ export function registerContentTools(server: McpServer, client: ApiClient): void
   );
 
   server.registerTool(
-    'typress_create_page',
+    'cmstack_ts_create_page',
     {
       title: 'Create a page',
       description:
@@ -189,7 +189,7 @@ export function registerContentTools(server: McpServer, client: ApiClient): void
   );
 
   server.registerTool(
-    'typress_update_page',
+    'cmstack_ts_update_page',
     {
       title: 'Update a page',
       description:
@@ -202,7 +202,7 @@ export function registerContentTools(server: McpServer, client: ApiClient): void
   );
 
   server.registerTool(
-    'typress_delete_page',
+    'cmstack_ts_delete_page',
     {
       title: 'Delete a page',
       description: 'Soft-delete a page by id (moves it to trash; restorable).',
@@ -213,7 +213,7 @@ export function registerContentTools(server: McpServer, client: ApiClient): void
   );
 
   server.registerTool(
-    'typress_restore_page',
+    'cmstack_ts_restore_page',
     {
       title: 'Restore a page',
       description: 'Restore a soft-deleted (trashed) page by id. Returns the restored page.',
@@ -227,7 +227,7 @@ export function registerContentTools(server: McpServer, client: ApiClient): void
   // --- Categories ------------------------------------------------------------
 
   server.registerTool(
-    'typress_list_categories',
+    'cmstack_ts_list_categories',
     {
       title: 'List categories',
       description: 'List all categories (a self-referential tree; each item carries its parentId).',
@@ -238,7 +238,7 @@ export function registerContentTools(server: McpServer, client: ApiClient): void
   );
 
   server.registerTool(
-    'typress_create_category',
+    'cmstack_ts_create_category',
     {
       title: 'Create a category',
       description:
@@ -250,7 +250,7 @@ export function registerContentTools(server: McpServer, client: ApiClient): void
   );
 
   server.registerTool(
-    'typress_update_category',
+    'cmstack_ts_update_category',
     {
       title: 'Update a category',
       description:
@@ -262,7 +262,7 @@ export function registerContentTools(server: McpServer, client: ApiClient): void
   );
 
   server.registerTool(
-    'typress_delete_category',
+    'cmstack_ts_delete_category',
     {
       title: 'Delete a category',
       description: 'Permanently delete a category by id.',
@@ -275,7 +275,7 @@ export function registerContentTools(server: McpServer, client: ApiClient): void
   // --- Tags ------------------------------------------------------------------
 
   server.registerTool(
-    'typress_list_tags',
+    'cmstack_ts_list_tags',
     {
       title: 'List tags',
       description: 'List all tags.',
@@ -286,7 +286,7 @@ export function registerContentTools(server: McpServer, client: ApiClient): void
   );
 
   server.registerTool(
-    'typress_create_tag',
+    'cmstack_ts_create_tag',
     {
       title: 'Create a tag',
       description:
@@ -298,7 +298,7 @@ export function registerContentTools(server: McpServer, client: ApiClient): void
   );
 
   server.registerTool(
-    'typress_update_tag',
+    'cmstack_ts_update_tag',
     {
       title: 'Update a tag',
       description: 'Update a tag by id. Any subset of: name, slug. Returns the updated tag.',
@@ -309,7 +309,7 @@ export function registerContentTools(server: McpServer, client: ApiClient): void
   );
 
   server.registerTool(
-    'typress_delete_tag',
+    'cmstack_ts_delete_tag',
     {
       title: 'Delete a tag',
       description: 'Permanently delete a tag by id.',

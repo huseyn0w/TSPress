@@ -1,5 +1,5 @@
-import { authResultSchema } from '@typress/config';
-import type { PublicRole } from '@typress/config';
+import { authResultSchema } from '@cmstack-ts/config';
+import type { PublicRole } from '@cmstack-ts/config';
 import NextAuth from 'next-auth';
 import type { JWT } from 'next-auth/jwt';
 import type { Provider } from 'next-auth/providers';

@@ -246,7 +246,7 @@ function Sidebar({
       <div className="px-5 py-5 border-b border-border shrink-0">
         <Link href="/admin" onClick={onClose} className="flex items-center gap-2 w-fit">
           <span className="inline-block w-2 h-2 rounded-full bg-primary" aria-hidden />
-          <span className="text-sm font-semibold tracking-tight text-foreground">Typress</span>
+          <span className="text-sm font-semibold tracking-tight text-foreground">Cmstack-TS</span>
         </Link>
       </div>
 

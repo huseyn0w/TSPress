@@ -1,5 +1,5 @@
 import { Logger } from '@nestjs/common';
-import type { TypressPlugin } from '../plugin.types';
+import type { CmstackTsPlugin } from '../plugin.types';
 
 const WORDS_PER_MINUTE = 200;
 const BADGE_MARKER = 'data-plugin="reading-time"';
@@ -32,7 +32,7 @@ export function withReadingTime(content: string): string {
  *  - a **filter** that alters public post output (the reading-time badge),
  *  - an **action** listener that observes the `post.published` event.
  */
-export const readingTimePlugin: TypressPlugin = {
+export const readingTimePlugin: CmstackTsPlugin = {
   name: 'reading-time',
   register(api) {
     const logger = new Logger('plugin:reading-time');

@@ -1,6 +1,6 @@
 import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import type { JwtService } from '@nestjs/jwt';
-import type { PrismaClient } from '@typress/db';
+import type { PrismaClient } from '@cmstack-ts/db';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { AccountsService } from './accounts.service';
 import { PasswordService } from './password.service';
@@ -67,10 +67,10 @@ describe('AccountsService', () => {
 
   it('register() creates a Member-role user and returns a token', async () => {
     const service = new AccountsService(makeFakePrisma(users), passwords, fakeJwt);
-    const result = await service.register({ email: 'new@typress.local', password: 'password123' });
+    const result = await service.register({ email: 'new@cmstack-ts.local', password: 'password123' });
 
     expect(result.accessToken).toBe('fake.jwt.token');
-    expect(result.user.email).toBe('new@typress.local');
+    expect(result.user.email).toBe('new@cmstack-ts.local');
     expect(result.user.role?.name).toBe('Member');
     expect(users[0]?.passwordHash).toMatch(/^\$argon2id\$/);
   });
@@ -78,7 +78,7 @@ describe('AccountsService', () => {
   it('register() rejects a duplicate email', async () => {
     users.push({
       id: 'u1',
-      email: 'taken@typress.local',
+      email: 'taken@cmstack-ts.local',
       name: null,
       passwordHash: 'x',
       image: null,
@@ -87,7 +87,7 @@ describe('AccountsService', () => {
     });
     const service = new AccountsService(makeFakePrisma(users), passwords, fakeJwt);
     await expect(
-      service.register({ email: 'taken@typress.local', password: 'password123' }),
+      service.register({ email: 'taken@cmstack-ts.local', password: 'password123' }),
     ).rejects.toBeInstanceOf(ConflictException);
   });
 
@@ -95,7 +95,7 @@ describe('AccountsService', () => {
     const passwordHash = await passwords.hash('s3cret-password');
     users.push({
       id: 'u1',
-      email: 'user@typress.local',
+      email: 'user@cmstack-ts.local',
       name: 'User',
       passwordHash,
       image: null,
@@ -104,7 +104,7 @@ describe('AccountsService', () => {
     });
     const service = new AccountsService(makeFakePrisma(users), passwords, fakeJwt);
     const result = await service.login({
-      email: 'user@typress.local',
+      email: 'user@cmstack-ts.local',
       password: 's3cret-password',
     });
     expect(result.accessToken).toBe('fake.jwt.token');
@@ -115,7 +115,7 @@ describe('AccountsService', () => {
     const passwordHash = await passwords.hash('s3cret-password');
     users.push({
       id: 'u1',
-      email: 'user@typress.local',
+      email: 'user@cmstack-ts.local',
       name: 'User',
       passwordHash,
       image: null,
@@ -124,14 +124,14 @@ describe('AccountsService', () => {
     });
     const service = new AccountsService(makeFakePrisma(users), passwords, fakeJwt);
     await expect(
-      service.login({ email: 'user@typress.local', password: 'wrong' }),
+      service.login({ email: 'user@cmstack-ts.local', password: 'wrong' }),
     ).rejects.toBeInstanceOf(UnauthorizedException);
   });
 
   it('login() rejects an unknown email', async () => {
     const service = new AccountsService(makeFakePrisma(users), passwords, fakeJwt);
     await expect(
-      service.login({ email: 'ghost@typress.local', password: 'whatever' }),
+      service.login({ email: 'ghost@cmstack-ts.local', password: 'whatever' }),
     ).rejects.toBeInstanceOf(UnauthorizedException);
   });
 });

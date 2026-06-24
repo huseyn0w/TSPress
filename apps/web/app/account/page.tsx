@@ -1,4 +1,4 @@
-import { authorProfileSchema, publicUserSchema } from '@typress/config';
+import { authorProfileSchema, publicUserSchema } from '@cmstack-ts/config';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { auth } from '../../auth';
@@ -88,7 +88,7 @@ export default async function AccountPage() {
                 color: 'var(--accent)',
               }}
             >
-              Typress
+              Cmstack-TS
             </p>
             <h1 style={{ fontSize: 24, margin: 0 }}>My account</h1>
           </div>

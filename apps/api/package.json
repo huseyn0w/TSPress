@@ -1,5 +1,5 @@
 {
-  "name": "@typress/api",
+  "name": "@cmstack-ts/api",
   "version": "0.0.0",
   "private": true,
   "scripts": {
@@ -17,8 +17,8 @@
     "@nestjs/platform-express": "10.4.15",
     "@nestjs/throttler": "^6.5.0",
     "@node-rs/argon2": "2.0.2",
-    "@typress/config": "workspace:*",
-    "@typress/db": "workspace:*",
+    "@cmstack-ts/config": "workspace:*",
+    "@cmstack-ts/db": "workspace:*",
     "image-size": "1.1.1",
     "reflect-metadata": "0.2.2",
     "rxjs": "7.8.1",

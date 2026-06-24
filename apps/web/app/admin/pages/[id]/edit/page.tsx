@@ -1,7 +1,7 @@
 import { PageForm } from '@/components/admin/page-form';
 import { apiGet } from '@/lib/admin/api';
-import { pageDetailSchema } from '@typress/config';
-import type { PageDetail } from '@typress/config';
+import { pageDetailSchema } from '@cmstack-ts/config';
+import type { PageDetail } from '@cmstack-ts/config';
 import { notFound } from 'next/navigation';
 import { updatePageAction } from '../../actions';
 

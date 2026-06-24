@@ -26,6 +26,12 @@ importers:
       '@casl/ability':
         specifier: 6.7.3
         version: 6.7.3
+      '@cmstack-ts/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@cmstack-ts/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       '@nestjs/common':
         specifier: 10.4.15
         version: 10.4.15(reflect-metadata@0.2.2)(rxjs@7.8.1)
@@ -44,12 +50,6 @@ importers:
       '@node-rs/argon2':
         specifier: 2.0.2
         version: 2.0.2
-      '@typress/config':
-        specifier: workspace:*
-        version: link:../../packages/config
-      '@typress/db':
-        specifier: workspace:*
-        version: link:../../packages/db
       image-size:
         specifier: 1.1.1
         version: 1.1.1
@@ -90,12 +90,12 @@ importers:
 
   apps/mcp:
     dependencies:
+      '@cmstack-ts/config':
+        specifier: workspace:*
+        version: link:../../packages/config
       '@modelcontextprotocol/sdk':
         specifier: ^1.29.0
         version: 1.29.0(zod@3.25.76)
-      '@typress/config':
-        specifier: workspace:*
-        version: link:../../packages/config
       zod:
         specifier: 3.25.76
         version: 3.25.76
@@ -109,6 +109,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@cmstack-ts/config':
+        specifier: workspace:*
+        version: link:../../packages/config
       '@radix-ui/react-dialog':
         specifier: ^1.1.4
         version: 1.1.17(@types/react-dom@19.0.2(@types/react@19.0.2))(@types/react@19.0.2)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -139,9 +142,6 @@ importers:
       '@tiptap/starter-kit':
         specifier: ^2.10.0
         version: 2.27.2
-      '@typress/config':
-        specifier: workspace:*
-        version: link:../../packages/config
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1

@@ -4,7 +4,7 @@ import { languageAlternates, localizedPath, localizedUrl } from './alternates';
 const opts = {
   locales: ['en', 'de', 'ru'] as const,
   defaultLocale: 'en',
-  baseUrl: 'https://typress.example.com',
+  baseUrl: 'https://cmstack-ts.example.com',
 };
 
 describe('localizedPath', () => {
@@ -29,27 +29,27 @@ describe('localizedPath', () => {
 
 describe('localizedUrl', () => {
   it('builds an absolute URL', () => {
-    expect(localizedUrl('de', '/blog', opts)).toBe('https://typress.example.com/de/blog');
-    expect(localizedUrl('en', '/', opts)).toBe('https://typress.example.com/');
+    expect(localizedUrl('de', '/blog', opts)).toBe('https://cmstack-ts.example.com/de/blog');
+    expect(localizedUrl('en', '/', opts)).toBe('https://cmstack-ts.example.com/');
   });
 });
 
 describe('languageAlternates', () => {
   it('maps every locale plus x-default to absolute URLs', () => {
     expect(languageAlternates('/blog', opts)).toEqual({
-      en: 'https://typress.example.com/blog',
-      de: 'https://typress.example.com/de/blog',
-      ru: 'https://typress.example.com/ru/blog',
-      'x-default': 'https://typress.example.com/blog',
+      en: 'https://cmstack-ts.example.com/blog',
+      de: 'https://cmstack-ts.example.com/de/blog',
+      ru: 'https://cmstack-ts.example.com/ru/blog',
+      'x-default': 'https://cmstack-ts.example.com/blog',
     });
   });
 
   it('handles the home path', () => {
     expect(languageAlternates('/', opts)).toEqual({
-      en: 'https://typress.example.com/',
-      de: 'https://typress.example.com/de',
-      ru: 'https://typress.example.com/ru',
-      'x-default': 'https://typress.example.com/',
+      en: 'https://cmstack-ts.example.com/',
+      de: 'https://cmstack-ts.example.com/de',
+      ru: 'https://cmstack-ts.example.com/ru',
+      'x-default': 'https://cmstack-ts.example.com/',
     });
   });
 });

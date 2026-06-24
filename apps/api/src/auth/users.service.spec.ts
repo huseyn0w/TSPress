@@ -1,5 +1,5 @@
 import { ForbiddenException } from '@nestjs/common';
-import type { PrismaClient } from '@typress/db';
+import type { PrismaClient } from '@cmstack-ts/db';
 import { describe, expect, it, vi } from 'vitest';
 import { UsersService } from './users.service';
 

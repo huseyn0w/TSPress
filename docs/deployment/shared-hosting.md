@@ -1,6 +1,6 @@
-# Deploying Typress on shared hosting (Hostinger / cPanel / Passenger)
+# Deploying Cmstack-TS on shared hosting (Hostinger / cPanel / Passenger)
 
-Typress can run on shared hosting that supports **Node.js apps via Phusion
+Cmstack-TS can run on shared hosting that supports **Node.js apps via Phusion
 Passenger** (Hostinger, cPanel "Setup Node.js App", Plesk, and similar). This is
 a more constrained environment than a VPS, so read the caveats first.
 
@@ -12,7 +12,7 @@ a more constrained environment than a VPS, so read the caveats first.
 
 ## Caveat: the database
 
-Typress uses Prisma and is **DB-agnostic by design, with one exception**: the
+Cmstack-TS uses Prisma and is **DB-agnostic by design, with one exception**: the
 full-text **search** feature (Phase 8) uses PostgreSQL-specific SQL
 (`to_tsvector` / `websearch_to_tsquery` / `ts_rank`). So:
 
@@ -21,7 +21,7 @@ full-text **search** feature (Phase 8) uses PostgreSQL-specific SQL
   works, including search.
 - **MySQL/MariaDB only:** the rest of the CMS works, but `/search` and
   `GET /public/search` will error. Either disable/hide the search UI, or front
-  Typress with a managed PostgreSQL. Switching providers also means changing the
+  Cmstack-TS with a managed PostgreSQL. Switching providers also means changing the
   Prisma `datasource` provider and regenerating migrations.
 
 Treat PostgreSQL as a requirement unless you are prepared to drop search.
@@ -54,8 +54,8 @@ Create a PostgreSQL database in your hosting panel and note the connection
 string. From your machine, with `DATABASE_URL` pointing at it:
 
 ```bash
-pnpm --filter @typress/db migrate     # prisma migrate deploy
-pnpm --filter @typress/db seed        # first time only
+pnpm --filter @cmstack-ts/db migrate     # prisma migrate deploy
+pnpm --filter @cmstack-ts/db seed        # first time only
 ```
 
 (Run these from anywhere that can reach the database; they do not need to run on

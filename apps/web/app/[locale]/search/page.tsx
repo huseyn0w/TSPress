@@ -4,7 +4,7 @@ import { routing } from '@/i18n/routing';
 import { localizedPath } from '@/lib/i18n/alternates';
 import { alternatesFor } from '@/lib/i18n/metadata';
 import { getActiveTheme } from '@/themes/active-theme';
-import { searchResponseSchema } from '@typress/config';
+import { searchResponseSchema } from '@cmstack-ts/config';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 

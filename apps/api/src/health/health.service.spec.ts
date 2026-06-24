@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { healthResponseSchema } from '@typress/config';
+import { healthResponseSchema } from '@cmstack-ts/config';
 import { describe, expect, it, vi } from 'vitest';
 import { HealthService } from './health.service';
 import type { DatabasePinger } from './health.tokens';
@@ -18,7 +18,7 @@ describe('HealthService', () => {
   it('check() returns a payload matching the shared HealthResponse contract', () => {
     const result = new HealthService(dbUp).check();
     expect(() => healthResponseSchema.parse(result)).not.toThrow();
-    expect(result.service).toBe('typress-api');
+    expect(result.service).toBe('cmstack-ts-api');
   });
 
   it('readiness() reports the database as up when the query succeeds', async () => {

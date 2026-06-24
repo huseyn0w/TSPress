@@ -1,4 +1,4 @@
-import { authResultSchema } from '@typress/config';
+import { authResultSchema } from '@cmstack-ts/config';
 import type { ZodSchema } from 'zod';
 import type { McpConfig } from './config.js';
 import { ApiError } from './errors.js';
@@ -39,7 +39,7 @@ export function toQueryString(query?: Record<string, unknown>): string {
 }
 
 /**
- * Authenticated client for the Typress API. Logs in once with the configured
+ * Authenticated client for the Cmstack-TS API. Logs in once with the configured
  * service account, caches the bearer token, and transparently re-logs in a
  * single time if a request comes back 401 (token expired). The API re-checks
  * CASL on every call, so this client carries no authorization logic of its own.

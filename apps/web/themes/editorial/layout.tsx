@@ -39,7 +39,7 @@ export async function EditorialLayout({ children }: { children: ReactNode }) {
             fontSize: 12,
           }}
         >
-          Typress
+          Cmstack-TS
         </Link>
         <nav style={{ display: 'flex', gap: '1.25rem', fontSize: 14, alignItems: 'center' }}>
           <Link href="/blog" style={{ color: 'var(--muted)', textDecoration: 'none' }}>
@@ -73,7 +73,7 @@ export async function EditorialLayout({ children }: { children: ReactNode }) {
           textAlign: 'center',
         }}
       >
-        © {new Date().getFullYear()} Typress · {tf('editorial')}
+        © {new Date().getFullYear()} Cmstack-TS · {tf('editorial')}
       </footer>
     </div>
   );

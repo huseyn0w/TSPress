@@ -1,5 +1,5 @@
 /**
- * Local content view types not yet promoted to @typress/config.
+ * Local content view types not yet promoted to @cmstack-ts/config.
  * These mirror the API response shapes for categories and tags.
  */
 

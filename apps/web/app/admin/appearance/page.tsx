@@ -1,7 +1,7 @@
 import { apiGet } from '@/lib/admin/api';
 import { canManageSettings, requireAdminSession } from '@/lib/admin/guard';
 import { DEFAULT_THEME_ID, themeCatalog } from '@/themes/registry';
-import { themeSettingSchema } from '@typress/config';
+import { themeSettingSchema } from '@cmstack-ts/config';
 import { ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';

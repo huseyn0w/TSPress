@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-# Multi-stage build for the Typress Next.js web app (standalone output).
+# Multi-stage build for the Cmstack-TS Next.js web app (standalone output).
 
 FROM node:22-alpine AS base
 RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
@@ -27,8 +27,8 @@ ENV NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
 COPY tsconfig.base.json ./
 COPY packages/config ./packages/config
 COPY apps/web ./apps/web
-RUN pnpm --filter @typress/config build \
-  && pnpm --filter @typress/web build
+RUN pnpm --filter @cmstack-ts/config build \
+  && pnpm --filter @cmstack-ts/web build
 
 # --- Runtime (Next standalone server) ---
 FROM base AS runtime

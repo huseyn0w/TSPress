@@ -21,7 +21,7 @@ function reflectorReturning(handlers: PolicyHandler[] | undefined): Reflector {
 
 const admin: AuthenticatedUser = {
   id: 'u1',
-  email: 'admin@typress.local',
+  email: 'admin@cmstack-ts.local',
   name: 'Admin',
   image: null,
   role: { name: 'Administrator', permissions: [{ action: 'manage', subject: 'all' }] },
@@ -30,7 +30,7 @@ const admin: AuthenticatedUser = {
 
 const member: AuthenticatedUser = {
   id: 'u2',
-  email: 'member@typress.local',
+  email: 'member@cmstack-ts.local',
   name: 'Member',
   image: null,
   role: { name: 'Member', permissions: [] },

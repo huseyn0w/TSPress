@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/table';
 import { apiGet } from '@/lib/admin/api';
 import { canModerateComments, requireAdminSession } from '@/lib/admin/guard';
-import { type AdminCommentList, type CommentStatus, adminCommentListSchema } from '@typress/config';
+import { type AdminCommentList, type CommentStatus, adminCommentListSchema } from '@cmstack-ts/config';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { CommentRowActions } from './comment-row-actions';

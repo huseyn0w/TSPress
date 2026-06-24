@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-# Multi-stage build for the Typress NestJS API within the pnpm monorepo.
+# Multi-stage build for the Cmstack-TS NestJS API within the pnpm monorepo.
 
 FROM node:22-alpine AS base
 RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
@@ -18,10 +18,10 @@ FROM deps AS build
 COPY tsconfig.base.json ./
 COPY packages ./packages
 COPY apps/api ./apps/api
-RUN pnpm --filter @typress/config build \
-  && pnpm --filter @typress/db generate \
-  && pnpm --filter @typress/db build \
-  && pnpm --filter @typress/api build
+RUN pnpm --filter @cmstack-ts/config build \
+  && pnpm --filter @cmstack-ts/db generate \
+  && pnpm --filter @cmstack-ts/db build \
+  && pnpm --filter @cmstack-ts/api build
 
 # --- Runtime ---
 FROM base AS runtime
@@ -30,4 +30,4 @@ COPY --from=build /app ./
 WORKDIR /app/apps/api
 EXPOSE 4000
 # Apply pending migrations, then start the API.
-CMD ["sh", "-c", "pnpm --filter @typress/db migrate && node dist/main.js"]
+CMD ["sh", "-c", "pnpm --filter @cmstack-ts/db migrate && node dist/main.js"]

@@ -1,4 +1,4 @@
-import type { PostDetail } from '@typress/config';
+import type { PostDetail } from '@cmstack-ts/config';
 
 /**
  * Typed hook catalogue. The plugin system exposes a fixed set of extension
@@ -20,8 +20,8 @@ export interface FilterMap {
 export interface ActionMap {
   /**
    * Fired each time a post transitions *into* PUBLISHED (first publish and any
-   * later republish), not only the first time — mirrors WordPress's
-   * `transition_post_status`. Listeners that must run once should dedupe.
+   * later republish), not only the first time — mirrors a typical CMS
+   * post-status transition hook. Listeners that must run once should dedupe.
    */
   'post.published': { id: string; slug: string; title: string };
 }

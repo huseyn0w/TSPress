@@ -2,7 +2,7 @@
 
 import { apiBaseUrl } from '@/app/lib/api';
 import { auth } from '@/auth';
-import { type LikeState, likeStateSchema } from '@typress/config';
+import { type LikeState, likeStateSchema } from '@cmstack-ts/config';
 
 const NO_LIKES: LikeState = { likes: 0, liked: false };
 

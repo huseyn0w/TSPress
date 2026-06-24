@@ -1,7 +1,7 @@
 import { apiGet } from '@/lib/admin/api';
 import { canManageSeo, requireAdminSession } from '@/lib/admin/guard';
-import { faqSchema, serviceSchema, siteProfileSchema } from '@typress/config';
-import type { Faq, Service, SiteProfile } from '@typress/config';
+import { faqSchema, serviceSchema, siteProfileSchema } from '@cmstack-ts/config';
+import type { Faq, Service, SiteProfile } from '@cmstack-ts/config';
 import { ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
@@ -20,7 +20,7 @@ import { ProfileForm } from './profile-form';
 export const dynamic = 'force-dynamic';
 
 const DEFAULT_PROFILE: SiteProfile = {
-  organizationName: 'Typress',
+  organizationName: 'Cmstack-TS',
   tagline: '',
   description: '',
   url: '',

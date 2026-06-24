@@ -24,7 +24,7 @@ export default function SignInPage() {
             color: 'var(--accent)',
           }}
         >
-          Typress
+          Cmstack-TS
         </p>
         <h1 style={{ fontSize: 28, margin: '0 0 2rem', lineHeight: 1.1 }}>Sign in</h1>
         <SignInForm googleEnabled={googleEnabled} githubEnabled={githubEnabled} />

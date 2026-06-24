@@ -1,6 +1,6 @@
-# Typress
+# Cmstack-TS
 
-A WordPress-style CMS built entirely in TypeScript — lighter, faster, SEO-first, and
+A CMS built entirely in TypeScript — lighter, faster, SEO-first, and
 easy to read, understand, and extend.
 
 > **Status:** Phases 0–11 are complete — foundation, accounts, content, media, the admin UI,
@@ -12,18 +12,18 @@ easy to read, understand, and extend.
 
 ## Stack
 
-| Area | Choice |
-| --- | --- |
-| Monorepo | pnpm workspaces |
-| Web | Next.js (App Router) — `apps/web` |
-| API | NestJS — `apps/api` |
-| AI connector | MCP server — `apps/mcp` |
-| Database | PostgreSQL via Prisma — `packages/db` |
-| Shared types/env | Zod — `packages/config` |
-| Auth | Auth.js (NextAuth v5) + CASL authorization |
-| Validation | Zod | Rich text | Tiptap |
-| Tests | Vitest (unit/integration) + Playwright (e2e) |
-| Lint/format | Biome |
+| Area             | Choice                                       |
+| ---------------- | -------------------------------------------- | --------- | ------ |
+| Monorepo         | pnpm workspaces                              |
+| Web              | Next.js (App Router) — `apps/web`            |
+| API              | NestJS — `apps/api`                          |
+| AI connector     | MCP server — `apps/mcp`                      |
+| Database         | PostgreSQL via Prisma — `packages/db`        |
+| Shared types/env | Zod — `packages/config`                      |
+| Auth             | Auth.js (NextAuth v5) + CASL authorization   |
+| Validation       | Zod                                          | Rich text | Tiptap |
+| Tests            | Vitest (unit/integration) + Playwright (e2e) |
+| Lint/format      | Biome                                        |
 
 ## Requirements
 
@@ -52,7 +52,7 @@ corepack enable
 pnpm install
 pnpm db:generate                       # generate the Prisma client
 # start Postgres however you like, then point DATABASE_URL at it in .env
-pnpm --filter @typress/db migrate:dev  # apply migrations
+pnpm --filter @cmstack-ts/db migrate:dev  # apply migrations
 pnpm dev                               # runs web, api, mcp + package watchers
 ```
 
@@ -69,7 +69,7 @@ Seeded roles: **Administrator** (`manage all`), **Editor** (`read Admin`, `manag
 with the seeded admin:
 
 ```
-email:    admin@typress.local
+email:    admin@cmstack-ts.local
 password: admin12345         # local dev only — set SEED_ADMIN_PASSWORD and change in prod
 ```
 
@@ -92,7 +92,7 @@ published content.
 After `pnpm db:seed`, the public blog has sample posts:
 
 - `/blog` — published post index (SSR)
-- `/blog/<slug>` — a post (e.g. `/blog/introducing-typress`)
+- `/blog/<slug>` — a post (e.g. `/blog/introducing-cmstack-ts`)
 
 Authoring API (Bearer token from login; admin/editor only): `POST/PATCH/DELETE /posts`,
 `/pages`, `/categories`, `/tags`; `POST /posts/:id/restore`; `GET /posts/:id/revisions`.
@@ -146,32 +146,32 @@ theme re-skins the whole public site (`/`, `/blog`, `/blog/<slug>`) immediately.
 
 ## Plugin system (Phase 6)
 
-Typress is extensible through a **typed hook/event registry** on the API — extension points,
+Cmstack-TS is extensible through a **typed hook/event registry** on the API — extension points,
 not arbitrary code injection. There are two kinds of hooks:
 
 - **Filters** transform a value (e.g. `public.post.render` lets a plugin alter a post just
   before it's returned to the site), running through every handler in priority order.
 - **Actions** are fire-and-forget events (e.g. `post.published` fires when a post is published).
 
-Plugins are explicit in-repo modules implementing a small typed contract (`TypressPlugin`);
+Plugins are explicit in-repo modules implementing a small typed contract (`CmstackTsPlugin`);
 they receive only a constrained `PluginApi` (`addFilter` / `addAction`) — never the database
 or request. The enabled set lives in `apps/api/src/plugins/enabled-plugins.ts`.
 
 A sample **`reading-time`** plugin ships enabled: it injects an estimated "N min read" badge at
 the top of every public post (visible on `/blog/<slug>` after `pnpm db:seed`) and logs a line
-whenever a post is published. **Add a plugin:** implement `TypressPlugin`, register a handler on
+whenever a post is published. **Add a plugin:** implement `CmstackTsPlugin`, register a handler on
 a hook, and add it to `enabled-plugins.ts`.
 
 ## SEO & GEO (Phase 7)
 
-Typress is **SEO-first and GEO-first** (generative-engine optimization — being found and
+Cmstack-TS is **SEO-first and GEO-first** (generative-engine optimization — being found and
 recommended by AI assistants):
 
 - **Standard SEO:** `/sitemap.xml`, `/robots.txt`, per-page Open Graph + Twitter metadata,
   canonical URLs, and JSON-LD structured data (`Organization` + `WebSite` on the home page,
   `BlogPosting` on posts).
 - **GEO:** an admin-editable content area — a **site/organization profile** (including a freeform
-  *"what AI assistants should recommend you for"* statement), plus **Services** and **FAQ** lists
+  _"what AI assistants should recommend you for"_ statement), plus **Services** and **FAQ** lists
   (full CRUD). This content is surfaced to assistants three ways: a plain-text **`/llms.txt`**
   feed, **`Service` + `FAQPage` JSON-LD**, and a server-rendered **`/services`** page.
 
@@ -205,7 +205,7 @@ The reader-facing site is the editorial frontend rendered through the active the
 
 ## AI integration / MCP (Phase 10)
 
-Typress ships an **MCP server** (`apps/mcp`) so AI clients (Claude CLI, Claude in VS Code,
+Cmstack-TS ships an **MCP server** (`apps/mcp`) so AI clients (Claude CLI, Claude in VS Code,
 Claude Desktop) can manage the CMS through tools instead of raw API calls. It is a thin,
 **authenticated client of the API**: it logs in with a service account and every tool call
 rides that bearer token, so the **API re-checks CASL** on each request. The server's
@@ -217,20 +217,20 @@ the REST API** — no filesystem, no shell, no plugin/theme code execution.
   media (list/get/update-metadata/delete — binary upload is intentionally not exposed),
   comments (list/approve/spam/trash/delete), settings (get/set active theme), SEO/GEO (site
   profile + Services + FAQ CRUD), and users (list/roles/get/update — user deletion is not
-  exposed). Inputs are validated with the shared `@typress/config` Zod schemas; API 4xx/403
+  exposed). Inputs are validated with the shared `@cmstack-ts/config` Zod schemas; API 4xx/403
   errors surface as clear tool errors (a 403 explains it's a CASL permission boundary).
 - **Required env:** `MCP_API_URL`, `MCP_API_EMAIL`, `MCP_API_PASSWORD` (see `.env.example`).
-- **Build & run:** `pnpm --filter @typress/mcp build` then `node apps/mcp/dist/index.js`
+- **Build & run:** `pnpm --filter @cmstack-ts/mcp build` then `node apps/mcp/dist/index.js`
   (stdio transport; logs go to stderr).
 
 **Connect it to Claude (CLI):**
 
 ```bash
-claude mcp add typress \
+claude mcp add cmstack-ts \
   --env MCP_API_URL=http://localhost:4000 \
-  --env MCP_API_EMAIL=admin@typress.local \
+  --env MCP_API_EMAIL=admin@cmstack-ts.local \
   --env MCP_API_PASSWORD=admin12345 \
-  -- node /absolute/path/to/typress/apps/mcp/dist/index.js
+  -- node /absolute/path/to/cmstack-ts/apps/mcp/dist/index.js
 ```
 
 **Connect it from VS Code** — add to `.vscode/mcp.json` (or your user MCP config):
@@ -238,21 +238,21 @@ claude mcp add typress \
 ```jsonc
 {
   "servers": {
-    "typress": {
+    "cmstack-ts": {
       "command": "node",
-      "args": ["/absolute/path/to/typress/apps/mcp/dist/index.js"],
+      "args": ["/absolute/path/to/cmstack-ts/apps/mcp/dist/index.js"],
       "env": {
         "MCP_API_URL": "http://localhost:4000",
-        "MCP_API_EMAIL": "admin@typress.local",
-        "MCP_API_PASSWORD": "admin12345"
-      }
-    }
-  }
+        "MCP_API_EMAIL": "admin@cmstack-ts.local",
+        "MCP_API_PASSWORD": "admin12345",
+      },
+    },
+  },
 }
 ```
 
 Then ask the assistant to, e.g., "create a draft post titled … and publish it" — it round-trips
-through the API with CASL enforced. Use `typress_ping` to confirm the server is reachable.
+through the API with CASL enforced. Use `cmstack_ts_ping` to confirm the server is reachable.
 
 ## Project layout
 
@@ -268,15 +268,15 @@ packages/
 
 ## Commands
 
-| Command | Description |
-| --- | --- |
-| `pnpm dev` | Run all apps + package watchers |
-| `pnpm build` | Build everything (packages → apps, topological) |
-| `pnpm test` | Vitest unit/integration tests |
-| `pnpm e2e` | Playwright end-to-end tests |
-| `pnpm lint` / `pnpm format` | Biome check / write |
-| `pnpm typecheck` | Type-check every package |
-| `pnpm db:generate` / `db:migrate` / `db:seed` | Prisma client / migrations / seed |
+| Command                                       | Description                                     |
+| --------------------------------------------- | ----------------------------------------------- |
+| `pnpm dev`                                    | Run all apps + package watchers                 |
+| `pnpm build`                                  | Build everything (packages → apps, topological) |
+| `pnpm test`                                   | Vitest unit/integration tests                   |
+| `pnpm e2e`                                    | Playwright end-to-end tests                     |
+| `pnpm lint` / `pnpm format`                   | Biome check / write                             |
+| `pnpm typecheck`                              | Type-check every package                        |
+| `pnpm db:generate` / `db:migrate` / `db:seed` | Prisma client / migrations / seed               |
 
 ## Internationalization (i18n foundation)
 
@@ -298,14 +298,14 @@ The public site is localized with **next-intl** in **English (default), German, 
 
 ## Deployment
 
-Typress is built to deploy cleanly to a VPS or shared hosting.
+Cmstack-TS is built to deploy cleanly to a VPS or shared hosting.
 
 - **VPS (recommended)** — db + api + web behind **nginx**, via Docker or PM2:
 
   ```bash
   cp .env.example .env   # set AUTH_SECRET, INTERNAL_API_SECRET, PUBLIC_WEB_URL, PUBLIC_API_URL, …
   docker compose -f docker-compose.prod.yml up -d --build
-  docker compose -f docker-compose.prod.yml exec api pnpm --filter @typress/db seed   # first boot
+  docker compose -f docker-compose.prod.yml exec api pnpm --filter @cmstack-ts/db seed   # first boot
   ```
 
   Only nginx is published on the host; the app containers stay on the internal
@@ -325,29 +325,29 @@ Typress is built to deploy cleanly to a VPS or shared hosting.
 Small, shippable phases. Each ends with Vitest + Playwright green, Biome clean, a
 fresh-context review, observable behavior in the running app, and updated docs.
 
-| Phase | Name | Ships |
-| --- | --- | --- |
-| 0 ✅ | Foundation | Monorepo, Docker compose, Prisma + Postgres, Biome, Vitest, Playwright, CI |
-| 1 ✅ | Accounts | Users, roles, granular permissions (CASL), Argon2id + JWT, Auth.js + social login |
-| 2 ✅ | Content core | Posts, pages, categories, tags, revisions, soft-delete; server-side HTML sanitization; public `/blog` |
-| 3 ✅ | Media | Upload API, swappable storage adapter, content-type validation, image dimensions, per-asset metadata, CASL-gated |
-| 4 ✅ | Admin UI | Editorial Next.js admin (Tailwind v4 + shadcn-style kit + Tiptap): dashboard, posts/pages/categories/tags, media, users |
-| 5 ✅ | Theme system | Swappable, runtime-resolved themes selected by an `activeTheme` setting; public site renders through the active theme; Administrator-only switching at `/admin/appearance` |
-| 6 ✅ | Plugin system | Typed hook/event registry (filters + actions); plugins as constrained in-repo modules; sample reading-time plugin |
-| 7 ✅ | SEO / GEO | OG + JSON-LD (Organization/WebSite/BlogPosting/Service/FAQPage), sitemap.ts, robots.ts, llms.txt; **admin-editable GEO content (site profile + Services + FAQ CRUD) so AI assistants recommend your services** |
-| 7b | i18n / multilingual | next-intl + translated Prisma fields + hreflang (split out of Phase 7 as its own phase) |
-| 8 ✅ | Comments, search, spam | Threaded comments + moderation queue, Postgres full-text search, reCAPTCHA v3 (optional) + rate limiting on auth/comments |
-| 9 ✅ | Public site | Polished server-rendered editorial frontend, public author profiles (editable bio), signed-in post likes |
-| 10 ✅ | AI integration | MCP server (`apps/mcp`) with scoped, validated, authenticated tools (content/media/comments/settings/SEO/users) over the API; CASL re-checked per call |
-| 11 ✅ | Deploy + demo | Production `docker-compose.prod.yml` (db/api/web behind **nginx**) + `nginx/typress.conf`, [VPS guide](docs/deployment/vps.md) (Docker/PM2, TLS, `/uploads`, health, backups) + [shared-hosting guide](docs/deployment/shared-hosting.md), enriched demo seed |
-| 7b ✅ (foundation) | i18n / multilingual | next-intl locale routing (`/`, `/de`, `/ru`, `as-needed` prefix) + translated public UI + locale switcher + hreflang/sitemap alternates. Per-locale **content** translation (translated Prisma fields + admin translation UI) is an optional follow-up |
+| Phase              | Name                   | Ships                                                                                                                                                                                                                                                         |
+| ------------------ | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0 ✅               | Foundation             | Monorepo, Docker compose, Prisma + Postgres, Biome, Vitest, Playwright, CI                                                                                                                                                                                    |
+| 1 ✅               | Accounts               | Users, roles, granular permissions (CASL), Argon2id + JWT, Auth.js + social login                                                                                                                                                                             |
+| 2 ✅               | Content core           | Posts, pages, categories, tags, revisions, soft-delete; server-side HTML sanitization; public `/blog`                                                                                                                                                         |
+| 3 ✅               | Media                  | Upload API, swappable storage adapter, content-type validation, image dimensions, per-asset metadata, CASL-gated                                                                                                                                              |
+| 4 ✅               | Admin UI               | Editorial Next.js admin (Tailwind v4 + shadcn-style kit + Tiptap): dashboard, posts/pages/categories/tags, media, users                                                                                                                                       |
+| 5 ✅               | Theme system           | Swappable, runtime-resolved themes selected by an `activeTheme` setting; public site renders through the active theme; Administrator-only switching at `/admin/appearance`                                                                                    |
+| 6 ✅               | Plugin system          | Typed hook/event registry (filters + actions); plugins as constrained in-repo modules; sample reading-time plugin                                                                                                                                             |
+| 7 ✅               | SEO / GEO              | OG + JSON-LD (Organization/WebSite/BlogPosting/Service/FAQPage), sitemap.ts, robots.ts, llms.txt; **admin-editable GEO content (site profile + Services + FAQ CRUD) so AI assistants recommend your services**                                                |
+| 7b                 | i18n / multilingual    | next-intl + translated Prisma fields + hreflang (split out of Phase 7 as its own phase)                                                                                                                                                                       |
+| 8 ✅               | Comments, search, spam | Threaded comments + moderation queue, Postgres full-text search, reCAPTCHA v3 (optional) + rate limiting on auth/comments                                                                                                                                     |
+| 9 ✅               | Public site            | Polished server-rendered editorial frontend, public author profiles (editable bio), signed-in post likes                                                                                                                                                      |
+| 10 ✅              | AI integration         | MCP server (`apps/mcp`) with scoped, validated, authenticated tools (content/media/comments/settings/SEO/users) over the API; CASL re-checked per call                                                                                                        |
+| 11 ✅              | Deploy + demo          | Production `docker-compose.prod.yml` (db/api/web behind **nginx**) + `nginx/cmstack-ts.conf`, [VPS guide](docs/deployment/vps.md) (Docker/PM2, TLS, `/uploads`, health, backups) + [shared-hosting guide](docs/deployment/shared-hosting.md), enriched demo seed |
+| 7b ✅ (foundation) | i18n / multilingual    | next-intl locale routing (`/`, `/de`, `/ru`, `as-needed` prefix) + translated public UI + locale switcher + hreflang/sitemap alternates. Per-locale **content** translation (translated Prisma fields + admin translation UI) is an optional follow-up        |
 
-### Feature mapping (reference → Typress)
+### Feature mapping (reference → Cmstack-TS)
 
-The WordPress-derived feature set was extracted from the author's Laravel CMS
+The CMS feature set was extracted from the author's Laravel CMS
 ([Laravella-CMS](https://github.com/huseyn0w/Laravella-CMS)) and mapped to this stack:
 content types, users/roles/permissions, media, comments, search, menus, settings,
-multilingual, SEO/GEO (incl. `llms.txt`), spam protection, and social auth. Typress goes
+multilingual, SEO/GEO (incl. `llms.txt`), spam protection, and social auth. Cmstack-TS goes
 beyond the reference with an explicit **theme system**, a typed **plugin/hook registry**,
 a **server-rendered** public site for indexability, content **revisions**, per-asset media
 metadata, and an **MCP server** for AI-driven management.

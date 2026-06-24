@@ -3,7 +3,7 @@ import {
   adminCommentListQuerySchema,
   adminCommentListSchema,
   adminCommentSchema,
-} from '@typress/config';
+} from '@cmstack-ts/config';
 import { z } from 'zod';
 import type { ApiClient } from '../api-client.js';
 import { DESTRUCTIVE, READ, UPDATE, respond } from '../tool-kit.js';
@@ -17,7 +17,7 @@ const byId = z.object({ id: z.string().min(1).describe('The comment id.') });
  */
 export function registerCommentTools(server: McpServer, client: ApiClient): void {
   server.registerTool(
-    'typress_list_comments',
+    'cmstack_ts_list_comments',
     {
       title: 'List comments',
       description:
@@ -32,7 +32,7 @@ export function registerCommentTools(server: McpServer, client: ApiClient): void
   );
 
   server.registerTool(
-    'typress_approve_comment',
+    'cmstack_ts_approve_comment',
     {
       title: 'Approve a comment',
       description:
@@ -50,7 +50,7 @@ export function registerCommentTools(server: McpServer, client: ApiClient): void
   );
 
   server.registerTool(
-    'typress_mark_comment_spam',
+    'cmstack_ts_mark_comment_spam',
     {
       title: 'Mark a comment as spam',
       description:
@@ -68,7 +68,7 @@ export function registerCommentTools(server: McpServer, client: ApiClient): void
   );
 
   server.registerTool(
-    'typress_trash_comment',
+    'cmstack_ts_trash_comment',
     {
       title: 'Trash a comment',
       description: 'Move a comment by id to TRASH. Returns the updated comment.',
@@ -85,7 +85,7 @@ export function registerCommentTools(server: McpServer, client: ApiClient): void
   );
 
   server.registerTool(
-    'typress_delete_comment',
+    'cmstack_ts_delete_comment',
     {
       title: 'Delete a comment',
       description: 'Permanently delete a comment by id.',

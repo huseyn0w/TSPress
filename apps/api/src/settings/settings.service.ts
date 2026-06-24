@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ACTIVE_THEME_KEY, type ThemeSetting, type UpdateThemeSettingInput } from '@typress/config';
-import type { PrismaClient } from '@typress/db';
+import { ACTIVE_THEME_KEY, type ThemeSetting, type UpdateThemeSettingInput } from '@cmstack-ts/config';
+import type { PrismaClient } from '@cmstack-ts/db';
 import { PRISMA } from '../prisma/prisma.module';
 
 /**

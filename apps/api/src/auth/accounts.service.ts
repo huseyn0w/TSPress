@@ -9,8 +9,8 @@ import type {
   PublicUser,
   RegisterInput,
   UpdateAccountInput,
-} from '@typress/config';
-import { Prisma, type PrismaClient } from '@typress/db';
+} from '@cmstack-ts/config';
+import { Prisma, type PrismaClient } from '@cmstack-ts/db';
 import { PRISMA } from '../prisma/prisma.module';
 import type { AuthenticatedUser } from './authenticated-user';
 import { PasswordService } from './password.service';
@@ -38,7 +38,7 @@ export class AccountsService {
     private readonly passwords: PasswordService,
     private readonly jwt: JwtService,
   ) {
-    this.decoyHash = this.passwords.hash('typress-decoy-password');
+    this.decoyHash = this.passwords.hash('cmstack-ts-decoy-password');
   }
 
   async register(input: RegisterInput): Promise<AuthResult> {

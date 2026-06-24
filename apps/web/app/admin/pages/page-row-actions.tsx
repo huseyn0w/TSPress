@@ -22,7 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { PageDetail } from '@typress/config';
+import type { PageDetail } from '@cmstack-ts/config';
 import { MoreHorizontal, Pencil, RefreshCw, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useTransition } from 'react';

@@ -3,7 +3,7 @@ import {
   type ThemeSetting,
   type UpdateThemeSettingInput,
   updateThemeSettingSchema,
-} from '@typress/config';
+} from '@cmstack-ts/config';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CheckPolicies } from '../authz/check-policies.decorator';
 import { PoliciesGuard } from '../authz/policies.guard';

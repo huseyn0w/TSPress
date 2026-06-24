@@ -2,8 +2,8 @@ import { MediaGrid } from '@/app/admin/media/media-grid';
 import { UploadButton } from '@/app/admin/media/upload-button';
 import { Button } from '@/components/ui/button';
 import { apiGet } from '@/lib/admin/api';
-import { mediaListSchema } from '@typress/config';
-import type { MediaList } from '@typress/config';
+import { mediaListSchema } from '@cmstack-ts/config';
+import type { MediaList } from '@cmstack-ts/config';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';

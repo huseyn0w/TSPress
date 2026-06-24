@@ -1,4 +1,4 @@
-import type { SeoContent } from '@typress/config';
+import type { SeoContent } from '@cmstack-ts/config';
 
 export interface LlmsTxtOptions {
   siteUrl: string;

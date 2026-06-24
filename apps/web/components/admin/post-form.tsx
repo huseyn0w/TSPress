@@ -14,7 +14,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import type { CategoryView, TagView } from '@/types/content';
-import type { PostDetail } from '@typress/config';
+import type { PostDetail } from '@cmstack-ts/config';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useState, useTransition } from 'react';

@@ -1,7 +1,7 @@
 -- CreateTable
 CREATE TABLE "SiteProfile" (
     "id" TEXT NOT NULL DEFAULT 'default',
-    "organizationName" TEXT NOT NULL DEFAULT 'Typress',
+    "organizationName" TEXT NOT NULL DEFAULT 'Cmstack-TS',
     "tagline" TEXT NOT NULL DEFAULT '',
     "description" TEXT NOT NULL DEFAULT '',
     "url" TEXT NOT NULL DEFAULT '',

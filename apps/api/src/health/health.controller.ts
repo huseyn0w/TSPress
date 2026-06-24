@@ -1,5 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
-import type { HealthResponse } from '@typress/config';
+import type { HealthResponse } from '@cmstack-ts/config';
 import { HealthService, type ReadinessResponse } from './health.service';
 
 @Controller('health')

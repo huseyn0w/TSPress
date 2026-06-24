@@ -4,7 +4,7 @@ import {
   mediaListSchema,
   mediaSchema,
   updateMediaSchema,
-} from '@typress/config';
+} from '@cmstack-ts/config';
 import { z } from 'zod';
 import type { ApiClient } from '../api-client.js';
 import { DESTRUCTIVE, READ, UPDATE, respond } from '../tool-kit.js';
@@ -18,7 +18,7 @@ const byId = z.object({ id: z.string().min(1).describe('The media asset id.') })
  */
 export function registerMediaTools(server: McpServer, client: ApiClient): void {
   server.registerTool(
-    'typress_list_media',
+    'cmstack_ts_list_media',
     {
       title: 'List media',
       description:
@@ -31,7 +31,7 @@ export function registerMediaTools(server: McpServer, client: ApiClient): void {
   );
 
   server.registerTool(
-    'typress_get_media',
+    'cmstack_ts_get_media',
     {
       title: 'Get a media asset',
       description: 'Fetch a single media asset by id.',
@@ -42,7 +42,7 @@ export function registerMediaTools(server: McpServer, client: ApiClient): void {
   );
 
   server.registerTool(
-    'typress_update_media',
+    'cmstack_ts_update_media',
     {
       title: 'Update media metadata',
       description:
@@ -55,7 +55,7 @@ export function registerMediaTools(server: McpServer, client: ApiClient): void {
   );
 
   server.registerTool(
-    'typress_delete_media',
+    'cmstack_ts_delete_media',
     {
       title: 'Delete a media asset',
       description: 'Permanently delete a media asset (and its stored file) by id.',

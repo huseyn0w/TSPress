@@ -1,4 +1,4 @@
-import type { PostDetail } from '@typress/config';
+import type { PostDetail } from '@cmstack-ts/config';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { HookRegistry } from './hook-registry';
 

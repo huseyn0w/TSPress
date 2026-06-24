@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import type { AdminComment, CommentStatus } from '@typress/config';
+import type { AdminComment, CommentStatus } from '@cmstack-ts/config';
 import { Check, Loader2, ShieldAlert, Trash2 } from 'lucide-react';
 import { useTransition } from 'react';
 import { toast } from 'sonner';

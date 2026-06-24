@@ -3,7 +3,7 @@ import { loadConfig } from './config';
 
 const valid = {
   MCP_API_URL: 'http://localhost:4000',
-  MCP_API_EMAIL: 'admin@typress.local',
+  MCP_API_EMAIL: 'admin@cmstack-ts.local',
   MCP_API_PASSWORD: 'admin12345',
 };
 
@@ -11,7 +11,7 @@ describe('loadConfig', () => {
   it('parses a valid environment', () => {
     expect(loadConfig(valid)).toEqual({
       apiUrl: 'http://localhost:4000',
-      email: 'admin@typress.local',
+      email: 'admin@cmstack-ts.local',
       password: 'admin12345',
     });
   });

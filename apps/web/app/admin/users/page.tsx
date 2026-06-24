@@ -11,8 +11,8 @@ import {
 } from '@/components/ui/table';
 import { apiGet } from '@/lib/admin/api';
 import { canManageUsers, requireAdminSession } from '@/lib/admin/guard';
-import { adminUserListSchema, roleSummarySchema } from '@typress/config';
-import type { AdminUserList, RoleSummary } from '@typress/config';
+import { adminUserListSchema, roleSummarySchema } from '@cmstack-ts/config';
+import type { AdminUserList, RoleSummary } from '@cmstack-ts/config';
 import { Search } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';

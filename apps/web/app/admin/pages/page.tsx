@@ -9,8 +9,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { apiGet } from '@/lib/admin/api';
-import { pageDetailSchema } from '@typress/config';
-import type { PageDetail } from '@typress/config';
+import { pageDetailSchema } from '@cmstack-ts/config';
+import type { PageDetail } from '@cmstack-ts/config';
 import Link from 'next/link';
 import { z } from 'zod';
 import { PageRowActions } from './page-row-actions';

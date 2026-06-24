@@ -1,6 +1,6 @@
-# Deploying Typress on a VPS
+# Deploying Cmstack-TS on a VPS
 
-This is the primary, recommended way to run Typress in production: a Linux VPS
+This is the primary, recommended way to run Cmstack-TS in production: a Linux VPS
 with the app behind **nginx**, using either **Docker** (recommended) or **PM2**.
 
 Topology (single host):
@@ -68,10 +68,10 @@ api services — they share them. Never commit `.env`.
 
 The repo ships `docker-compose.prod.yml`: db + api + web, with **only nginx
 published** on the host (the app containers are reachable only on the internal
-Docker network). nginx config lives in `nginx/typress.conf`.
+Docker network). nginx config lives in `nginx/cmstack-ts.conf`.
 
 ```bash
-git clone <your-fork> typress && cd typress
+git clone <your-fork> cmstack-ts && cd cmstack-ts
 cp .env.example .env && $EDITOR .env        # set the variables from step 2
 
 # Build and start (db → api → web → nginx).
@@ -79,10 +79,10 @@ docker compose -f docker-compose.prod.yml up -d --build
 
 # First boot only: apply the schema and seed demo content.
 # (The API container also runs `prisma migrate deploy` automatically on start.)
-docker compose -f docker-compose.prod.yml exec api pnpm --filter @typress/db seed
+docker compose -f docker-compose.prod.yml exec api pnpm --filter @cmstack-ts/db seed
 ```
 
-Edit `nginx/typress.conf` and replace the `example.com` / `api.example.com`
+Edit `nginx/cmstack-ts.conf` and replace the `example.com` / `api.example.com`
 `server_name` values with your domains.
 
 Verify:
@@ -94,14 +94,14 @@ curl    https://api.example.com/health/ready # {"status":"ok"} once the DB is re
 ```
 
 Sign in at `https://example.com/signin` with the seeded admin
-(`admin@typress.local` / the password from `SEED_ADMIN_PASSWORD`, default
+(`admin@cmstack-ts.local` / the password from `SEED_ADMIN_PASSWORD`, default
 `admin12345` — **change it**), then open `/admin`.
 
 ### Uploads
 
 Uploaded media lives on the `uploads` Docker volume and is served at
 `/uploads/<key>`. nginx forwards `/uploads/*` on the api subdomain to the API
-process (see `nginx/typress.conf`). Alternatively, mount the `uploads` volume
+process (see `nginx/cmstack-ts.conf`). Alternatively, mount the `uploads` volume
 into the nginx container and serve it directly — if you do, drop the API's
 `useStaticAssets` call so only one process owns the path.
 
@@ -130,7 +130,7 @@ The shipped nginx config listens on `:80` only. To add HTTPS:
 
 2. Mount the certs into the nginx container (uncomment the `letsencrypt` volume
    line in `docker-compose.prod.yml`).
-3. In `nginx/typress.conf`, uncomment the `listen 443 ssl` server blocks and the
+3. In `nginx/cmstack-ts.conf`, uncomment the `listen 443 ssl` server blocks and the
    `Strict-Transport-Security` header, and enable the `return 301 https://...`
    redirect in the `:80` blocks. Reload: `docker compose -f docker-compose.prod.yml restart nginx`.
 
@@ -147,16 +147,16 @@ corepack enable
 pnpm install --frozen-lockfile
 pnpm build                                   # topological: packages → apps
 
-pnpm --filter @typress/db migrate            # prisma migrate deploy
-pnpm --filter @typress/db seed               # first boot only
+pnpm --filter @cmstack-ts/db migrate            # prisma migrate deploy
+pnpm --filter @cmstack-ts/db seed               # first boot only
 
 # Run both apps under PM2 (set the env first — see step 2).
-pm2 start "node apps/api/dist/main.js"  --name typress-api
-pm2 start "node apps/web/.next/standalone/apps/web/server.js" --name typress-web
+pm2 start "node apps/api/dist/main.js"  --name cmstack-ts-api
+pm2 start "node apps/web/.next/standalone/apps/web/server.js" --name cmstack-ts-web
 pm2 save && pm2 startup
 ```
 
-Point the same `nginx/typress.conf` (installed under
+Point the same `nginx/cmstack-ts.conf` (installed under
 `/etc/nginx/conf.d/`) at `127.0.0.1:3000` / `127.0.0.1:4000` instead of the
 `web` / `api` container hostnames, and `sudo nginx -t && sudo systemctl reload nginx`.
 
@@ -181,7 +181,7 @@ health endpoints.
 
 ## 7. Backups
 
-- **Database**: `docker compose -f docker-compose.prod.yml exec db pg_dump -U typress typress > backup.sql`
+- **Database**: `docker compose -f docker-compose.prod.yml exec db pg_dump -U cmstack-ts cmstack-ts > backup.sql`
   on a schedule.
 - **Uploads**: back up the `uploads` Docker volume (e.g. `docker run --rm -v
-  typress_uploads:/data -v "$PWD":/backup alpine tar czf /backup/uploads.tgz -C /data .`).
+  cmstack-ts_uploads:/data -v "$PWD":/backup alpine tar czf /backup/uploads.tgz -C /data .`).

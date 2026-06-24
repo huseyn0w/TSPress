@@ -1,5 +1,5 @@
 {
-  "name": "@typress/web",
+  "name": "@cmstack-ts/web",
   "version": "0.0.0",
   "private": true,
   "scripts": {
@@ -19,7 +19,7 @@
     "@tiptap/pm": "^2.10.0",
     "@tiptap/react": "^2.10.0",
     "@tiptap/starter-kit": "^2.10.0",
-    "@typress/config": "workspace:*",
+    "@cmstack-ts/config": "workspace:*",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "geist": "^1.3.1",

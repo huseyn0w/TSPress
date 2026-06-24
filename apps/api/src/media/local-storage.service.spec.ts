@@ -10,7 +10,7 @@ describe('LocalStorageService', () => {
   let storage: LocalStorageService;
 
   beforeEach(async () => {
-    dir = await mkdtemp(join(tmpdir(), 'typress-storage-'));
+    dir = await mkdtemp(join(tmpdir(), 'cmstack-ts-storage-'));
     storage = new LocalStorageService(dir);
   });
 

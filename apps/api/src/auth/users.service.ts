@@ -11,8 +11,8 @@ import type {
   RoleSummary,
   UpdateUserInput,
   UserListQuery,
-} from '@typress/config';
-import { Prisma, type PrismaClient } from '@typress/db';
+} from '@cmstack-ts/config';
+import { Prisma, type PrismaClient } from '@cmstack-ts/db';
 import { PRISMA } from '../prisma/prisma.module';
 
 const userInclude = { role: { select: { id: true, name: true } } } satisfies Prisma.UserInclude;

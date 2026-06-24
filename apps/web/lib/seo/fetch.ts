@@ -1,11 +1,11 @@
 import 'server-only';
 
 import { apiBaseUrl } from '@/app/lib/api';
-import { type SeoContent, postListSchema, seoContentSchema } from '@typress/config';
+import { type SeoContent, postListSchema, seoContentSchema } from '@cmstack-ts/config';
 
 const FALLBACK: SeoContent = {
   profile: {
-    organizationName: 'Typress',
+    organizationName: 'Cmstack-TS',
     tagline: '',
     description: '',
     url: '',

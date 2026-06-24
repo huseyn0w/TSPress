@@ -26,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { AdminUser, RoleSummary } from '@typress/config';
+import type { AdminUser, RoleSummary } from '@cmstack-ts/config';
 import { Loader2, MoreHorizontal, ShieldCheck, Trash2 } from 'lucide-react';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';

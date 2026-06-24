@@ -1,6 +1,6 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import type { CreateTagInput, UpdateTagInput } from '@typress/config';
-import { Prisma, type PrismaClient } from '@typress/db';
+import type { CreateTagInput, UpdateTagInput } from '@cmstack-ts/config';
+import { Prisma, type PrismaClient } from '@cmstack-ts/db';
 import { PRISMA } from '../prisma/prisma.module';
 import { slugify } from './slug';
 

@@ -12,8 +12,8 @@ import type {
   PostListQuery,
   PostSummary,
   UpdatePostInput,
-} from '@typress/config';
-import { Prisma, type PrismaClient } from '@typress/db';
+} from '@cmstack-ts/config';
+import { Prisma, type PrismaClient } from '@cmstack-ts/db';
 import { HookRegistry } from '../plugins/hook-registry';
 import { PRISMA } from '../prisma/prisma.module';
 import { HtmlSanitizerService } from './html-sanitizer.service';

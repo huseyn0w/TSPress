@@ -3,15 +3,15 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-typress}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-typress}
-      POSTGRES_DB: ${POSTGRES_DB:-typress}
+      POSTGRES_USER: ${POSTGRES_USER:-cmstack-ts}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cmstack-ts}
+      POSTGRES_DB: ${POSTGRES_DB:-cmstack-ts}
     ports:
       - "5432:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-typress} -d ${POSTGRES_DB:-typress}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cmstack-ts} -d ${POSTGRES_DB:-cmstack-ts}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -27,7 +27,7 @@ services:
     environment:
       NODE_ENV: production
       API_PORT: 4000
-      DATABASE_URL: postgresql://${POSTGRES_USER:-typress}:${POSTGRES_PASSWORD:-typress}@db:5432/${POSTGRES_DB:-typress}?schema=public
+      DATABASE_URL: postgresql://${POSTGRES_USER:-cmstack-ts}:${POSTGRES_PASSWORD:-cmstack-ts}@db:5432/${POSTGRES_DB:-cmstack-ts}?schema=public
       # Shared with the web app so it can sign tokens the API verifies.
       AUTH_SECRET: ${AUTH_SECRET:-dev-only-shared-auth-secret-change-me}
       AUTH_TOKEN_TTL: ${AUTH_TOKEN_TTL:-7d}

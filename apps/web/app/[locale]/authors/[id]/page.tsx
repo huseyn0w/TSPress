@@ -2,7 +2,7 @@ import { apiBaseUrl } from '@/app/lib/api';
 import { Link } from '@/i18n/navigation';
 import { alternatesFor } from '@/lib/i18n/metadata';
 import { getActiveTheme } from '@/themes/active-theme';
-import { authorProfileSchema } from '@typress/config';
+import { authorProfileSchema } from '@cmstack-ts/config';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';

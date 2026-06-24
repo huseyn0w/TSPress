@@ -1,5 +1,5 @@
 import { Link } from '@/i18n/navigation';
-import type { PostDetail } from '@typress/config';
+import type { PostDetail } from '@cmstack-ts/config';
 import { getFormatter, getTranslations } from 'next-intl/server';
 
 export async function MagazineBlogPost({ post }: { post: PostDetail }) {

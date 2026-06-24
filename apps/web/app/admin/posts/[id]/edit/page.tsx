@@ -1,8 +1,8 @@
 import { PostForm } from '@/components/admin/post-form';
 import { apiGet } from '@/lib/admin/api';
 import type { CategoryView, TagView } from '@/types/content';
-import { postDetailSchema } from '@typress/config';
-import type { PostDetail } from '@typress/config';
+import { postDetailSchema } from '@cmstack-ts/config';
+import type { PostDetail } from '@cmstack-ts/config';
 import { notFound } from 'next/navigation';
 import { updatePostAction } from '../../actions';
 

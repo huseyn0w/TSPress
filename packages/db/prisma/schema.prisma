@@ -1,4 +1,4 @@
-// Typress database schema.
+// Cmstack-TS database schema.
 //
 // PostgreSQL is the default. Access goes exclusively through Prisma and the
 // schema is kept DB-agnostic so MySQL works for shared hosting.
@@ -158,7 +158,7 @@ model Tag {
 }
 
 /// An immutable snapshot of a Post or Page captured before each update, enabling
-/// WordPress-style revision history. Exactly one of postId/pageId is set.
+///  revision history. Exactly one of postId/pageId is set.
 model Revision {
   id        String   @id @default(cuid())
   postId    String?
@@ -216,7 +216,7 @@ model Setting {
 /// metadata, Organization JSON-LD, and the GEO statement surfaced to AI crawlers.
 model SiteProfile {
   id               String   @id @default("default")
-  organizationName String   @default("Typress")
+  organizationName String   @default("Cmstack-TS")
   tagline          String   @default("")
   description      String   @default("")
   url              String   @default("")

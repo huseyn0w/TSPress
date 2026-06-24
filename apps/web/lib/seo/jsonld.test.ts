@@ -1,4 +1,4 @@
-import type { Faq, Service, SiteProfile } from '@typress/config';
+import type { Faq, Service, SiteProfile } from '@cmstack-ts/config';
 import { describe, expect, it } from 'vitest';
 import { blogPostingJsonLd, faqPageJsonLd, organizationJsonLd, servicesJsonLd } from './jsonld';
 

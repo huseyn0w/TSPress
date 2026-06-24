@@ -9,8 +9,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { apiGet } from '@/lib/admin/api';
-import { postListSchema } from '@typress/config';
-import type { PostList, PostSummary } from '@typress/config';
+import { postListSchema } from '@cmstack-ts/config';
+import type { PostList, PostSummary } from '@cmstack-ts/config';
 import Link from 'next/link';
 import { PostRowActions } from './post-row-actions';
 

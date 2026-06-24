@@ -16,7 +16,7 @@ export async function EditorialHome() {
             color: 'var(--accent)',
           }}
         >
-          Typress
+          Cmstack-TS
         </p>
         <h1 style={{ fontSize: 'clamp(2rem, 6vw, 3.5rem)', lineHeight: 1.05, margin: '1rem 0' }}>
           {t('title')}

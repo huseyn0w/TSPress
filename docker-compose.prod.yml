@@ -4,7 +4,7 @@
 # published (80/443). Run it standalone:
 #
 #   docker compose -f docker-compose.prod.yml up -d --build
-#   docker compose -f docker-compose.prod.yml exec api pnpm --filter @typress/db seed   # first boot
+#   docker compose -f docker-compose.prod.yml exec api pnpm --filter @cmstack-ts/db seed   # first boot
 #
 # Required in .env (see .env.example + docs/deployment/vps.md):
 #   AUTH_SECRET, INTERNAL_API_SECRET, POSTGRES_PASSWORD,
@@ -21,13 +21,13 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-typress}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-typress}
-      POSTGRES_DB: ${POSTGRES_DB:-typress}
+      POSTGRES_USER: ${POSTGRES_USER:-cmstack-ts}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cmstack-ts}
+      POSTGRES_DB: ${POSTGRES_DB:-cmstack-ts}
     volumes:
       - db-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-typress} -d ${POSTGRES_DB:-typress}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cmstack-ts} -d ${POSTGRES_DB:-cmstack-ts}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -43,7 +43,7 @@ services:
     environment:
       NODE_ENV: production
       API_PORT: 4000
-      DATABASE_URL: postgresql://${POSTGRES_USER:-typress}:${POSTGRES_PASSWORD:-typress}@db:5432/${POSTGRES_DB:-typress}?schema=public
+      DATABASE_URL: postgresql://${POSTGRES_USER:-cmstack-ts}:${POSTGRES_PASSWORD:-cmstack-ts}@db:5432/${POSTGRES_DB:-cmstack-ts}?schema=public
       AUTH_SECRET: ${AUTH_SECRET:?set AUTH_SECRET in .env}
       AUTH_TOKEN_TTL: ${AUTH_TOKEN_TTL:-7d}
       INTERNAL_API_SECRET: ${INTERNAL_API_SECRET:?set INTERNAL_API_SECRET in .env}
@@ -109,9 +109,9 @@ services:
       - api
     ports:
       - "80:80"
-      # - "443:443"   # enable with TLS (see nginx/typress.conf + the VPS guide)
+      # - "443:443"   # enable with TLS (see nginx/cmstack-ts.conf + the VPS guide)
     volumes:
-      - ./nginx/typress.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/cmstack-ts.conf:/etc/nginx/conf.d/default.conf:ro
       # - ./nginx/letsencrypt:/etc/letsencrypt:ro   # mount certs for TLS
 
 volumes:

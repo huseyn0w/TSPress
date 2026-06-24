@@ -7,7 +7,7 @@ import {
   updateFaqSchema,
   updateServiceSchema,
   updateSiteProfileSchema,
-} from '@typress/config';
+} from '@cmstack-ts/config';
 import { revalidatePath } from 'next/cache';
 
 type ActionResult = { ok: true } | { ok: false; error: string };

@@ -14,7 +14,7 @@ test('llms.txt is served as a GEO feed', async ({ page }) => {
   const res = await page.goto('/llms.txt');
   expect(res?.ok()).toBe(true);
   const body = await page.textContent('body');
-  expect(body).toContain('# Typress');
+  expect(body).toContain('# Cmstack-TS');
 });
 
 test('the services page renders inside the active theme', async ({ page }) => {

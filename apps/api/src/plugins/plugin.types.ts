@@ -18,7 +18,7 @@ export interface PluginApi {
 }
 
 /** A plugin is an in-repo module implementing this typed contract. */
-export interface TypressPlugin {
+export interface CmstackTsPlugin {
   /** Stable, human-readable name (used in logs). */
   name: string;
   /** Called once at bootstrap to attach the plugin's hook handlers. */

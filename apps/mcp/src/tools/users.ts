@@ -5,7 +5,7 @@ import {
   roleSummarySchema,
   updateUserSchema,
   userListQuerySchema,
-} from '@typress/config';
+} from '@cmstack-ts/config';
 import { z } from 'zod';
 import type { ApiClient } from '../api-client.js';
 import { READ, UPDATE, respond } from '../tool-kit.js';
@@ -17,7 +17,7 @@ import { READ, UPDATE, respond } from '../tool-kit.js';
  */
 export function registerUserTools(server: McpServer, client: ApiClient): void {
   server.registerTool(
-    'typress_list_users',
+    'cmstack_ts_list_users',
     {
       title: 'List users',
       description:
@@ -30,11 +30,11 @@ export function registerUserTools(server: McpServer, client: ApiClient): void {
   );
 
   server.registerTool(
-    'typress_list_roles',
+    'cmstack_ts_list_roles',
     {
       title: 'List roles',
       description:
-        'List the available roles ({ id, name }) for assignment with typress_update_user.',
+        'List the available roles ({ id, name }) for assignment with cmstack_ts_update_user.',
       inputSchema: z.object({}),
       annotations: READ,
     },
@@ -43,7 +43,7 @@ export function registerUserTools(server: McpServer, client: ApiClient): void {
   );
 
   server.registerTool(
-    'typress_get_user',
+    'cmstack_ts_get_user',
     {
       title: 'Get a user',
       description: 'Fetch a single user by id (id, email, name, image, role, createdAt).',
@@ -54,11 +54,11 @@ export function registerUserTools(server: McpServer, client: ApiClient): void {
   );
 
   server.registerTool(
-    'typress_update_user',
+    'cmstack_ts_update_user',
     {
       title: 'Update a user',
       description:
-        'Update a user by id. Any subset of: name, roleId (assign a role; use typress_list_roles for valid ids). Returns the updated user. A user cannot change their own role.',
+        'Update a user by id. Any subset of: name, roleId (assign a role; use cmstack_ts_list_roles for valid ids). Returns the updated user. A user cannot change their own role.',
       inputSchema: updateUserSchema.extend({ id: z.string().min(1) }),
       annotations: UPDATE,
     },

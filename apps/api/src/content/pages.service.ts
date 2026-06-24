@@ -1,6 +1,6 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import type { CreatePageInput, PageDetail, UpdatePageInput } from '@typress/config';
-import { Prisma, type PrismaClient } from '@typress/db';
+import type { CreatePageInput, PageDetail, UpdatePageInput } from '@cmstack-ts/config';
+import { Prisma, type PrismaClient } from '@cmstack-ts/db';
 import { PRISMA } from '../prisma/prisma.module';
 import { HtmlSanitizerService } from './html-sanitizer.service';
 import type { RevisionView } from './posts.service';

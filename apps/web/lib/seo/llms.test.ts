@@ -1,4 +1,4 @@
-import type { SeoContent } from '@typress/config';
+import type { SeoContent } from '@cmstack-ts/config';
 import { describe, expect, it } from 'vitest';
 import { buildLlmsTxt } from './llms';
 

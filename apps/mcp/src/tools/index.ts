@@ -7,7 +7,7 @@ import { registerSeoTools } from './seo.js';
 import { registerSettingsTools } from './settings.js';
 import { registerUserTools } from './users.js';
 
-/** Register every Typress tool onto the MCP server. */
+/** Register every Cmstack-TS tool onto the MCP server. */
 export function registerAllTools(server: McpServer, client: ApiClient): void {
   registerContentTools(server, client);
   registerMediaTools(server, client);

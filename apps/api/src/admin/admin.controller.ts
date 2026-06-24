@@ -1,5 +1,5 @@
 import { Controller, Get, Inject, UseGuards } from '@nestjs/common';
-import type { PrismaClient } from '@typress/db';
+import type { PrismaClient } from '@cmstack-ts/db';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CheckPolicies } from '../authz/check-policies.decorator';
 import { PoliciesGuard } from '../authz/policies.guard';

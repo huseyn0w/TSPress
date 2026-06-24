@@ -4,8 +4,8 @@ This file guides Claude Code (CLI / VSCode extension) when working in this repos
 
 ## Project
 
-Typress is an open-source, WordPress-style CMS built on TypeScript. Goal: same core
-capabilities as WordPress, but lighter, faster, SEO-first, and easy to read, understand,
+Cmstack-TS is an open-source, CMS built on TypeScript. Goal: same core
+capabilities as a traditional CMS, but lighter, faster, SEO-first, and easy to read, understand,
 and extend. It is a commercial/open project that will be demoed publicly on YouTube,
 Product Hunt, and Slack, so code quality, security, and a clean demo matter.
 
@@ -30,23 +30,24 @@ theme; Administrator-only switching from `/admin/appearance`. Phase 6 (Plugin sy
 typed hook/event registry on the API (filters transform values, actions fire events),
 plugins as in-repo modules with a constrained `PluginApi` (not arbitrary code injection),
 plus a sample `reading-time` plugin. Phase 7 (SEO/GEO): sitemap/robots/llms.txt, Open Graph
-+ JSON-LD (Organization/WebSite/BlogPosting/Service/FAQPage), and an admin-editable GEO area
-(site profile + Services + FAQ CRUD) surfaced to AI assistants via llms.txt, JSON-LD, and a
-server-rendered `/services` page. **i18n/multilingual was split out into its own later phase.**
-Phase 8 (Comments, search, spam): threaded guest/auth comments with a moderation queue,
-Postgres full-text search, reCAPTCHA v3 (optional) + rate limiting on auth + comment submit.
-Phase 9 (Public site): the polished editorial frontend, public author profiles (with an
-editable bio), and signed-in post likes. Phase 10 (AI integration / MCP): `apps/mcp` built
-into a real MCP server exposing 48 scoped, Zod-validated, authenticated tools (content/media/
-comments/settings/SEO/users) that call the existing API with a service-account bearer token,
-so the API re-checks CASL per call. Phase 11 (Deployment + demo): production
-`docker-compose.prod.yml` (db/api/web behind nginx, only nginx published) + `nginx/typress.conf`
-(web on the domain, api on an `api.` subdomain, `/uploads` proxied to the API), web Dockerfile
-build args for `NEXT_PUBLIC_*`, VPS + shared-hosting guides under `docs/deployment/`, and an
-enriched demo seed. **i18n foundation** (next-intl): the public site is localized in en/de/ru with
-locale routing, a translated UI + locale switcher, and hreflang; the admin stays English. Remaining
-(optional): per-locale **content** translation. The full
-phased roadmap and feature mapping live in [README.md](README.md).
+
+- JSON-LD (Organization/WebSite/BlogPosting/Service/FAQPage), and an admin-editable GEO area
+  (site profile + Services + FAQ CRUD) surfaced to AI assistants via llms.txt, JSON-LD, and a
+  server-rendered `/services` page. **i18n/multilingual was split out into its own later phase.**
+  Phase 8 (Comments, search, spam): threaded guest/auth comments with a moderation queue,
+  Postgres full-text search, reCAPTCHA v3 (optional) + rate limiting on auth + comment submit.
+  Phase 9 (Public site): the polished editorial frontend, public author profiles (with an
+  editable bio), and signed-in post likes. Phase 10 (AI integration / MCP): `apps/mcp` built
+  into a real MCP server exposing 48 scoped, Zod-validated, authenticated tools (content/media/
+  comments/settings/SEO/users) that call the existing API with a service-account bearer token,
+  so the API re-checks CASL per call. Phase 11 (Deployment + demo): production
+  `docker-compose.prod.yml` (db/api/web behind nginx, only nginx published) + `nginx/cmstack-ts.conf`
+  (web on the domain, api on an `api.` subdomain, `/uploads` proxied to the API), web Dockerfile
+  build args for `NEXT_PUBLIC_*`, VPS + shared-hosting guides under `docs/deployment/`, and an
+  enriched demo seed. **i18n foundation** (next-intl): the public site is localized in en/de/ru with
+  locale routing, a translated UI + locale switcher, and hreflang; the admin stays English. Remaining
+  (optional): per-locale **content** translation. The full
+  phased roadmap and feature mapping live in [README.md](README.md).
 
 ## Auth & authorization (Phase 1)
 
@@ -60,7 +61,7 @@ phased roadmap and feature mapping live in [README.md](README.md).
   `@UseGuards(JwtAuthGuard, PoliciesGuard)` + `@CheckPolicies((a) => a.can(...))`.
   JwtAuthGuard must precede PoliciesGuard. Validate every mutation body with
   `ZodValidationPipe(<sharedSchema>)`.
-- Shared request/response shapes live in `@typress/config` (`registerSchema`, `loginSchema`,
+- Shared request/response shapes live in `@cmstack-ts/config` (`registerSchema`, `loginSchema`,
   `oauthSchema`, `publicUserSchema`, …) — import them on both sides; never redefine.
 - Secrets: `AUTH_SECRET` (shared web↔api), `INTERNAL_API_SECRET` (guards `/auth/oauth`,
   the server-to-server upsert), `WEB_ORIGIN` (CORS). All required; see `.env.example`.
@@ -131,7 +132,7 @@ phased roadmap and feature mapping live in [README.md](README.md).
   it before any session). `GET/PUT /settings/theme` are CASL-gated on a new subject
   **`Setting`** (`read`/`manage`); only **Administrator** (`manage all`) holds it — Editors
   don't switch themes. `PUT` body is validated by `updateThemeSettingSchema` (slug-shaped).
-  Shared contracts live in `@typress/config` (`updateThemeSettingSchema`, `themeSettingSchema`,
+  Shared contracts live in `@cmstack-ts/config` (`updateThemeSettingSchema`, `themeSettingSchema`,
   `ACTIVE_THEME_KEY`).
 - **Web**: themes live in `apps/web/themes/*` (they're React component sets — can't sit in
   `packages/config`). A `Theme` contract = `{ meta, Layout, Home, BlogIndex, BlogPost }`;
@@ -159,18 +160,18 @@ phased roadmap and feature mapping live in [README.md](README.md).
   `FilterMap`/`ActionMap` give each hook a typed payload; no `any`.
 - `HookRegistry` (provided + exported by `PluginsModule`) implements the **`PluginApi`** — the
   only surface a plugin gets (`addFilter`/`addAction`). Plugins never receive Prisma, the Nest
-  container, or request objects. A plugin is a `TypressPlugin` (`{ name, register(api) }`); the
+  container, or request objects. A plugin is a `CmstackTsPlugin` (`{ name, register(api) }`); the
   enabled set is an explicit in-repo list (`enabled-plugins.ts`) registered once in
   `onModuleInit`.
 - **`emit` is fault-isolated**: a throwing action listener is logged and swallowed so it can
-  neither fail an already-committed write nor stop other listeners. Filters are *not* swallowed
+  neither fail an already-committed write nor stop other listeners. Filters are _not_ swallowed
   (a bad transform should surface).
 - Wired in `PostsService`: `findPublicBySlug` returns `applyFilters('public.post.render', …)`
   so plugins can transform public post output; `create`/`update` `emit('post.published', …)`
   on each transition into PUBLISHED. Sample plugin `samples/reading-time.plugin.ts` injects a
   reading-time badge (a fixed-shape, integer-only HTML snippet — safe to render next to the
   write-time-sanitized content) and logs on publish.
-- Add a plugin: implement `TypressPlugin`, add it to `enabled-plugins.ts`. New extension points
+- Add a plugin: implement `CmstackTsPlugin`, add it to `enabled-plugins.ts`. New extension points
   = add a hook to `FilterMap`/`ActionMap` and call `applyFilters`/`emit` at the right spot.
 
 ## SEO / GEO (Phase 7)
@@ -208,8 +209,8 @@ phased roadmap and feature mapping live in [README.md](README.md).
     rate-limiter sees the real client IP; comment content is plain text rendered as escaped React text
     (no `dangerouslySetInnerHTML`). Admin moderation at `/admin/comments` (gated `canModerateComments`).
 - **Search**: Postgres full-text (`SearchService`, `$queryRaw` with `to_tsvector` + `websearch_to_tsquery`
-  + `ts_rank`; the user query is always a **bound parameter**). Public `GET /public/search` + a `/search`
-  page. Postgres-specific by design ("Postgres full-text first").
+  - `ts_rank`; the user query is always a **bound parameter**). Public `GET /public/search` + a `/search`
+    page. Postgres-specific by design ("Postgres full-text first").
 - **Spam**: `RecaptchaService` is **optional** — when `RECAPTCHA_SECRET_KEY` is unset it skips
   verification (local/demo runs without Google keys); when set it requires a token meeting
   `RECAPTCHA_MIN_SCORE`. Rate limiting via `@nestjs/throttler` (`ThrottlerModule.forRoot`, applied per-route
@@ -244,7 +245,7 @@ phased roadmap and feature mapping live in [README.md](README.md).
 - **Config**: `loadConfig()` validates `MCP_API_URL`/`MCP_API_EMAIL`/`MCP_API_PASSWORD` (Zod) and
   throws an actionable error if unset. `ApiClient` (`src/api-client.ts`) takes an injectable
   `fetch` (so the login/retry/error-mapping logic is unit-tested without a network). Tool inputs
-  are validated by the **shared `@typress/config` schemas** (e.g. `createPostSchema`,
+  are validated by the **shared `@cmstack-ts/config` schemas** (e.g. `createPostSchema`,
   `postListQuerySchema`), composed with `.extend({ id })` where a route param is needed — never
   redefined. The bearer token lives only in `ApiClient` + the `authorization` header; it is
   **never logged or returned** (startup logs only `apiUrl`).
@@ -257,10 +258,10 @@ phased roadmap and feature mapping live in [README.md](README.md).
   **no user delete over MCP**). Results are JSON via a shared `tool-kit` (`respond`/`toolResult`,
   25k-char truncation guidance); API 4xx/403 surface as clear tool errors (`errors.ts` —
   403 explicitly names the CASL boundary). **No filesystem, shell, or plugin/theme code execution.**
-- **Build/run**: `pnpm --filter @typress/mcp build` → `node apps/mcp/dist/index.js` (stdio; logs to
+- **Build/run**: `pnpm --filter @cmstack-ts/mcp build` → `node apps/mcp/dist/index.js` (stdio; logs to
   stderr). Connecting from Claude (CLI `claude mcp add` / VS Code `mcp.json`) is documented in
   README. Add a tool: add a module fn or entry calling `client.request(method, path, { query, body,
-  schema })` and register it in `src/tools/index.ts`.
+schema })` and register it in `src/tools/index.ts`.
 
 ## Deployment (Phase 11)
 
@@ -271,7 +272,7 @@ phased roadmap and feature mapping live in [README.md](README.md).
   `/health/ready` (**use `127.0.0.1`, not `localhost` — the API listens on IPv4 `0.0.0.0` and Alpine
   `localhost` can resolve to IPv6 `::1`**); web waits for api `service_healthy`. The api image's CMD
   runs `prisma migrate deploy` then starts, so migrations apply on every deploy.
-- **nginx** (`nginx/typress.conf`): the public site is served from the domain and the **API from an
+- **nginx** (`nginx/cmstack-ts.conf`): the public site is served from the domain and the **API from an
   `api.` subdomain** (its root routes `/auth`,`/public`,`/posts`,`/uploads` would otherwise collide
   with Next's own `/api/auth/*`). Forwards `Host`/`X-Forwarded-For`/`X-Forwarded-Proto` (needed for the
   API's `trust proxy` + rate limiting), gzip, security headers, `client_max_body_size 12m` (keep above
@@ -359,20 +360,21 @@ phased roadmap and feature mapping live in [README.md](README.md).
 - Dev up (full stack in Docker): `docker compose up` → web :3000, api :4000, db :5432.
 - Dev servers (local, no Docker): `pnpm dev` (runs all apps + package watchers).
 - DB: generate client `pnpm db:generate`; apply migrations `pnpm db:migrate`
-  (dev migration: `pnpm --filter @typress/db migrate:dev`); seed demo `pnpm db:seed`.
+  (dev migration: `pnpm --filter @cmstack-ts/db migrate:dev`); seed demo `pnpm db:seed`.
 - Tests: `pnpm test` (single: `pnpm vitest run <path> -t "name"`). E2E: `pnpm e2e`.
 - Lint/format: `pnpm lint` (check) / `pnpm format` (write). Typecheck: `pnpm typecheck`.
 - Build: `pnpm build` (topological: packages → apps).
-- MCP server: build `pnpm --filter @typress/mcp build`, run `node apps/mcp/dist/index.js`
+- MCP server: build `pnpm --filter @cmstack-ts/mcp build`, run `node apps/mcp/dist/index.js`
   (needs `MCP_API_URL`/`MCP_API_EMAIL`/`MCP_API_PASSWORD`); connect from Claude via
   `claude mcp add` or a VS Code `mcp.json` (see README).
 - Prod (Docker + nginx): `docker compose -f docker-compose.prod.yml up -d --build`, then
-  `docker compose -f docker-compose.prod.yml exec api pnpm --filter @typress/db seed` (first boot).
+  `docker compose -f docker-compose.prod.yml exec api pnpm --filter @cmstack-ts/db seed` (first boot).
   Full guide: `docs/deployment/vps.md`.
 - i18n: locales/config in `apps/web/i18n/`, UI strings in `apps/web/messages/{en,de,ru}.json`
   (keep keys in parity). Public site only; admin stays English.
 
 Notes:
+
 - Biome needs `javascript.parser.unsafeParameterDecoratorsEnabled: true` for NestJS
   param decorators (`@Body`, `@Inject`, …), and `style/useImportType` is off because
   Nest DI needs runtime (value) imports for injected types — see biome.json.

@@ -1,5 +1,5 @@
 import { type MongoAbility, createMongoAbility } from '@casl/ability';
-import type { Permission } from '@typress/config';
+import type { Permission } from '@cmstack-ts/config';
 
 /**
  * The application's CASL ability: a set of (action, subject) rules. We use string

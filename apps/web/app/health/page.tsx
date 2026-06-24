@@ -1,4 +1,4 @@
-import { type HealthResponse, healthResponseSchema } from '@typress/config';
+import { type HealthResponse, healthResponseSchema } from '@cmstack-ts/config';
 
 export const dynamic = 'force-dynamic';
 

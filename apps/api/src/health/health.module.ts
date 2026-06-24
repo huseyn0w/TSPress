@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { prisma } from '@typress/db';
+import { prisma } from '@cmstack-ts/db';
 import { HealthController } from './health.controller';
 import { HealthService } from './health.service';
 import { DATABASE_PINGER } from './health.tokens';

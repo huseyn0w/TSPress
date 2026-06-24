@@ -1,4 +1,4 @@
-import type { CommentNode } from '@typress/config';
+import type { CommentNode } from '@cmstack-ts/config';
 
 export interface FlatComment {
   id: string;

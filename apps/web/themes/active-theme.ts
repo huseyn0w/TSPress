@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { apiBaseUrl } from '@/app/lib/api';
-import { themeSettingSchema } from '@typress/config';
+import { themeSettingSchema } from '@cmstack-ts/config';
 import { DEFAULT_THEME_ID, resolveTheme } from './registry';
 import type { Theme } from './types';
 

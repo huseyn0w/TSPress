@@ -8,7 +8,7 @@ on:
 
 env:
   # Dummy connection string; Phase 0 builds/tests never hit a live database.
-  DATABASE_URL: postgresql://typress:typress@localhost:5432/typress?schema=public
+  DATABASE_URL: postgresql://cmstack-ts:cmstack-ts@localhost:5432/cmstack-ts?schema=public
 
 jobs:
   verify:

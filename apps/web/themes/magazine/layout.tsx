@@ -36,7 +36,7 @@ export async function MagazineLayout({ children }: { children: ReactNode }) {
               fontWeight: 700,
             }}
           >
-            Typress
+            Cmstack-TS
           </Link>
           <p
             style={{
@@ -97,7 +97,7 @@ export async function MagazineLayout({ children }: { children: ReactNode }) {
           fontFamily: 'var(--font-sans)',
         }}
       >
-        © {new Date().getFullYear()} Typress · {tf('magazine')}
+        © {new Date().getFullYear()} Cmstack-TS · {tf('magazine')}
       </footer>
     </div>
   );

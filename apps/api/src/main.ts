@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { resolve } from 'node:path';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
-import { parseEnv } from '@typress/config';
+import { parseEnv } from '@cmstack-ts/config';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -25,7 +25,7 @@ async function bootstrap() {
   });
 
   await app.listen(env.API_PORT, '0.0.0.0');
-  console.log(`Typress API listening on http://localhost:${env.API_PORT}`);
+  console.log(`Cmstack-TS API listening on http://localhost:${env.API_PORT}`);
 }
 
 bootstrap();

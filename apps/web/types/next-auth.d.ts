@@ -1,4 +1,4 @@
-import type { PublicRole } from '@typress/config';
+import type { PublicRole } from '@cmstack-ts/config';
 
 declare module 'next-auth' {
   interface Session {

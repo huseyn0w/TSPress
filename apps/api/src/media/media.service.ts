@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import type { Media, MediaList, MediaListQuery, UpdateMediaInput } from '@typress/config';
-import type { PrismaClient } from '@typress/db';
+import type { Media, MediaList, MediaListQuery, UpdateMediaInput } from '@cmstack-ts/config';
+import type { PrismaClient } from '@cmstack-ts/db';
 import imageSize from 'image-size';
 import { PRISMA } from '../prisma/prisma.module';
 import { STORAGE, type StorageDriver } from './storage';

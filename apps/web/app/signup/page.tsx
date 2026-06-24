@@ -20,7 +20,7 @@ export default function SignUpPage() {
             color: 'var(--accent)',
           }}
         >
-          Typress
+          Cmstack-TS
         </p>
         <h1 style={{ fontSize: 28, margin: '0 0 2rem', lineHeight: 1.1 }}>Create account</h1>
         <SignUpForm />

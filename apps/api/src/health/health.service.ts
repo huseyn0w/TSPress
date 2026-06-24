@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import type { HealthResponse } from '@typress/config';
+import type { HealthResponse } from '@cmstack-ts/config';
 import { DATABASE_PINGER, type DatabasePinger } from './health.tokens';
 
 export interface ReadinessResponse {
@@ -15,7 +15,7 @@ export class HealthService {
   check(): HealthResponse {
     return {
       status: 'ok',
-      service: 'typress-api',
+      service: 'cmstack-ts-api',
       timestamp: new Date().toISOString(),
     };
   }

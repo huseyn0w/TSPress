@@ -1,5 +1,5 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { themeSettingSchema, updateThemeSettingSchema } from '@typress/config';
+import { themeSettingSchema, updateThemeSettingSchema } from '@cmstack-ts/config';
 import { z } from 'zod';
 import type { ApiClient } from '../api-client.js';
 import { READ, UPDATE, respond } from '../tool-kit.js';
@@ -11,7 +11,7 @@ import { READ, UPDATE, respond } from '../tool-kit.js';
  */
 export function registerSettingsTools(server: McpServer, client: ApiClient): void {
   server.registerTool(
-    'typress_get_active_theme',
+    'cmstack_ts_get_active_theme',
     {
       title: 'Get the active theme',
       description:
@@ -23,7 +23,7 @@ export function registerSettingsTools(server: McpServer, client: ApiClient): voi
   );
 
   server.registerTool(
-    'typress_set_active_theme',
+    'cmstack_ts_set_active_theme',
     {
       title: 'Set the active theme',
       description:

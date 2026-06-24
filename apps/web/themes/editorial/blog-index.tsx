@@ -1,5 +1,5 @@
 import { Link } from '@/i18n/navigation';
-import type { PostSummary } from '@typress/config';
+import type { PostSummary } from '@cmstack-ts/config';
 import { getTranslations } from 'next-intl/server';
 
 export async function EditorialBlogIndex({ posts }: { posts: PostSummary[] }) {
@@ -16,7 +16,7 @@ export async function EditorialBlogIndex({ posts }: { posts: PostSummary[] }) {
           color: 'var(--accent)',
         }}
       >
-        Typress
+        Cmstack-TS
       </p>
       <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', margin: '0.75rem 0 2.5rem' }}>
         {t('title')}

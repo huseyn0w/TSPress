@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 /**
- * Configuration for the Typress MCP server. The server is a thin, authenticated
- * client of the Typress API: it logs in with a service account and every tool
+ * Configuration for the Cmstack-TS MCP server. The server is a thin, authenticated
+ * client of the Cmstack-TS API: it logs in with a service account and every tool
  * call rides that account's bearer token, so the API re-checks CASL on each
  * request. Tools are only as powerful as the account's role.
  */
@@ -39,7 +39,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): McpConfig {
       .map((issue) => `  - ${issue.path.join('.') || '(env)'}: ${issue.message}`)
       .join('\n');
     throw new Error(
-      `Invalid Typress MCP configuration. Set MCP_API_URL, MCP_API_EMAIL, and MCP_API_PASSWORD.\n${issues}`,
+      `Invalid Cmstack-TS MCP configuration. Set MCP_API_URL, MCP_API_EMAIL, and MCP_API_PASSWORD.\n${issues}`,
     );
   }
 

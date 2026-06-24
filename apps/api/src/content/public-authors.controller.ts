@@ -1,5 +1,5 @@
 import { Controller, Get, Param } from '@nestjs/common';
-import type { AuthorProfile } from '@typress/config';
+import type { AuthorProfile } from '@cmstack-ts/config';
 import { AuthorsService } from './authors.service';
 
 /** Public author profiles (identity + their published posts). */

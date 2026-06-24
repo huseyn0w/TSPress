@@ -1,14 +1,14 @@
 import { Badge } from '@/components/ui/badge';
 import { apiGet } from '@/lib/admin/api';
-import { postListSchema } from '@typress/config';
-import type { PostList } from '@typress/config';
+import { postListSchema } from '@cmstack-ts/config';
+import type { PostList } from '@cmstack-ts/config';
 import { Users } from 'lucide-react';
 import Link from 'next/link';
 import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
 
-// Overview shape — defined here until promoted to @typress/config
+// Overview shape — defined here until promoted to @cmstack-ts/config
 const overviewSchema = z.object({
   users: z.number().int(),
   roles: z.number().int(),

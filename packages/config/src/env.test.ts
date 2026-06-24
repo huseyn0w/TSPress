@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { parseEnv } from './env';
 
 const valid = {
-  DATABASE_URL: 'postgresql://typress:typress@localhost:5432/typress?schema=public',
+  DATABASE_URL: 'postgresql://cmstack-ts:cmstack-ts@localhost:5432/cmstack-ts?schema=public',
   AUTH_SECRET: 'test-auth-secret-value',
   INTERNAL_API_SECRET: 'test-internal-secret-value',
 };

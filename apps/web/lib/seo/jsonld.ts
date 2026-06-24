@@ -1,4 +1,4 @@
-import type { Faq, Service, SiteProfile } from '@typress/config';
+import type { Faq, Service, SiteProfile } from '@cmstack-ts/config';
 
 /**
  * Pure JSON-LD builders (schema.org). They return plain serializable objects so

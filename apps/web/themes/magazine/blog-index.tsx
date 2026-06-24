@@ -1,5 +1,5 @@
 import { Link } from '@/i18n/navigation';
-import type { PostSummary } from '@typress/config';
+import type { PostSummary } from '@cmstack-ts/config';
 import { getTranslations } from 'next-intl/server';
 
 export async function MagazineBlogIndex({ posts }: { posts: PostSummary[] }) {

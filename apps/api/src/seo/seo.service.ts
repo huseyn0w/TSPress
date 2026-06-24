@@ -9,14 +9,14 @@ import type {
   UpdateFaqInput,
   UpdateServiceInput,
   UpdateSiteProfileInput,
-} from '@typress/config';
-import type { PrismaClient } from '@typress/db';
+} from '@cmstack-ts/config';
+import type { PrismaClient } from '@cmstack-ts/db';
 import { PRISMA } from '../prisma/prisma.module';
 
 const PROFILE_ID = 'default';
 
 const DEFAULT_PROFILE: SiteProfile = {
-  organizationName: 'Typress',
+  organizationName: 'Cmstack-TS',
   tagline: '',
   description: '',
   url: '',

@@ -5,7 +5,7 @@ import { ApiError } from './errors';
 
 const config = {
   apiUrl: 'http://api.test',
-  email: 'admin@typress.local',
+  email: 'admin@cmstack-ts.local',
   password: 'secret',
 };
 

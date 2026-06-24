@@ -17,14 +17,14 @@
   },
   "home": {
     "editorial": {
-      "title": "A WordPress-style CMS, built entirely in TypeScript.",
+      "title": "A  CMS, built entirely in TypeScript.",
       "subtitle": "Light, fast, SEO-first, and easy to read, understand, and extend.",
       "readBlog": "Read the blog →",
       "systemStatus": "System status"
     },
     "magazine": {
       "kicker": "Vol. 1 · The Front Page",
-      "title": "A WordPress-style CMS, set entirely in TypeScript.",
+      "title": "A  CMS, set entirely in TypeScript.",
       "subtitle": "Light, fast, SEO-first, and a pleasure to read, understand, and extend.",
       "readLatest": "Read the latest"
     }
@@ -34,7 +34,7 @@
     "empty": "No published posts yet.",
     "allPosts": "← All posts",
     "magazineTitle": "Latest Stories",
-    "magazineSubtitle": "Reporting from the Typress newsroom",
+    "magazineSubtitle": "Reporting from the Cmstack-TS newsroom",
     "magazineEmpty": "No published stories yet.",
     "allStories": "← All stories"
   },

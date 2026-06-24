@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const title = profile.tagline
     ? `${profile.organizationName} — ${profile.tagline}`
     : profile.organizationName;
-  const description = profile.description || 'A WordPress-style CMS built entirely in TypeScript.';
+  const description = profile.description || 'A  CMS built entirely in TypeScript.';
 
   return {
     metadataBase: new URL(siteUrl),

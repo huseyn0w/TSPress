@@ -1,7 +1,7 @@
 'use server';
 
 import { apiSend, apiUpload } from '@/lib/admin/api';
-import type { UpdateMediaInput } from '@typress/config';
+import type { UpdateMediaInput } from '@cmstack-ts/config';
 import { revalidatePath } from 'next/cache';
 
 type ActionResult<T = undefined> = T extends undefined

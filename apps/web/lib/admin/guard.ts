@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { auth } from '@/auth';
-import type { Permission } from '@typress/config';
+import type { Permission } from '@cmstack-ts/config';
 import type { Session } from 'next-auth';
 import { redirect } from 'next/navigation';
 

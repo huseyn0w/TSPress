@@ -2,7 +2,7 @@
 
 import { apiBaseUrl } from '@/app/lib/api';
 import { auth } from '@/auth';
-import { updateAccountSchema } from '@typress/config';
+import { updateAccountSchema } from '@cmstack-ts/config';
 import { revalidatePath } from 'next/cache';
 
 type ActionResult = { ok: true } | { ok: false; error: string };

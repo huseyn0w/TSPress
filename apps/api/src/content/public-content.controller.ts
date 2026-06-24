@@ -5,7 +5,7 @@ import {
   type PostList,
   type PostListQuery,
   postListQuerySchema,
-} from '@typress/config';
+} from '@cmstack-ts/config';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { PagesService } from './pages.service';
 import { PostsService } from './posts.service';

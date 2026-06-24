@@ -25,7 +25,7 @@ import {
   mediaListQuerySchema,
   parseEnv,
   updateMediaSchema,
-} from '@typress/config';
+} from '@cmstack-ts/config';
 import type { AuthenticatedUser } from '../auth/authenticated-user';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';

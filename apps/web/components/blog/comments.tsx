@@ -1,7 +1,7 @@
 'use client';
 
 import { getRecaptchaToken } from '@/lib/recaptcha';
-import type { CommentNode, CommentThread } from '@typress/config';
+import type { CommentNode, CommentThread } from '@cmstack-ts/config';
 import { type FormEvent, useState } from 'react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';

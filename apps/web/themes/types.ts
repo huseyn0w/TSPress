@@ -1,4 +1,4 @@
-import type { PostDetail, PostSummary } from '@typress/config';
+import type { PostDetail, PostSummary } from '@cmstack-ts/config';
 import type { ReactNode } from 'react';
 
 /** A theme surface; may be an async Server Component (e.g. to read translations). */

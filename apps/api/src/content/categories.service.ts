@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import type { CreateCategoryInput, UpdateCategoryInput } from '@typress/config';
-import { Prisma, type PrismaClient } from '@typress/db';
+import type { CreateCategoryInput, UpdateCategoryInput } from '@cmstack-ts/config';
+import { Prisma, type PrismaClient } from '@cmstack-ts/db';
 import { PRISMA } from '../prisma/prisma.module';
 import { slugify } from './slug';
 

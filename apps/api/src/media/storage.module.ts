@@ -1,5 +1,5 @@
 import { Global, Module } from '@nestjs/common';
-import { parseEnv } from '@typress/config';
+import { parseEnv } from '@cmstack-ts/config';
 import { LocalStorageService } from './local-storage.service';
 import { STORAGE } from './storage';
 

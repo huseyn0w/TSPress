@@ -1,6 +1,6 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import type { AuthorProfile } from '@typress/config';
-import type { PrismaClient } from '@typress/db';
+import type { AuthorProfile } from '@cmstack-ts/config';
+import type { PrismaClient } from '@cmstack-ts/db';
 import { PRISMA } from '../prisma/prisma.module';
 import { PostsService } from './posts.service';
 

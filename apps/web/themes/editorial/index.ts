@@ -8,7 +8,7 @@ export const editorialTheme: Theme = {
   meta: {
     id: 'editorial',
     label: 'Editorial',
-    description: 'Dark, restrained, typography-led. The default Typress look.',
+    description: 'Dark, restrained, typography-led. The default Cmstack-TS look.',
   },
   Layout: EditorialLayout,
   Home: EditorialHome,

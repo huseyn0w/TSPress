@@ -1,4 +1,4 @@
-import type { Permission, PublicUser } from '@typress/config';
+import type { Permission, PublicUser } from '@cmstack-ts/config';
 
 /**
  * The shape attached to `request.user` by JwtAuthGuard. `permissions` is the

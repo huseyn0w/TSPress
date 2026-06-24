@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import type { SiteProfile } from '@typress/config';
+import type { SiteProfile } from '@cmstack-ts/config';
 import { Loader2 } from 'lucide-react';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';

@@ -1,4 +1,4 @@
-import type { Permission } from '@typress/config';
+import type { Permission } from '@cmstack-ts/config';
 import { describe, expect, it } from 'vitest';
 import { buildAbility } from './ability';
 

@@ -6,8 +6,8 @@ import type {
   CommentThread,
   CreateCommentInput,
   ModerateCommentInput,
-} from '@typress/config';
-import { Prisma, type PrismaClient } from '@typress/db';
+} from '@cmstack-ts/config';
+import { Prisma, type PrismaClient } from '@cmstack-ts/db';
 import { PRISMA } from '../prisma/prisma.module';
 import { RecaptchaService } from '../spam/recaptcha.service';
 import { buildCommentThread } from './thread';

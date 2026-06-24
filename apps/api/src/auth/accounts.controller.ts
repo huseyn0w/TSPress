@@ -11,7 +11,7 @@ import {
   oauthSchema,
   registerSchema,
   updateAccountSchema,
-} from '@typress/config';
+} from '@cmstack-ts/config';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { AccountsService } from './accounts.service';
 import type { AuthenticatedUser } from './authenticated-user';

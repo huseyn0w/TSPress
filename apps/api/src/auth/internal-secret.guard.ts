@@ -5,7 +5,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { parseEnv } from '@typress/config';
+import { parseEnv } from '@cmstack-ts/config';
 import type { Request } from 'express';
 
 /**

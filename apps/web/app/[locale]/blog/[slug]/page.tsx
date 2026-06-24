@@ -7,7 +7,7 @@ import { JsonLd } from '@/lib/seo/json-ld';
 import { blogPostingJsonLd } from '@/lib/seo/jsonld';
 import { siteUrl } from '@/lib/seo/site';
 import { getActiveTheme } from '@/themes/active-theme';
-import { type CommentThread, commentThreadSchema, postDetailSchema } from '@typress/config';
+import { type CommentThread, commentThreadSchema, postDetailSchema } from '@cmstack-ts/config';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getLikeState } from './like-actions';

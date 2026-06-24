@@ -4,7 +4,7 @@
  * permission boundary it cannot work around).
  */
 
-/** Raised when the Typress API returns a non-2xx response. */
+/** Raised when the Cmstack-TS API returns a non-2xx response. */
 export class ApiError extends Error {
   constructor(
     readonly status: number,

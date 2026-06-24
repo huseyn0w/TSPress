@@ -8,8 +8,8 @@ export default defineConfig({
     // Resolve workspace packages to their TypeScript source so unit tests run
     // without a prior build step. Production builds still consume `dist`.
     alias: {
-      '@typress/config': fromRoot('./packages/config/src/index.ts'),
-      '@typress/db': fromRoot('./packages/db/src/index.ts'),
+      '@cmstack-ts/config': fromRoot('./packages/config/src/index.ts'),
+      '@cmstack-ts/db': fromRoot('./packages/db/src/index.ts'),
     },
   },
   test: {

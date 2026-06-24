@@ -17,7 +17,7 @@ import {
   type UserListQuery,
   updateUserSchema,
   userListQuerySchema,
-} from '@typress/config';
+} from '@cmstack-ts/config';
 import { CheckPolicies } from '../authz/check-policies.decorator';
 import { PoliciesGuard } from '../authz/policies.guard';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';

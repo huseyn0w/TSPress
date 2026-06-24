@@ -1,6 +1,6 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import type { LikeState } from '@typress/config';
-import { Prisma, type PrismaClient } from '@typress/db';
+import type { LikeState } from '@cmstack-ts/config';
+import { Prisma, type PrismaClient } from '@cmstack-ts/db';
 import { PRISMA } from '../prisma/prisma.module';
 
 @Injectable()

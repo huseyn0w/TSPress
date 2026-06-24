@@ -1,7 +1,7 @@
 'use server';
 
 import { apiSend } from '@/lib/admin/api';
-import type { CreatePageInput, UpdatePageInput } from '@typress/config';
+import type { CreatePageInput, UpdatePageInput } from '@cmstack-ts/config';
 import { revalidatePath } from 'next/cache';
 
 type ActionResult<T = undefined> = T extends undefined

@@ -17,14 +17,14 @@
   },
   "home": {
     "editorial": {
-      "title": "CMS в стиле WordPress, полностью на TypeScript.",
+      "title": "Современная CMS, полностью на TypeScript.",
       "subtitle": "Лёгкая, быстрая, ориентированная на SEO и понятная для чтения и расширения.",
       "readBlog": "Открыть блог →",
       "systemStatus": "Статус системы"
     },
     "magazine": {
       "kicker": "Выпуск 1 · Главная полоса",
-      "title": "CMS в стиле WordPress, целиком на TypeScript.",
+      "title": "Современная CMS, целиком на TypeScript.",
       "subtitle": "Лёгкая, быстрая, ориентированная на SEO и приятная для чтения и расширения.",
       "readLatest": "Читать свежее"
     }
@@ -34,7 +34,7 @@
     "empty": "Пока нет опубликованных записей.",
     "allPosts": "← Все записи",
     "magazineTitle": "Свежие материалы",
-    "magazineSubtitle": "Репортажи из редакции Typress",
+    "magazineSubtitle": "Репортажи из редакции Cmstack-TS",
     "magazineEmpty": "Пока нет опубликованных материалов.",
     "allStories": "← Все материалы"
   },

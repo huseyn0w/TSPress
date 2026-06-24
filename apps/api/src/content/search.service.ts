@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import type { SearchQuery, SearchResponse, SearchResult } from '@typress/config';
-import { Prisma, type PrismaClient } from '@typress/db';
+import type { SearchQuery, SearchResponse, SearchResult } from '@cmstack-ts/config';
+import { Prisma, type PrismaClient } from '@cmstack-ts/db';
 import { PRISMA } from '../prisma/prisma.module';
 
 interface SearchRow {

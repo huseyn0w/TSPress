@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 /**
- * The single source of truth for Typress runtime configuration. Every variable
+ * The single source of truth for Cmstack-TS runtime configuration. Every variable
  * is validated here so a misconfigured deploy fails fast at boot with a clear
  * message instead of surfacing as a confusing runtime error later.
  */
