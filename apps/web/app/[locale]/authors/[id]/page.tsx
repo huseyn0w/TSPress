@@ -9,11 +9,12 @@ import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
-async function getAuthor(id: string) {
+async function getAuthor(id: string, locale: string) {
   try {
-    const res = await fetch(`${apiBaseUrl}/public/authors/${encodeURIComponent(id)}`, {
-      cache: 'no-store',
-    });
+    const res = await fetch(
+      `${apiBaseUrl}/public/authors/${encodeURIComponent(id)}?locale=${encodeURIComponent(locale)}`,
+      { cache: 'no-store' },
+    );
     if (!res.ok) return null;
     const parsed = authorProfileSchema.safeParse(await res.json());
     return parsed.success ? parsed.data : null;
@@ -34,7 +35,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string; id: string }>;
 }): Promise<Metadata> {
   const { locale, id } = await params;
-  const author = await getAuthor(id);
+  const author = await getAuthor(id, locale);
   if (!author) return {};
   const name = author.name ?? 'Author';
   return {
@@ -49,9 +50,9 @@ export default async function AuthorPage({
 }: {
   params: Promise<{ locale: string; id: string }>;
 }) {
-  const { id } = await params;
+  const { locale, id } = await params;
   const [author, { Layout }, t] = await Promise.all([
-    getAuthor(id),
+    getAuthor(id, locale),
     getActiveTheme(),
     getTranslations('author'),
   ]);

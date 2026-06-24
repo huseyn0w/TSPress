@@ -20,9 +20,12 @@ export async function generateMetadata({
 
 const EMPTY = { items: [], total: 0, page: 1, perPage: 20 };
 
-async function getPosts() {
+async function getPosts(locale: string) {
   try {
-    const res = await fetch(`${apiBaseUrl}/public/posts?perPage=20`, { cache: 'no-store' });
+    const res = await fetch(
+      `${apiBaseUrl}/public/posts?perPage=20&locale=${encodeURIComponent(locale)}`,
+      { cache: 'no-store' },
+    );
     if (!res.ok) return EMPTY;
     const parsed = postListSchema.safeParse(await res.json());
     return parsed.success ? parsed.data : EMPTY;
@@ -32,8 +35,12 @@ async function getPosts() {
   }
 }
 
-export default async function BlogIndexPage() {
-  const [{ items }, { Layout, BlogIndex }] = await Promise.all([getPosts(), getActiveTheme()]);
+export default async function BlogIndexPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const [{ items }, { Layout, BlogIndex }] = await Promise.all([
+    getPosts(locale),
+    getActiveTheme(),
+  ]);
 
   return (
     <Layout>

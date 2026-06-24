@@ -16,11 +16,12 @@ export const dynamic = 'force-dynamic';
 
 const EMPTY_THREAD: CommentThread = { items: [], total: 0 };
 
-async function getPost(slug: string) {
+async function getPost(slug: string, locale: string) {
   try {
-    const res = await fetch(`${apiBaseUrl}/public/posts/${encodeURIComponent(slug)}`, {
-      cache: 'no-store',
-    });
+    const res = await fetch(
+      `${apiBaseUrl}/public/posts/${encodeURIComponent(slug)}?locale=${encodeURIComponent(locale)}`,
+      { cache: 'no-store' },
+    );
     if (!res.ok) return null;
     const parsed = postDetailSchema.safeParse(await res.json());
     return parsed.success ? parsed.data : null;
@@ -48,7 +49,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
   const { locale, slug } = await params;
-  const post = await getPost(slug);
+  const post = await getPost(slug, locale);
   if (!post) return {};
 
   return {
@@ -65,10 +66,14 @@ export async function generateMetadata({
   };
 }
 
-export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
+export default async function BlogPostPage({
+  params,
+}: {
+  params: Promise<{ locale: string; slug: string }>;
+}) {
+  const { locale, slug } = await params;
   const [post, { Layout, BlogPost }, { profile }, thread, like] = await Promise.all([
-    getPost(slug),
+    getPost(slug, locale),
     getActiveTheme(),
     getSeoContent(),
     getComments(slug),
