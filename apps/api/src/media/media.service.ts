@@ -1,9 +1,8 @@
 import { randomBytes } from 'node:crypto';
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import type { Media, MediaList, MediaListQuery, UpdateMediaInput } from '@cmstack-ts/config';
-import type { PrismaClient } from '@cmstack-ts/db';
+import { MEDIA_REPOSITORY, type MediaRepository, type MediaUpdateData } from '@cmstack-ts/db';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import imageSize from 'image-size';
-import { PRISMA } from '../prisma/prisma.module';
 import { STORAGE, type StorageDriver } from './storage';
 
 const EXT_FROM_MIME: Record<string, string> = {
@@ -50,7 +49,7 @@ export interface UploadFile {
 @Injectable()
 export class MediaService {
   constructor(
-    @Inject(PRISMA) private readonly prisma: PrismaClient,
+    @Inject(MEDIA_REPOSITORY) private readonly media: MediaRepository,
     @Inject(STORAGE) private readonly storage: StorageDriver,
   ) {}
 
@@ -62,17 +61,15 @@ export class MediaService {
     await this.storage.save(key, file.buffer);
 
     try {
-      const media = await this.prisma.media.create({
-        data: {
-          filename: key,
-          originalName: file.originalname,
-          mimeType: file.mimetype,
-          size: file.size,
-          width: dimensions?.width ?? null,
-          height: dimensions?.height ?? null,
-          url: `/uploads/${key}`,
-          uploaderId,
-        },
+      const media = await this.media.create({
+        filename: key,
+        originalName: file.originalname,
+        mimeType: file.mimetype,
+        size: file.size,
+        width: dimensions?.width ?? null,
+        height: dimensions?.height ?? null,
+        url: `/uploads/${key}`,
+        uploaderId,
       });
       return this.toView(media);
     } catch (error) {
@@ -83,14 +80,10 @@ export class MediaService {
   }
 
   async list(query: MediaListQuery): Promise<MediaList> {
-    const [items, total] = await this.prisma.$transaction([
-      this.prisma.media.findMany({
-        orderBy: { createdAt: 'desc' },
-        skip: (query.page - 1) * query.perPage,
-        take: query.perPage,
-      }),
-      this.prisma.media.count(),
-    ]);
+    const { items, total } = await this.media.listAndCount({
+      page: query.page,
+      perPage: query.perPage,
+    });
     return {
       items: items.map((m) => this.toView(m)),
       total,
@@ -100,34 +93,31 @@ export class MediaService {
   }
 
   async findById(id: string): Promise<Media> {
-    const media = await this.prisma.media.findUnique({ where: { id } });
+    const media = await this.media.findById(id);
     if (!media) throw new NotFoundException('Media not found.');
     return this.toView(media);
   }
 
   async update(id: string, input: UpdateMediaInput): Promise<Media> {
     await this.ensureExists(id);
-    const media = await this.prisma.media.update({
-      where: { id },
-      data: {
-        ...(input.alt !== undefined ? { alt: input.alt } : {}),
-        ...(input.title !== undefined ? { title: input.title } : {}),
-        ...(input.caption !== undefined ? { caption: input.caption } : {}),
-      },
-    });
+    const data: MediaUpdateData = {
+      ...(input.alt !== undefined ? { alt: input.alt } : {}),
+      ...(input.title !== undefined ? { title: input.title } : {}),
+      ...(input.caption !== undefined ? { caption: input.caption } : {}),
+    };
+    const media = await this.media.update(id, data);
     return this.toView(media);
   }
 
   async remove(id: string): Promise<void> {
-    const media = await this.prisma.media.findUnique({ where: { id }, select: { filename: true } });
+    const media = await this.media.findFilename(id);
     if (!media) throw new NotFoundException('Media not found.');
     await this.storage.delete(media.filename);
-    await this.prisma.media.delete({ where: { id } });
+    await this.media.hardDelete(id);
   }
 
   private async ensureExists(id: string): Promise<void> {
-    const media = await this.prisma.media.findUnique({ where: { id }, select: { id: true } });
-    if (!media) throw new NotFoundException('Media not found.');
+    if (!(await this.media.exists(id))) throw new NotFoundException('Media not found.');
   }
 
   /**

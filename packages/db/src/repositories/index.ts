@@ -9,3 +9,4 @@ export * from './service.repository';
 export * from './faq.repository';
 export * from './tag.repository';
 export * from './category.repository';
+export * from './media.repository';

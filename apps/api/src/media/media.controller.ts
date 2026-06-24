@@ -1,4 +1,14 @@
 import {
+  ALLOWED_MEDIA_MIME_TYPES,
+  type Media,
+  type MediaList,
+  type MediaListQuery,
+  type UpdateMediaInput,
+  mediaListQuerySchema,
+  parseEnv,
+  updateMediaSchema,
+} from '@cmstack-ts/config';
+import {
   Body,
   Controller,
   Delete,
@@ -16,16 +26,6 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import {
-  ALLOWED_MEDIA_MIME_TYPES,
-  type Media,
-  type MediaList,
-  type MediaListQuery,
-  type UpdateMediaInput,
-  mediaListQuerySchema,
-  parseEnv,
-  updateMediaSchema,
-} from '@cmstack-ts/config';
 import type { AuthenticatedUser } from '../auth/authenticated-user';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
