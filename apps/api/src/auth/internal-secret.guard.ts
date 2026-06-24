@@ -1,11 +1,11 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
+import { parseEnv } from '@cmstack-ts/config';
 import {
   type CanActivate,
   type ExecutionContext,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { parseEnv } from '@cmstack-ts/config';
 import type { Request } from 'express';
 
 /**

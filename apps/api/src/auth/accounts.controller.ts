@@ -1,5 +1,3 @@
-import { Body, Controller, Get, HttpCode, Patch, Post, UseGuards } from '@nestjs/common';
-import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import {
   type AuthResult,
   type LoginInput,
@@ -12,6 +10,8 @@ import {
   registerSchema,
   updateAccountSchema,
 } from '@cmstack-ts/config';
+import { Body, Controller, Get, HttpCode, Patch, Post, UseGuards } from '@nestjs/common';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { AccountsService } from './accounts.service';
 import type { AuthenticatedUser } from './authenticated-user';

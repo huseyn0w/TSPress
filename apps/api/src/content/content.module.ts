@@ -10,9 +10,11 @@ import {
   PrismaRevisionRepository,
   PrismaSearchRepository,
   PrismaTagRepository,
+  PrismaUserRepository,
   REVISION_REPOSITORY,
   SEARCH_REPOSITORY,
   TAG_REPOSITORY,
+  USER_REPOSITORY,
 } from '@cmstack-ts/db';
 import { Module } from '@nestjs/common';
 import { AccountsModule } from '../auth/accounts.module';
@@ -67,6 +69,7 @@ import { TagsService } from './tags.service';
     provideRepository(REVISION_REPOSITORY, PrismaRevisionRepository),
     provideRepository(POST_LIKE_REPOSITORY, PrismaPostLikeRepository),
     provideRepository(SEARCH_REPOSITORY, PrismaSearchRepository),
+    provideRepository(USER_REPOSITORY, PrismaUserRepository),
   ],
 })
 export class ContentModule {}

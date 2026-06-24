@@ -1,5 +1,3 @@
-import { ConflictException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import type {
   AuthResult,
   CaslAction,
@@ -10,16 +8,20 @@ import type {
   RegisterInput,
   UpdateAccountInput,
 } from '@cmstack-ts/config';
-import { Prisma, type PrismaClient } from '@cmstack-ts/db';
-import { PRISMA } from '../prisma/prisma.module';
+import {
+  ACCOUNT_REPOSITORY,
+  type AccountRepository,
+  ROLE_REPOSITORY,
+  type RoleRepository,
+  USER_REPOSITORY,
+  type UserPublicFields,
+  type UserRepository,
+  type UserWithRole,
+} from '@cmstack-ts/db';
+import { ConflictException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import type { AuthenticatedUser } from './authenticated-user';
 import { PasswordService } from './password.service';
-
-const userInclude = {
-  role: { include: { permissions: true } },
-} satisfies Prisma.UserInclude;
-
-type UserWithRole = Prisma.UserGetPayload<{ include: typeof userInclude }>;
 
 /** Default role assigned to self-registered and first-time OAuth users. */
 const DEFAULT_ROLE = 'Member';
@@ -34,7 +36,9 @@ export class AccountsService {
   private readonly decoyHash: Promise<string>;
 
   constructor(
-    @Inject(PRISMA) private readonly prisma: PrismaClient,
+    @Inject(USER_REPOSITORY) private readonly users: UserRepository,
+    @Inject(ACCOUNT_REPOSITORY) private readonly accounts: AccountRepository,
+    @Inject(ROLE_REPOSITORY) private readonly roles: RoleRepository,
     private readonly passwords: PasswordService,
     private readonly jwt: JwtService,
   ) {
@@ -42,32 +46,26 @@ export class AccountsService {
   }
 
   async register(input: RegisterInput): Promise<AuthResult> {
-    const existing = await this.prisma.user.findUnique({ where: { email: input.email } });
+    const existing = await this.users.findIdByEmail(input.email);
     if (existing) {
       throw new ConflictException('An account with this email already exists.');
     }
 
     const passwordHash = await this.passwords.hash(input.password);
-    const role = await this.prisma.role.findUnique({ where: { name: DEFAULT_ROLE } });
+    const role = await this.roles.findIdByName(DEFAULT_ROLE);
 
-    const user = await this.prisma.user.create({
-      data: {
-        email: input.email,
-        name: input.name ?? null,
-        passwordHash,
-        roleId: role?.id ?? null,
-      },
-      include: userInclude,
+    const user = await this.users.createWithRole({
+      email: input.email,
+      name: input.name ?? null,
+      passwordHash,
+      roleId: role?.id ?? null,
     });
 
     return this.buildAuthResult(user);
   }
 
   async login(input: LoginInput): Promise<AuthResult> {
-    const user = await this.prisma.user.findUnique({
-      where: { email: input.email },
-      include: userInclude,
-    });
+    const user = await this.users.findByEmailWithRole(input.email);
 
     // Always run a verification (against a decoy hash when the user or password
     // is absent) so response timing does not reveal which emails are registered.
@@ -81,54 +79,35 @@ export class AccountsService {
   }
 
   async oauth(input: OAuthInput): Promise<AuthResult> {
-    const linked = await this.prisma.account.findUnique({
-      where: {
-        provider_providerAccountId: {
-          provider: input.provider,
-          providerAccountId: input.providerAccountId,
-        },
-      },
-      include: { user: { include: userInclude } },
-    });
+    const linked = await this.accounts.findByProvider(input.provider, input.providerAccountId);
     if (linked) {
       return this.buildAuthResult(linked.user);
     }
 
-    const existing = await this.prisma.user.findUnique({
-      where: { email: input.email },
-      include: userInclude,
-    });
+    const existing = await this.users.findByEmailWithRole(input.email);
     if (existing) {
-      await this.prisma.account.create({
-        data: {
-          userId: existing.id,
-          provider: input.provider,
-          providerAccountId: input.providerAccountId,
-        },
+      await this.accounts.linkToUser(existing.id, {
+        provider: input.provider,
+        providerAccountId: input.providerAccountId,
       });
       return this.buildAuthResult(existing);
     }
 
-    const role = await this.prisma.role.findUnique({ where: { name: DEFAULT_ROLE } });
-    const user = await this.prisma.user.create({
-      data: {
-        email: input.email,
-        name: input.name ?? null,
-        image: input.image ?? null,
-        emailVerified: new Date(),
-        roleId: role?.id ?? null,
-        accounts: {
-          create: { provider: input.provider, providerAccountId: input.providerAccountId },
-        },
-      },
-      include: userInclude,
+    const role = await this.roles.findIdByName(DEFAULT_ROLE);
+    const user = await this.users.createWithRoleAndAccount({
+      email: input.email,
+      name: input.name ?? null,
+      image: input.image ?? null,
+      roleId: role?.id ?? null,
+      provider: input.provider,
+      providerAccountId: input.providerAccountId,
     });
     return this.buildAuthResult(user);
   }
 
   /** Loads the user for an authenticated request, or null if they no longer exist. */
   async getAuthenticatedUserById(id: string): Promise<AuthenticatedUser | null> {
-    const user = await this.prisma.user.findUnique({ where: { id }, include: userInclude });
+    const user = await this.users.findByIdWithRole(id);
     if (!user) {
       return null;
     }
@@ -136,20 +115,13 @@ export class AccountsService {
   }
 
   /** Self-service profile update for the signed-in user (name / bio / avatar). */
-  async updateProfile(
-    userId: string,
-    input: UpdateAccountInput,
-  ): Promise<{ id: string; name: string | null; image: string | null; bio: string | null }> {
-    const data: Prisma.UserUpdateInput = {};
+  async updateProfile(userId: string, input: UpdateAccountInput): Promise<UserPublicFields> {
+    const data: { name?: string; bio?: string; image?: string | null } = {};
     if (input.name !== undefined) data.name = input.name;
     if (input.bio !== undefined) data.bio = input.bio;
     if (input.image !== undefined) data.image = input.image === '' ? null : input.image;
 
-    return this.prisma.user.update({
-      where: { id: userId },
-      data,
-      select: { id: true, name: true, image: true, bio: true },
-    });
+    return this.users.updateProfileFields(userId, data);
   }
 
   private async buildAuthResult(user: UserWithRole): Promise<AuthResult> {

@@ -1,4 +1,13 @@
 import {
+  type AdminUser,
+  type AdminUserList,
+  type RoleSummary,
+  type UpdateUserInput,
+  type UserListQuery,
+  updateUserSchema,
+  userListQuerySchema,
+} from '@cmstack-ts/config';
+import {
   Body,
   Controller,
   Delete,
@@ -9,15 +18,6 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import {
-  type AdminUser,
-  type AdminUserList,
-  type RoleSummary,
-  type UpdateUserInput,
-  type UserListQuery,
-  updateUserSchema,
-  userListQuerySchema,
-} from '@cmstack-ts/config';
 import { CheckPolicies } from '../authz/check-policies.decorator';
 import { PoliciesGuard } from '../authz/policies.guard';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';

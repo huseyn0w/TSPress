@@ -16,3 +16,6 @@ export * from './revision.repository';
 export * from './post-like.repository';
 export * from './comment.repository';
 export * from './search.repository';
+export * from './user.repository';
+export * from './account.repository';
+export * from './role.repository';

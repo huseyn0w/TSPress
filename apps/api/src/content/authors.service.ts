@@ -1,22 +1,18 @@
 import type { AuthorProfile } from '@cmstack-ts/config';
-import type { PrismaClient } from '@cmstack-ts/db';
+import { USER_REPOSITORY, type UserRepository } from '@cmstack-ts/db';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { PRISMA } from '../prisma/prisma.module';
 import { PostsService } from './posts.service';
 
 @Injectable()
 export class AuthorsService {
   constructor(
-    @Inject(PRISMA) private readonly prisma: PrismaClient,
+    @Inject(USER_REPOSITORY) private readonly users: UserRepository,
     private readonly posts: PostsService,
   ) {}
 
   /** Public author profile: identity + their published posts. */
   async getProfile(id: string): Promise<AuthorProfile> {
-    const user = await this.prisma.user.findUnique({
-      where: { id },
-      select: { id: true, name: true, image: true, bio: true },
-    });
+    const user = await this.users.findPublicProfile(id);
     if (!user) throw new NotFoundException('Author not found.');
 
     const posts = await this.posts.publicByAuthor(id);
