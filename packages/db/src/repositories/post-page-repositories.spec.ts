@@ -207,8 +207,9 @@ describe('PrismaPageRepository', () => {
       findMany: vi.fn(),
       update: vi.fn(),
     };
-    const prisma = { page } as unknown as PrismaClient;
-    return { repo: new PrismaPageRepository(prisma), page };
+    const pageTranslation = { upsert: vi.fn(), delete: vi.fn() };
+    const prisma = { page, pageTranslation } as unknown as PrismaClient;
+    return { repo: new PrismaPageRepository(prisma), page, pageTranslation };
   }
 
   it('list() orders by updatedAt desc and hides trashed by default', async () => {
@@ -229,6 +230,60 @@ describe('PrismaPageRepository', () => {
     expect(page.findFirst).toHaveBeenCalledWith({
       where: { id: 'p1', deletedAt: null },
       include: { author: true },
+    });
+  });
+
+  it('findPublicBySlug without a locale includes no translations (en path unchanged)', async () => {
+    const { repo, page } = pageRepo();
+    page.findFirst.mockResolvedValue(null);
+    await repo.findPublicBySlug('s');
+    expect(page.findFirst.mock.calls[0]?.[0]?.include).toEqual({ author: true });
+  });
+
+  it("findPublicBySlug with a locale joins that locale's translation", async () => {
+    const { repo, page } = pageRepo();
+    page.findFirst.mockResolvedValue(null);
+    await repo.findPublicBySlug('s', 'de');
+    expect(page.findFirst.mock.calls[0]?.[0]?.include.translations).toEqual({
+      where: { locale: 'de' },
+    });
+  });
+
+  it('findByIdWithTranslations includes ALL translations', async () => {
+    const { repo, page } = pageRepo();
+    page.findUnique.mockResolvedValue(null);
+    await repo.findByIdWithTranslations('p1');
+    expect(page.findUnique.mock.calls[0]?.[0]?.include.translations).toBe(true);
+  });
+
+  it('upsertTranslation writes the full locale row on the composite key (no excerpt)', async () => {
+    const { repo, pageTranslation } = pageRepo();
+    pageTranslation.upsert.mockResolvedValue({});
+    await repo.upsertTranslation('p1', 'ru', { title: 'T', content: 'c' });
+    const arg = pageTranslation.upsert.mock.calls[0]?.[0];
+    expect(arg.where).toEqual({ pageId_locale: { pageId: 'p1', locale: 'ru' } });
+    expect(arg.create).toEqual({
+      pageId: 'p1',
+      locale: 'ru',
+      title: 'T',
+      content: 'c',
+      metaTitle: null,
+      metaDescription: null,
+    });
+    expect(arg.update).toEqual({
+      title: 'T',
+      content: 'c',
+      metaTitle: null,
+      metaDescription: null,
+    });
+  });
+
+  it('deleteTranslation removes by the composite key', async () => {
+    const { repo, pageTranslation } = pageRepo();
+    pageTranslation.delete.mockResolvedValue({});
+    await repo.deleteTranslation('p1', 'de');
+    expect(pageTranslation.delete.mock.calls[0]?.[0]?.where).toEqual({
+      pageId_locale: { pageId: 'p1', locale: 'de' },
     });
   });
 });

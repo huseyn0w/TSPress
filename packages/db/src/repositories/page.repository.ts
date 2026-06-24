@@ -5,6 +5,23 @@ export const pageInclude = { author: true } satisfies Prisma.PageInclude;
 
 export type PageWithAuthor = Prisma.PageGetPayload<{ include: typeof pageInclude }>;
 
+/** See {@link import('./post.repository').localizedPostInclude}. */
+export function localizedPageInclude(locale?: string): Prisma.PageInclude {
+  return locale ? { ...pageInclude, translations: { where: { locale } } } : pageInclude;
+}
+
+export type PageTranslationRow = Prisma.PageTranslationGetPayload<Record<string, never>>;
+
+export type LocalizedPage = PageWithAuthor & { translations?: PageTranslationRow[] };
+
+/** The per-locale fields a page translation write defines (no excerpt). */
+export type PageTranslationData = {
+  title?: string;
+  content?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+};
+
 export type PageCreateData = {
   title: string;
   slug: string;
@@ -26,12 +43,18 @@ export interface PageRepository {
   findById(id: string): Promise<PageWithAuthor | null>;
   /** Non-trashed page by id (deletedAt: null) — the editable view. */
   findActiveById(id: string): Promise<PageWithAuthor | null>;
-  findPublicBySlug(slug: string): Promise<PageWithAuthor | null>;
+  /** A page with every translation row — the admin edit view. */
+  findByIdWithTranslations(id: string): Promise<LocalizedPage | null>;
+  /** Published, non-trashed page by slug; overlays `locale`'s translation when given. */
+  findPublicBySlug(slug: string, locale?: string): Promise<LocalizedPage | null>;
   list(opts: { includeTrashed?: boolean }): Promise<PageWithAuthor[]>;
   update(id: string, data: PageUpdateData): Promise<PageWithAuthor>;
   setDeletedAt(id: string, when: Date | null): Promise<void>;
   restore(id: string): Promise<PageWithAuthor>;
   findIdBySlug(slug: string): Promise<{ id: string } | null>;
+  /** Create or replace the page's translation for `locale` (full-row replace). */
+  upsertTranslation(pageId: string, locale: string, data: PageTranslationData): Promise<void>;
+  deleteTranslation(pageId: string, locale: string): Promise<void>;
   exists(id: string): Promise<boolean>;
   hardDelete(id: string): Promise<void>;
 }
@@ -55,10 +78,17 @@ export class PrismaPageRepository extends PrismaCrudRepository implements PageRe
     return this.prisma.page.findFirst({ where: { id, deletedAt: null }, include: pageInclude });
   }
 
-  findPublicBySlug(slug: string): Promise<PageWithAuthor | null> {
+  findByIdWithTranslations(id: string): Promise<LocalizedPage | null> {
+    return this.prisma.page.findUnique({
+      where: { id },
+      include: { ...pageInclude, translations: true },
+    });
+  }
+
+  findPublicBySlug(slug: string, locale?: string): Promise<LocalizedPage | null> {
     return this.prisma.page.findFirst({
       where: { slug, status: 'PUBLISHED', deletedAt: null },
-      include: pageInclude,
+      include: localizedPageInclude(locale),
     });
   }
 
@@ -93,5 +123,27 @@ export class PrismaPageRepository extends PrismaCrudRepository implements PageRe
 
   findIdBySlug(slug: string): Promise<{ id: string } | null> {
     return this.prisma.page.findUnique({ where: { slug }, select: { id: true } });
+  }
+
+  async upsertTranslation(
+    pageId: string,
+    locale: string,
+    data: PageTranslationData,
+  ): Promise<void> {
+    const fields = {
+      title: data.title ?? null,
+      content: data.content ?? null,
+      metaTitle: data.metaTitle ?? null,
+      metaDescription: data.metaDescription ?? null,
+    };
+    await this.prisma.pageTranslation.upsert({
+      where: { pageId_locale: { pageId, locale } },
+      create: { pageId, locale, ...fields },
+      update: fields,
+    });
+  }
+
+  async deleteTranslation(pageId: string, locale: string): Promise<void> {
+    await this.prisma.pageTranslation.delete({ where: { pageId_locale: { pageId, locale } } });
   }
 }
