@@ -60,7 +60,7 @@ export default async function SearchPage({
             name="q"
             defaultValue={query}
             placeholder={t('placeholder')}
-            aria-label={t('title')}
+            aria-label={t('inputLabel')}
             style={{
               flex: 1,
               padding: '0.7rem 0.9rem',

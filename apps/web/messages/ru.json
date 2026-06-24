@@ -50,6 +50,7 @@
   "search": {
     "title": "Поиск",
     "placeholder": "Искать статьи…",
+    "inputLabel": "Поисковый запрос",
     "submit": "Найти",
     "noResults": "Нет результатов по запросу «{query}».",
     "results": "{count, plural, one {# результат} few {# результата} many {# результатов} other {# результатов}} по запросу «{query}»"

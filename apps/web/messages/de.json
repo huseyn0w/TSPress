@@ -50,6 +50,7 @@
   "search": {
     "title": "Suche",
     "placeholder": "Artikel suchen…",
+    "inputLabel": "Suchanfrage",
     "submit": "Suchen",
     "noResults": "Keine Ergebnisse für „{query}“.",
     "results": "{count, plural, one {# Ergebnis} other {# Ergebnisse}} für „{query}“"
