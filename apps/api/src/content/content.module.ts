@@ -1,5 +1,12 @@
+import {
+  CATEGORY_REPOSITORY,
+  PrismaCategoryRepository,
+  PrismaTagRepository,
+  TAG_REPOSITORY,
+} from '@cmstack-ts/db';
 import { Module } from '@nestjs/common';
 import { AccountsModule } from '../auth/accounts.module';
+import { provideRepository } from '../persistence/repository.providers';
 import { PluginsModule } from '../plugins/plugins.module';
 import { AuthorsService } from './authors.service';
 import { CategoriesController } from './categories.controller';
@@ -43,6 +50,8 @@ import { TagsService } from './tags.service';
     SearchService,
     AuthorsService,
     LikesService,
+    provideRepository(TAG_REPOSITORY, PrismaTagRepository),
+    provideRepository(CATEGORY_REPOSITORY, PrismaCategoryRepository),
   ],
 })
 export class ContentModule {}

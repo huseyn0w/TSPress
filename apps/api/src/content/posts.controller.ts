@@ -1,4 +1,14 @@
 import {
+  type CreatePostInput,
+  type PostDetail,
+  type PostList,
+  type PostListQuery,
+  type UpdatePostInput,
+  createPostSchema,
+  postListQuerySchema,
+  updatePostSchema,
+} from '@cmstack-ts/config';
+import {
   Body,
   Controller,
   Delete,
@@ -10,16 +20,6 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import {
-  type CreatePostInput,
-  type PostDetail,
-  type PostList,
-  type PostListQuery,
-  type UpdatePostInput,
-  createPostSchema,
-  postListQuerySchema,
-  updatePostSchema,
-} from '@cmstack-ts/config';
 import type { AuthenticatedUser } from '../auth/authenticated-user';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';

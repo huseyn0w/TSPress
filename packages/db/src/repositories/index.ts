@@ -7,3 +7,5 @@ export * from './setting.repository';
 export * from './site-profile.repository';
 export * from './service.repository';
 export * from './faq.repository';
+export * from './tag.repository';
+export * from './category.repository';

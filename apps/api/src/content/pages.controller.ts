@@ -1,4 +1,11 @@
 import {
+  type CreatePageInput,
+  type PageDetail,
+  type UpdatePageInput,
+  createPageSchema,
+  updatePageSchema,
+} from '@cmstack-ts/config';
+import {
   Body,
   Controller,
   Delete,
@@ -10,13 +17,6 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import {
-  type CreatePageInput,
-  type PageDetail,
-  type UpdatePageInput,
-  createPageSchema,
-  updatePageSchema,
-} from '@cmstack-ts/config';
 import type { AuthenticatedUser } from '../auth/authenticated-user';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';

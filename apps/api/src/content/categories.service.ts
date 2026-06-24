@@ -1,7 +1,11 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import type { CreateCategoryInput, UpdateCategoryInput } from '@cmstack-ts/config';
-import { Prisma, type PrismaClient } from '@cmstack-ts/db';
-import { PRISMA } from '../prisma/prisma.module';
+import {
+  CATEGORY_REPOSITORY,
+  type CategoryRepository,
+  type CategoryUpdateData,
+  Prisma,
+} from '@cmstack-ts/db';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { slugify } from './slug';
 
 export interface CategoryView {
@@ -16,27 +20,21 @@ export interface CategoryView {
 
 @Injectable()
 export class CategoriesService {
-  constructor(@Inject(PRISMA) private readonly prisma: PrismaClient) {}
+  constructor(@Inject(CATEGORY_REPOSITORY) private readonly categories: CategoryRepository) {}
 
   async create(input: CreateCategoryInput): Promise<CategoryView> {
     const slug = await this.uniqueSlug(input.slug ?? slugify(input.name));
 
-    if (input.parentId != null) {
-      const parent = await this.prisma.category.findUnique({
-        where: { id: input.parentId },
-        select: { id: true },
-      });
-      if (!parent) throw new BadRequestException('Invalid parent category.');
+    if (input.parentId != null && !(await this.categories.exists(input.parentId))) {
+      throw new BadRequestException('Invalid parent category.');
     }
 
     try {
-      const category = await this.prisma.category.create({
-        data: {
-          name: input.name,
-          slug,
-          description: input.description ?? null,
-          parentId: input.parentId ?? null,
-        },
+      const category = await this.categories.create({
+        name: input.name,
+        slug,
+        description: input.description ?? null,
+        parentId: input.parentId ?? null,
       });
       return this.toView(category);
     } catch (error) {
@@ -45,28 +43,26 @@ export class CategoriesService {
   }
 
   async update(id: string, input: UpdateCategoryInput): Promise<CategoryView> {
-    const existing = await this.prisma.category.findUnique({ where: { id } });
+    const existing = await this.categories.findById(id);
     if (!existing) throw new NotFoundException('Category not found.');
 
     if (input.parentId != null) {
       if (input.parentId === id) {
         throw new BadRequestException('A category cannot be its own parent.');
       }
-      const parent = await this.prisma.category.findUnique({
-        where: { id: input.parentId },
-        select: { id: true },
-      });
-      if (!parent) throw new BadRequestException('Invalid parent category.');
+      if (!(await this.categories.exists(input.parentId))) {
+        throw new BadRequestException('Invalid parent category.');
+      }
     }
 
-    const data: Prisma.CategoryUncheckedUpdateInput = {};
+    const data: CategoryUpdateData = {};
     if (input.name !== undefined) data.name = input.name;
     if (input.slug !== undefined) data.slug = await this.uniqueSlug(input.slug, id);
     if (input.description !== undefined) data.description = input.description ?? null;
     if ('parentId' in input) data.parentId = input.parentId ?? null;
 
     try {
-      const category = await this.prisma.category.update({ where: { id }, data });
+      const category = await this.categories.update(id, data);
       return this.toView(category);
     } catch (error) {
       throw this.mapError(error);
@@ -74,30 +70,26 @@ export class CategoriesService {
   }
 
   async list(): Promise<CategoryView[]> {
-    const categories = await this.prisma.category.findMany({ orderBy: { name: 'asc' } });
+    const categories = await this.categories.list();
     return categories.map((c) => this.toView(c));
   }
 
   async findById(id: string): Promise<CategoryView> {
-    const category = await this.prisma.category.findUnique({ where: { id } });
+    const category = await this.categories.findById(id);
     if (!category) throw new NotFoundException('Category not found.');
     return this.toView(category);
   }
 
   async remove(id: string): Promise<void> {
-    const existing = await this.prisma.category.findUnique({ where: { id }, select: { id: true } });
-    if (!existing) throw new NotFoundException('Category not found.');
-    await this.prisma.category.delete({ where: { id } });
+    if (!(await this.categories.exists(id))) throw new NotFoundException('Category not found.');
+    await this.categories.hardDelete(id);
   }
 
   private async uniqueSlug(desired: string, excludeId?: string): Promise<string> {
     let candidate = desired;
     let suffix = 1;
     while (true) {
-      const existing = await this.prisma.category.findUnique({
-        where: { slug: candidate },
-        select: { id: true },
-      });
+      const existing = await this.categories.findIdBySlug(candidate);
       if (!existing || existing.id === excludeId) return candidate;
       suffix += 1;
       candidate = `${desired}-${suffix}`;

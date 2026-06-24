@@ -1,5 +1,5 @@
-import { Controller, Get, Query } from '@nestjs/common';
 import { type SearchQuery, type SearchResponse, searchQuerySchema } from '@cmstack-ts/config';
+import { Controller, Get, Query } from '@nestjs/common';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { SearchService } from './search.service';
 

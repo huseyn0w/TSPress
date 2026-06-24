@@ -1,4 +1,3 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
 import {
   type PageDetail,
   type PostDetail,
@@ -6,6 +5,7 @@ import {
   type PostListQuery,
   postListQuerySchema,
 } from '@cmstack-ts/config';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { PagesService } from './pages.service';
 import { PostsService } from './posts.service';

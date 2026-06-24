@@ -1,4 +1,10 @@
 import {
+  type CreateTagInput,
+  type UpdateTagInput,
+  createTagSchema,
+  updateTagSchema,
+} from '@cmstack-ts/config';
+import {
   Body,
   Controller,
   Delete,
@@ -9,12 +15,6 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import {
-  type CreateTagInput,
-  type UpdateTagInput,
-  createTagSchema,
-  updateTagSchema,
-} from '@cmstack-ts/config';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CheckPolicies } from '../authz/check-policies.decorator';
 import { PoliciesGuard } from '../authz/policies.guard';

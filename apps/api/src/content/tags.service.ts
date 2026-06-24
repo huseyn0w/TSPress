@@ -1,7 +1,6 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import type { CreateTagInput, UpdateTagInput } from '@cmstack-ts/config';
-import { Prisma, type PrismaClient } from '@cmstack-ts/db';
-import { PRISMA } from '../prisma/prisma.module';
+import { TAG_REPOSITORY, type TagRepository, type TagUpdateData } from '@cmstack-ts/db';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { slugify } from './slug';
 
 export interface TagView {
@@ -14,53 +13,47 @@ export interface TagView {
 
 @Injectable()
 export class TagsService {
-  constructor(@Inject(PRISMA) private readonly prisma: PrismaClient) {}
+  constructor(@Inject(TAG_REPOSITORY) private readonly tags: TagRepository) {}
 
   async create(input: CreateTagInput): Promise<TagView> {
     const slug = await this.uniqueSlug(input.slug ?? slugify(input.name));
-    const tag = await this.prisma.tag.create({
-      data: { name: input.name, slug },
-    });
+    const tag = await this.tags.create({ name: input.name, slug });
     return this.toView(tag);
   }
 
   async update(id: string, input: UpdateTagInput): Promise<TagView> {
-    const existing = await this.prisma.tag.findUnique({ where: { id } });
+    const existing = await this.tags.findById(id);
     if (!existing) throw new NotFoundException('Tag not found.');
 
-    const data: Prisma.TagUpdateInput = {};
+    const data: TagUpdateData = {};
     if (input.name !== undefined) data.name = input.name;
     if (input.slug !== undefined) data.slug = await this.uniqueSlug(input.slug, id);
 
-    const tag = await this.prisma.tag.update({ where: { id }, data });
+    const tag = await this.tags.update(id, data);
     return this.toView(tag);
   }
 
   async list(): Promise<TagView[]> {
-    const tags = await this.prisma.tag.findMany({ orderBy: { name: 'asc' } });
+    const tags = await this.tags.list();
     return tags.map((t) => this.toView(t));
   }
 
   async findById(id: string): Promise<TagView> {
-    const tag = await this.prisma.tag.findUnique({ where: { id } });
+    const tag = await this.tags.findById(id);
     if (!tag) throw new NotFoundException('Tag not found.');
     return this.toView(tag);
   }
 
   async remove(id: string): Promise<void> {
-    const existing = await this.prisma.tag.findUnique({ where: { id }, select: { id: true } });
-    if (!existing) throw new NotFoundException('Tag not found.');
-    await this.prisma.tag.delete({ where: { id } });
+    if (!(await this.tags.exists(id))) throw new NotFoundException('Tag not found.');
+    await this.tags.hardDelete(id);
   }
 
   private async uniqueSlug(desired: string, excludeId?: string): Promise<string> {
     let candidate = desired;
     let suffix = 1;
     while (true) {
-      const existing = await this.prisma.tag.findUnique({
-        where: { slug: candidate },
-        select: { id: true },
-      });
+      const existing = await this.tags.findIdBySlug(candidate);
       if (!existing || existing.id === excludeId) return candidate;
       suffix += 1;
       candidate = `${desired}-${suffix}`;
