@@ -1,14 +1,20 @@
-import type {
-  CreatePostInput,
-  PostDetail,
-  PostList,
-  PostListQuery,
-  PostSummary,
-  UpdatePostInput,
+import {
+  type CreatePostInput,
+  DEFAULT_LOCALE,
+  type PostDetail,
+  type PostList,
+  type PostListQuery,
+  type PostSummary,
+  type PostTranslation,
+  type PostTranslationInput,
+  type UpdatePostInput,
 } from '@cmstack-ts/config';
 import {
+  type LocalizedPost,
   POST_REPOSITORY,
   type PostRepository,
+  type PostTranslationData,
+  type PostTranslationRow,
   type PostUpdateData,
   type PostWithRelations,
   Prisma,
@@ -24,6 +30,7 @@ import {
 } from '@nestjs/common';
 import { HookRegistry } from '../plugins/hook-registry';
 import { HtmlSanitizerService } from './html-sanitizer.service';
+import { localizeContent } from './localize';
 import { slugify } from './slug';
 
 export interface RevisionView {
@@ -32,6 +39,15 @@ export interface RevisionView {
   snapshot: unknown;
   createdAt: string;
 }
+
+/** Fields that carry a per-locale translation (see {@link localizeContent}). */
+const LOCALIZED_POST_FIELDS = [
+  'title',
+  'excerpt',
+  'content',
+  'metaTitle',
+  'metaDescription',
+] as const;
 
 @Injectable()
 export class PostsService {
@@ -53,6 +69,8 @@ export class PostsService {
         content: this.sanitizer.sanitize(input.content ?? ''),
         status,
         publishedAt: status === 'PUBLISHED' ? new Date() : null,
+        metaTitle: input.metaTitle ?? null,
+        metaDescription: input.metaDescription ?? null,
         authorId,
         categoryIds: input.categoryIds,
         tagIds: input.tagIds,
@@ -64,7 +82,7 @@ export class PostsService {
           title: post.title,
         });
       }
-      return this.toDetail(post);
+      return this.toDetail(post, []);
     } catch (error) {
       throw this.mapRelationError(error);
     }
@@ -94,6 +112,8 @@ export class PostsService {
         data.publishedAt = new Date();
       }
     }
+    if (input.metaTitle !== undefined) data.metaTitle = input.metaTitle ?? null;
+    if (input.metaDescription !== undefined) data.metaDescription = input.metaDescription ?? null;
     if (input.categoryIds !== undefined) data.categoryIds = input.categoryIds;
     if (input.tagIds !== undefined) data.tagIds = input.tagIds;
 
@@ -108,49 +128,90 @@ export class PostsService {
           title: post.title,
         });
       }
-      return this.toDetail(post);
+      return this.toDetail(post, []);
     } catch (error) {
       throw this.mapRelationError(error);
     }
   }
 
-  async list(query: PostListQuery, opts: { publicOnly: boolean }): Promise<PostList> {
-    const { items, total } = await this.posts.listAndCount({
-      publicOnly: opts.publicOnly,
-      includeTrashed: query.includeTrashed,
-      status: query.status,
-      categorySlug: query.categorySlug,
-      tagSlug: query.tagSlug,
-      q: query.q,
-      page: query.page,
-      perPage: query.perPage,
-    });
+  async list(
+    query: PostListQuery,
+    opts: { publicOnly: boolean },
+    locale: string = DEFAULT_LOCALE,
+  ): Promise<PostList> {
+    const { items, total } = await this.posts.listAndCount(
+      {
+        publicOnly: opts.publicOnly,
+        includeTrashed: query.includeTrashed,
+        status: query.status,
+        categorySlug: query.categorySlug,
+        tagSlug: query.tagSlug,
+        q: query.q,
+        page: query.page,
+        perPage: query.perPage,
+      },
+      this.translationLocale(locale),
+    );
 
     return {
-      items: items.map((p) => this.toSummary(p)),
+      items: items.map((p) => this.toSummary(this.localize(p))),
       total,
       page: query.page,
       perPage: query.perPage,
     };
   }
 
+  /** Admin read: the post with every translation row (for the per-locale editor). */
   async findById(id: string): Promise<PostDetail> {
-    const post = await this.posts.findById(id);
+    const post = await this.posts.findByIdWithTranslations(id);
     if (!post) throw new NotFoundException('Post not found.');
-    return this.toDetail(post);
+    return this.toDetail(post, this.toTranslationViews(post.translations ?? []));
   }
 
   /** Published posts by a given author (newest first), as summaries. */
-  async publicByAuthor(authorId: string): Promise<PostSummary[]> {
-    const posts = await this.posts.publicByAuthor(authorId);
-    return posts.map((p) => this.toSummary(p));
+  async publicByAuthor(authorId: string, locale: string = DEFAULT_LOCALE): Promise<PostSummary[]> {
+    const posts = await this.posts.publicByAuthor(authorId, this.translationLocale(locale));
+    return posts.map((p) => this.toSummary(this.localize(p)));
   }
 
-  async findPublicBySlug(slug: string): Promise<PostDetail> {
-    const post = await this.posts.findPublicBySlug(slug);
+  async findPublicBySlug(slug: string, locale: string = DEFAULT_LOCALE): Promise<PostDetail> {
+    const post = await this.posts.findPublicBySlug(slug, this.translationLocale(locale));
     if (!post) throw new NotFoundException('Post not found.');
+    // Public detail is already localized; the raw translation rows are not leaked.
+    const detail = this.toDetail(this.localize(post), []);
     // Let plugins transform the public post just before it is returned.
-    return this.hooks.applyFilters('public.post.render', this.toDetail(post));
+    return this.hooks.applyFilters('public.post.render', detail);
+  }
+
+  /** Create or replace a post's translation for a non-default locale. */
+  async upsertTranslation(id: string, locale: string, input: PostTranslationInput): Promise<void> {
+    await this.ensureActive(id);
+    const data: PostTranslationData = {};
+    if (input.title !== undefined) data.title = input.title;
+    if (input.excerpt !== undefined) data.excerpt = input.excerpt;
+    if (input.content !== undefined) data.content = this.sanitizer.sanitize(input.content);
+    if (input.metaTitle !== undefined) data.metaTitle = input.metaTitle;
+    if (input.metaDescription !== undefined) data.metaDescription = input.metaDescription;
+
+    // An all-empty save clears the translation (the locale falls back to base).
+    const hasAny = Object.values(data).some((v) => v !== undefined && v !== '');
+    if (!hasAny) {
+      await this.deleteTranslation(id, locale);
+      return;
+    }
+    await this.posts.upsertTranslation(id, locale, data);
+  }
+
+  /** Remove a post's translation for a locale (idempotent). */
+  async deleteTranslation(id: string, locale: string): Promise<void> {
+    await this.ensureActive(id);
+    try {
+      await this.posts.deleteTranslation(id, locale);
+    } catch (error) {
+      // Deleting an absent translation is a no-op, not a 404.
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') return;
+      throw error;
+    }
   }
 
   async softDelete(id: string): Promise<void> {
@@ -161,7 +222,7 @@ export class PostsService {
   async restore(id: string): Promise<PostDetail> {
     await this.ensureExists(id);
     const post = await this.posts.restore(id);
-    return this.toDetail(post);
+    return this.toDetail(post, []);
   }
 
   async destroy(id: string): Promise<void> {
@@ -182,6 +243,31 @@ export class PostsService {
 
   private async ensureExists(id: string): Promise<void> {
     if (!(await this.posts.exists(id))) throw new NotFoundException('Post not found.');
+  }
+
+  private async ensureActive(id: string): Promise<void> {
+    if (!(await this.posts.findActiveById(id))) throw new NotFoundException('Post not found.');
+  }
+
+  /** The locale to overlay, or `undefined` for the default locale (base-only read). */
+  private translationLocale(locale: string): string | undefined {
+    return locale === DEFAULT_LOCALE ? undefined : locale;
+  }
+
+  /** Overlay the (already locale-filtered) translation row onto the base post. */
+  private localize(post: LocalizedPost): LocalizedPost {
+    return localizeContent(post, post.translations?.[0] ?? null, LOCALIZED_POST_FIELDS);
+  }
+
+  private toTranslationViews(rows: PostTranslationRow[]): PostTranslation[] {
+    return rows.map((r) => ({
+      locale: r.locale,
+      title: r.title,
+      excerpt: r.excerpt,
+      content: r.content,
+      metaTitle: r.metaTitle,
+      metaDescription: r.metaDescription,
+    }));
   }
 
   private async uniqueSlug(desired: string, excludeId?: string): Promise<string> {
@@ -238,7 +324,13 @@ export class PostsService {
     };
   }
 
-  private toDetail(post: PostWithRelations): PostDetail {
-    return { ...this.toSummary(post), content: post.content };
+  private toDetail(post: PostWithRelations, translations: PostTranslation[]): PostDetail {
+    return {
+      ...this.toSummary(post),
+      content: post.content,
+      metaTitle: post.metaTitle,
+      metaDescription: post.metaDescription,
+      translations,
+    };
   }
 }

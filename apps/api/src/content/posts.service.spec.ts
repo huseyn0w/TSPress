@@ -15,6 +15,8 @@ function postRow(over: Partial<PostWithRelations> = {}): PostWithRelations {
     content: 'body',
     status: 'DRAFT',
     publishedAt: null,
+    metaTitle: null,
+    metaDescription: null,
     authorId: 'u1',
     deletedAt: null,
     createdAt: new Date('2026-01-01T00:00:00Z'),
@@ -38,6 +40,7 @@ beforeEach(() => {
     create: vi.fn(),
     findById: vi.fn(),
     findActiveById: vi.fn(),
+    findByIdWithTranslations: vi.fn(),
     findPublicBySlug: vi.fn(),
     publicByAuthor: vi.fn(),
     listAndCount: vi.fn(),
@@ -45,6 +48,8 @@ beforeEach(() => {
     setDeletedAt: vi.fn(),
     restore: vi.fn(),
     findIdBySlug: vi.fn().mockResolvedValue(null),
+    upsertTranslation: vi.fn(),
+    deleteTranslation: vi.fn(),
     exists: vi.fn(),
     hardDelete: vi.fn(),
   };
@@ -192,5 +197,119 @@ describe('PostsService reads & lifecycle', () => {
       snapshot: { title: 'x' },
       createdAt: '2026-01-01T00:00:00.000Z',
     });
+  });
+});
+
+describe('PostsService meta + localization', () => {
+  it('create passes metaTitle/metaDescription through to the repo', async () => {
+    posts.create.mockResolvedValue(postRow());
+    await service.create({ title: 'T', content: '', metaTitle: 'MT', metaDescription: 'MD' }, 'u1');
+    const data = posts.create.mock.calls[0]?.[0];
+    expect(data.metaTitle).toBe('MT');
+    expect(data.metaDescription).toBe('MD');
+  });
+
+  it('the default locale (en) reads base-only (no locale to the repo)', async () => {
+    posts.findPublicBySlug.mockResolvedValue(postRow({ status: 'PUBLISHED' }));
+    await service.findPublicBySlug('title', 'en');
+    expect(posts.findPublicBySlug).toHaveBeenCalledWith('title', undefined);
+  });
+
+  it('a non-default locale overlays the translation per field, falling back to base', async () => {
+    posts.findPublicBySlug.mockResolvedValue({
+      ...postRow({ status: 'PUBLISHED', metaTitle: 'EN meta' }),
+      translations: [
+        {
+          locale: 'de',
+          title: 'DE title',
+          excerpt: null,
+          content: null,
+          metaTitle: 'DE meta',
+          metaDescription: null,
+        },
+      ],
+    });
+    const detail = await service.findPublicBySlug('title', 'de');
+    expect(posts.findPublicBySlug).toHaveBeenCalledWith('title', 'de');
+    expect(detail.title).toBe('DE title'); // overlaid
+    expect(detail.content).toBe('body'); // null translation field -> base
+    expect(detail.metaTitle).toBe('DE meta');
+    expect(detail.translations).toEqual([]); // public detail does not leak the raw rows
+  });
+
+  it('public list overlays each item for the requested locale', async () => {
+    posts.listAndCount.mockResolvedValue({
+      items: [
+        {
+          ...postRow({ status: 'PUBLISHED' }),
+          translations: [{ locale: 'ru', title: 'RU', excerpt: null, content: null }],
+        },
+      ],
+      total: 1,
+    });
+    const list = await service.list({ page: 1, perPage: 10 } as never, { publicOnly: true }, 'ru');
+    expect(posts.listAndCount.mock.calls[0]?.[1]).toBe('ru');
+    expect(list.items[0]?.title).toBe('RU');
+  });
+
+  it('findById (admin) returns the post with its translation rows', async () => {
+    posts.findByIdWithTranslations.mockResolvedValue({
+      ...postRow(),
+      translations: [
+        {
+          locale: 'de',
+          title: 'DE',
+          excerpt: null,
+          content: 'dec',
+          metaTitle: null,
+          metaDescription: null,
+        },
+      ],
+    });
+    const detail = await service.findById('p1');
+    expect(detail.translations).toEqual([
+      {
+        locale: 'de',
+        title: 'DE',
+        excerpt: null,
+        content: 'dec',
+        metaTitle: null,
+        metaDescription: null,
+      },
+    ]);
+  });
+});
+
+describe('PostsService.upsertTranslation', () => {
+  it('sanitizes translated content and passes other fields through', async () => {
+    posts.findActiveById.mockResolvedValue(postRow());
+    await service.upsertTranslation('p1', 'de', { title: 'DE', content: '<b>x</b>' });
+    expect(posts.upsertTranslation).toHaveBeenCalledWith('p1', 'de', {
+      title: 'DE',
+      content: 'clean:<b>x</b>',
+    });
+  });
+
+  it('an all-empty input deletes the translation (clear)', async () => {
+    posts.findActiveById.mockResolvedValue(postRow());
+    await service.upsertTranslation('p1', 'de', {});
+    expect(posts.deleteTranslation).toHaveBeenCalledWith('p1', 'de');
+    expect(posts.upsertTranslation).not.toHaveBeenCalled();
+  });
+
+  it('throws NotFound when the base post is missing/trashed', async () => {
+    posts.findActiveById.mockResolvedValue(null);
+    await expect(service.upsertTranslation('x', 'de', { title: 'T' })).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+    expect(posts.upsertTranslation).not.toHaveBeenCalled();
+  });
+
+  it('deleteTranslation is a no-op-safe idempotent clear', async () => {
+    posts.findActiveById.mockResolvedValue(postRow());
+    posts.deleteTranslation.mockRejectedValueOnce(
+      new Prisma.PrismaClientKnownRequestError('x', { code: 'P2025', clientVersion: '6' }),
+    );
+    await expect(service.deleteTranslation('p1', 'de')).resolves.toBeUndefined();
   });
 });

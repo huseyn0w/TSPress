@@ -1,8 +1,11 @@
 import {
   type CreatePageInput,
   type PageDetail,
+  type PageTranslationInput,
   type UpdatePageInput,
   createPageSchema,
+  localeSchema,
+  pageTranslationInputSchema,
   updatePageSchema,
 } from '@cmstack-ts/config';
 import {
@@ -14,6 +17,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -66,6 +70,26 @@ export class PagesController {
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<PageDetail> {
     return this.pages.update(id, body, user.id);
+  }
+
+  @Put(':id/translations/:locale')
+  @CheckPolicies((ability) => ability.can('update', 'Page'))
+  async upsertTranslation(
+    @Param('id') id: string,
+    @Param('locale', new ZodValidationPipe(localeSchema)) locale: string,
+    @Body(new ZodValidationPipe(pageTranslationInputSchema)) body: PageTranslationInput,
+  ): Promise<void> {
+    await this.pages.upsertTranslation(id, locale, body);
+  }
+
+  @Delete(':id/translations/:locale')
+  @HttpCode(204)
+  @CheckPolicies((ability) => ability.can('update', 'Page'))
+  async deleteTranslation(
+    @Param('id') id: string,
+    @Param('locale', new ZodValidationPipe(localeSchema)) locale: string,
+  ): Promise<void> {
+    await this.pages.deleteTranslation(id, locale);
   }
 
   @Delete(':id')

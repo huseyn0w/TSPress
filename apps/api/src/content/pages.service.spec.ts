@@ -11,6 +11,8 @@ function pageRow(over: Partial<PageWithAuthor> = {}): PageWithAuthor {
     slug: 'about',
     content: 'body',
     status: 'DRAFT',
+    metaTitle: null,
+    metaDescription: null,
     authorId: 'u1',
     deletedAt: null,
     createdAt: new Date('2026-01-01T00:00:00Z'),
@@ -30,12 +32,15 @@ beforeEach(() => {
     create: vi.fn(),
     findById: vi.fn(),
     findActiveById: vi.fn(),
+    findByIdWithTranslations: vi.fn(),
     findPublicBySlug: vi.fn(),
     list: vi.fn(),
     update: vi.fn(),
     setDeletedAt: vi.fn(),
     restore: vi.fn(),
     findIdBySlug: vi.fn().mockResolvedValue(null),
+    upsertTranslation: vi.fn(),
+    deleteTranslation: vi.fn(),
     exists: vi.fn(),
     hardDelete: vi.fn(),
   };
@@ -90,5 +95,61 @@ describe('PagesService', () => {
     revisionRepo.listForPage.mockResolvedValue([]);
     await service.revisions('pg1');
     expect(revisionRepo.listForPage).toHaveBeenCalledWith('pg1');
+  });
+
+  it('create passes metaTitle/metaDescription through', async () => {
+    pages.create.mockResolvedValue(pageRow());
+    await service.create({ title: 'A', content: '', metaTitle: 'MT', metaDescription: 'MD' }, 'u1');
+    expect(pages.create).toHaveBeenCalledWith(
+      expect.objectContaining({ metaTitle: 'MT', metaDescription: 'MD' }),
+    );
+  });
+
+  it('the default locale reads base-only; a non-default locale overlays + falls back', async () => {
+    pages.findPublicBySlug.mockResolvedValueOnce(pageRow({ status: 'PUBLISHED' }));
+    await service.findPublicBySlug('about', 'en');
+    expect(pages.findPublicBySlug).toHaveBeenCalledWith('about', undefined);
+
+    pages.findPublicBySlug.mockResolvedValueOnce({
+      ...pageRow({ status: 'PUBLISHED' }),
+      translations: [{ locale: 'de', title: 'Über', content: null, metaTitle: null }],
+    });
+    const detail = await service.findPublicBySlug('about', 'de');
+    expect(pages.findPublicBySlug).toHaveBeenLastCalledWith('about', 'de');
+    expect(detail.title).toBe('Über'); // overlaid
+    expect(detail.content).toBe('body'); // fallback
+  });
+
+  it('findById returns the page with its translation rows', async () => {
+    pages.findByIdWithTranslations.mockResolvedValue({
+      ...pageRow(),
+      translations: [
+        { locale: 'ru', title: 'O nas', content: 'c', metaTitle: null, metaDescription: null },
+      ],
+    });
+    const detail = await service.findById('pg1');
+    expect(detail.translations).toEqual([
+      { locale: 'ru', title: 'O nas', content: 'c', metaTitle: null, metaDescription: null },
+    ]);
+  });
+
+  it('upsertTranslation sanitizes content; an all-empty save clears it', async () => {
+    pages.findActiveById.mockResolvedValue(pageRow());
+    await service.upsertTranslation('pg1', 'de', { title: 'DE', content: '<b>x</b>' });
+    expect(pages.upsertTranslation).toHaveBeenCalledWith('pg1', 'de', {
+      title: 'DE',
+      content: 'clean:<b>x</b>',
+    });
+
+    await service.upsertTranslation('pg1', 'de', {});
+    expect(pages.deleteTranslation).toHaveBeenCalledWith('pg1', 'de');
+  });
+
+  it('upsertTranslation throws NotFound when the base page is missing/trashed', async () => {
+    pages.findActiveById.mockResolvedValue(null);
+    await expect(service.upsertTranslation('x', 'de', { title: 'T' })).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+    expect(pages.upsertTranslation).not.toHaveBeenCalled();
   });
 });

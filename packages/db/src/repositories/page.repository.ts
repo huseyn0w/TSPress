@@ -27,6 +27,8 @@ export type PageCreateData = {
   slug: string;
   content: string;
   status: ContentStatus;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
   authorId: string;
 };
 
@@ -35,6 +37,8 @@ export type PageUpdateData = {
   slug?: string;
   content?: string;
   status?: ContentStatus;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
 };
 
 /** Data access for {@link Page}. */
@@ -106,6 +110,8 @@ export class PrismaPageRepository extends PrismaCrudRepository implements PageRe
     if (data.slug !== undefined) prismaData.slug = data.slug;
     if (data.content !== undefined) prismaData.content = data.content;
     if (data.status !== undefined) prismaData.status = data.status;
+    if (data.metaTitle !== undefined) prismaData.metaTitle = data.metaTitle;
+    if (data.metaDescription !== undefined) prismaData.metaDescription = data.metaDescription;
     return this.prisma.page.update({ where: { id }, data: prismaData, include: pageInclude });
   }
 

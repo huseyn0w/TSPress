@@ -1,7 +1,17 @@
-import type { CreatePageInput, PageDetail, UpdatePageInput } from '@cmstack-ts/config';
 import {
+  type CreatePageInput,
+  DEFAULT_LOCALE,
+  type PageDetail,
+  type PageTranslation,
+  type PageTranslationInput,
+  type UpdatePageInput,
+} from '@cmstack-ts/config';
+import {
+  type LocalizedPage,
   PAGE_REPOSITORY,
   type PageRepository,
+  type PageTranslationData,
+  type PageTranslationRow,
   type PageUpdateData,
   type PageWithAuthor,
   Prisma,
@@ -10,8 +20,12 @@ import {
 } from '@cmstack-ts/db';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { HtmlSanitizerService } from './html-sanitizer.service';
+import { localizeContent } from './localize';
 import type { RevisionView } from './posts.service';
 import { slugify } from './slug';
+
+/** Fields that carry a per-locale translation (pages have no excerpt). */
+const LOCALIZED_PAGE_FIELDS = ['title', 'content', 'metaTitle', 'metaDescription'] as const;
 
 @Injectable()
 export class PagesService {
@@ -28,9 +42,11 @@ export class PagesService {
       slug,
       content: this.sanitizer.sanitize(input.content ?? ''),
       status: input.status ?? 'DRAFT',
+      metaTitle: input.metaTitle ?? null,
+      metaDescription: input.metaDescription ?? null,
       authorId,
     });
-    return this.toDetail(page);
+    return this.toDetail(page, []);
   }
 
   async update(id: string, input: UpdatePageInput, authorId: string): Promise<PageDetail> {
@@ -44,26 +60,57 @@ export class PagesService {
     if (input.slug !== undefined) data.slug = await this.uniqueSlug(input.slug, id);
     if (input.content !== undefined) data.content = this.sanitizer.sanitize(input.content);
     if (input.status !== undefined) data.status = input.status;
+    if (input.metaTitle !== undefined) data.metaTitle = input.metaTitle ?? null;
+    if (input.metaDescription !== undefined) data.metaDescription = input.metaDescription ?? null;
 
     const page = await this.pages.update(id, data);
-    return this.toDetail(page);
+    return this.toDetail(page, []);
   }
 
   async list(opts: { includeTrashed?: boolean }): Promise<PageDetail[]> {
     const pages = await this.pages.list(opts);
-    return pages.map((p) => this.toDetail(p));
+    return pages.map((p) => this.toDetail(p, []));
   }
 
+  /** Admin read: the page with every translation row (for the per-locale editor). */
   async findById(id: string): Promise<PageDetail> {
-    const page = await this.pages.findById(id);
+    const page = await this.pages.findByIdWithTranslations(id);
     if (!page) throw new NotFoundException('Page not found.');
-    return this.toDetail(page);
+    return this.toDetail(page, this.toTranslationViews(page.translations ?? []));
   }
 
-  async findPublicBySlug(slug: string): Promise<PageDetail> {
-    const page = await this.pages.findPublicBySlug(slug);
+  async findPublicBySlug(slug: string, locale: string = DEFAULT_LOCALE): Promise<PageDetail> {
+    const page = await this.pages.findPublicBySlug(slug, this.translationLocale(locale));
     if (!page) throw new NotFoundException('Page not found.');
-    return this.toDetail(page);
+    return this.toDetail(this.localize(page), []);
+  }
+
+  /** Create or replace a page's translation for a non-default locale. */
+  async upsertTranslation(id: string, locale: string, input: PageTranslationInput): Promise<void> {
+    await this.ensureActive(id);
+    const data: PageTranslationData = {};
+    if (input.title !== undefined) data.title = input.title;
+    if (input.content !== undefined) data.content = this.sanitizer.sanitize(input.content);
+    if (input.metaTitle !== undefined) data.metaTitle = input.metaTitle;
+    if (input.metaDescription !== undefined) data.metaDescription = input.metaDescription;
+
+    const hasAny = Object.values(data).some((v) => v !== undefined && v !== '');
+    if (!hasAny) {
+      await this.deleteTranslation(id, locale);
+      return;
+    }
+    await this.pages.upsertTranslation(id, locale, data);
+  }
+
+  /** Remove a page's translation for a locale (idempotent). */
+  async deleteTranslation(id: string, locale: string): Promise<void> {
+    await this.ensureActive(id);
+    try {
+      await this.pages.deleteTranslation(id, locale);
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') return;
+      throw error;
+    }
   }
 
   async softDelete(id: string): Promise<void> {
@@ -74,7 +121,7 @@ export class PagesService {
   async restore(id: string): Promise<PageDetail> {
     await this.ensureExists(id);
     const page = await this.pages.restore(id);
-    return this.toDetail(page);
+    return this.toDetail(page, []);
   }
 
   async destroy(id: string): Promise<void> {
@@ -97,6 +144,28 @@ export class PagesService {
     if (!(await this.pages.exists(id))) throw new NotFoundException('Page not found.');
   }
 
+  private async ensureActive(id: string): Promise<void> {
+    if (!(await this.pages.findActiveById(id))) throw new NotFoundException('Page not found.');
+  }
+
+  private translationLocale(locale: string): string | undefined {
+    return locale === DEFAULT_LOCALE ? undefined : locale;
+  }
+
+  private localize(page: LocalizedPage): LocalizedPage {
+    return localizeContent(page, page.translations?.[0] ?? null, LOCALIZED_PAGE_FIELDS);
+  }
+
+  private toTranslationViews(rows: PageTranslationRow[]): PageTranslation[] {
+    return rows.map((r) => ({
+      locale: r.locale,
+      title: r.title,
+      content: r.content,
+      metaTitle: r.metaTitle,
+      metaDescription: r.metaDescription,
+    }));
+  }
+
   private async uniqueSlug(desired: string, excludeId?: string): Promise<string> {
     let candidate = desired;
     let suffix = 1;
@@ -112,16 +181,19 @@ export class PagesService {
     return { title: page.title, slug: page.slug, content: page.content, status: page.status };
   }
 
-  private toDetail(page: PageWithAuthor): PageDetail {
+  private toDetail(page: PageWithAuthor, translations: PageTranslation[]): PageDetail {
     return {
       id: page.id,
       title: page.title,
       slug: page.slug,
       content: page.content,
       status: page.status,
+      metaTitle: page.metaTitle,
+      metaDescription: page.metaDescription,
       author: page.author
         ? { id: page.author.id, name: page.author.name, image: page.author.image }
         : null,
+      translations,
       createdAt: page.createdAt.toISOString(),
       updatedAt: page.updatedAt.toISOString(),
     };

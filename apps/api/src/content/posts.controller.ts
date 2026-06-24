@@ -3,9 +3,12 @@ import {
   type PostDetail,
   type PostList,
   type PostListQuery,
+  type PostTranslationInput,
   type UpdatePostInput,
   createPostSchema,
+  localeSchema,
   postListQuerySchema,
+  postTranslationInputSchema,
   updatePostSchema,
 } from '@cmstack-ts/config';
 import {
@@ -17,6 +20,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -69,6 +73,26 @@ export class PostsController {
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<PostDetail> {
     return this.posts.update(id, body, user.id);
+  }
+
+  @Put(':id/translations/:locale')
+  @CheckPolicies((ability) => ability.can('update', 'Post'))
+  async upsertTranslation(
+    @Param('id') id: string,
+    @Param('locale', new ZodValidationPipe(localeSchema)) locale: string,
+    @Body(new ZodValidationPipe(postTranslationInputSchema)) body: PostTranslationInput,
+  ): Promise<void> {
+    await this.posts.upsertTranslation(id, locale, body);
+  }
+
+  @Delete(':id/translations/:locale')
+  @HttpCode(204)
+  @CheckPolicies((ability) => ability.can('update', 'Post'))
+  async deleteTranslation(
+    @Param('id') id: string,
+    @Param('locale', new ZodValidationPipe(localeSchema)) locale: string,
+  ): Promise<void> {
+    await this.posts.deleteTranslation(id, locale);
   }
 
   @Delete(':id')
