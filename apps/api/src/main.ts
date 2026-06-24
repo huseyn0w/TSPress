@@ -1,8 +1,8 @@
 import 'reflect-metadata';
 import { resolve } from 'node:path';
+import { parseEnv } from '@cmstack-ts/config';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
-import { parseEnv } from '@cmstack-ts/config';
 import { AppModule } from './app.module';
 
 async function bootstrap() {

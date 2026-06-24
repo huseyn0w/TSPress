@@ -1,5 +1,5 @@
-import { Global, Module } from '@nestjs/common';
 import { prisma } from '@cmstack-ts/db';
+import { Global, Module } from '@nestjs/common';
 
 /** Injection token for the shared PrismaClient singleton. */
 export const PRISMA = Symbol('PRISMA');

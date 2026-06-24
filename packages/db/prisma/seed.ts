@@ -65,7 +65,11 @@ const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD ?? 'admin12345';
 const CATEGORIES = [
   { name: 'Announcements', slug: 'announcements', description: 'Product news and releases.' },
   { name: 'Guides', slug: 'guides', description: 'How-tos and tutorials.' },
-  { name: 'Engineering', slug: 'engineering', description: 'How Cmstack-TS is built under the hood.' },
+  {
+    name: 'Engineering',
+    slug: 'engineering',
+    description: 'How Cmstack-TS is built under the hood.',
+  },
 ];
 
 const TAGS = [

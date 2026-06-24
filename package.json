@@ -15,6 +15,7 @@
     "format": "biome check --write .",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "e2e": "playwright test",
     "typecheck": "pnpm -r --filter \"./packages/*\" build && pnpm -r typecheck",
     "db:generate": "pnpm --filter @cmstack-ts/db generate",
@@ -24,6 +25,7 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@playwright/test": "1.49.1",
+    "@vitest/coverage-v8": "2.1.8",
     "typescript": "5.7.3",
     "vitest": "2.1.8"
   }

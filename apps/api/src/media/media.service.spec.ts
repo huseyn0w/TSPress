@@ -1,5 +1,5 @@
 import type { Media, MediaRepository } from '@cmstack-ts/db';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { type Mock, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MediaService, type UploadFile, extensionForMime } from './media.service';
 import type { StorageDriver } from './storage';
@@ -129,5 +129,55 @@ describe('MediaService.update', () => {
     media.exists.mockResolvedValue(false);
     await expect(service.update('missing', { alt: 'x' })).rejects.toBeInstanceOf(NotFoundException);
     expect(media.update).not.toHaveBeenCalled();
+  });
+});
+
+describe('MediaService.upload validation', () => {
+  // 1x1 transparent PNG
+  const PNG_1x1 = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M8AAAMBAQDJ/pLvAAAAAElFTkSuQmCC',
+    'base64',
+  );
+
+  it('measures image dimensions and stores them', async () => {
+    media.create.mockResolvedValue(mediaRow({ mimeType: 'image/png', width: 1, height: 1 }));
+    await service.upload(
+      { originalname: 'a.png', mimetype: 'image/png', size: PNG_1x1.length, buffer: PNG_1x1 },
+      'u1',
+    );
+    expect(media.create.mock.calls[0]?.[0]).toMatchObject({ width: 1, height: 1 });
+  });
+
+  it('rejects bytes that are not a valid image', async () => {
+    await expect(
+      service.upload(
+        { originalname: 'x.png', mimetype: 'image/png', size: 3, buffer: Buffer.from('no!') },
+        'u1',
+      ),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(storage.save).not.toHaveBeenCalled();
+  });
+
+  it('rejects a PDF whose magic bytes are wrong', async () => {
+    await expect(
+      service.upload(
+        {
+          originalname: 'x.pdf',
+          mimetype: 'application/pdf',
+          size: 4,
+          buffer: Buffer.from('XXXX'),
+        },
+        'u1',
+      ),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('rejects an unsupported content type', async () => {
+    await expect(
+      service.upload(
+        { originalname: 'x.txt', mimetype: 'text/plain', size: 1, buffer: Buffer.from('x') },
+        'u1',
+      ),
+    ).rejects.toBeInstanceOf(BadRequestException);
   });
 });

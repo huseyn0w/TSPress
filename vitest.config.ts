@@ -17,5 +17,13 @@ export default defineConfig({
     environment: 'node',
     include: ['{apps,packages}/**/*.{test,spec}.ts'],
     exclude: ['**/node_modules/**', '**/dist/**', '**/.next/**', '**/e2e/**'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text-summary', 'text'],
+      // Focus the coverage gate on the layers the refactor targets: the NestJS
+      // service layer and the repository layer.
+      include: ['apps/api/src/**/*.service.ts', 'packages/db/src/repositories/**/*.ts'],
+      exclude: ['**/*.spec.ts', '**/*.test.ts', 'packages/db/src/repositories/index.ts'],
+    },
   },
 });

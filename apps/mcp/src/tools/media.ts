@@ -1,10 +1,10 @@
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import {
   mediaListQuerySchema,
   mediaListSchema,
   mediaSchema,
   updateMediaSchema,
 } from '@cmstack-ts/config';
+import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { ApiClient } from '../api-client.js';
 import { DESTRUCTIVE, READ, UPDATE, respond } from '../tool-kit.js';

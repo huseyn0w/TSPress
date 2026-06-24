@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { type CrudDelegate, PrismaCrudRepository } from './crud.repository';
 
 class TestRepo extends PrismaCrudRepository {
+  // biome-ignore lint/complexity/noUselessConstructor: widens the protected base constructor to public so the abstract base can be instantiated in tests.
   constructor(delegate: CrudDelegate) {
     super(delegate);
   }

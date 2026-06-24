@@ -1,5 +1,5 @@
-import { Inject, Injectable } from '@nestjs/common';
 import type { HealthResponse } from '@cmstack-ts/config';
+import { Inject, Injectable } from '@nestjs/common';
 import { DATABASE_PINGER, type DatabasePinger } from './health.tokens';
 
 export interface ReadinessResponse {

@@ -1,9 +1,9 @@
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import {
   adminCommentListQuerySchema,
   adminCommentListSchema,
   adminCommentSchema,
 } from '@cmstack-ts/config';
+import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { ApiClient } from '../api-client.js';
 import { DESTRUCTIVE, READ, UPDATE, respond } from '../tool-kit.js';

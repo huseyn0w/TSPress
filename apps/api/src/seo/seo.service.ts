@@ -10,12 +10,12 @@ import type {
   UpdateSiteProfileInput,
 } from '@cmstack-ts/config';
 import {
+  type SiteProfile as DbSiteProfile,
   FAQ_REPOSITORY,
   type FaqRepository,
   SERVICE_REPOSITORY,
   SITE_PROFILE_REPOSITORY,
   type ServiceRepository,
-  type SiteProfile as DbSiteProfile,
   type SiteProfileRepository,
 } from '@cmstack-ts/db';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
