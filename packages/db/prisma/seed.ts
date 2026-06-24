@@ -324,6 +324,56 @@ async function seedContent(authorId: string) {
   }
 }
 
+/**
+ * Demo per-locale translations so the localized public site shows real content.
+ * Only a couple of items are translated — untranslated locales fall back to the
+ * base (en) row, which is exactly the behaviour under test. Idempotent via the
+ * [postId|pageId, locale] unique.
+ */
+async function seedTranslations() {
+  const post = await prisma.post.findUnique({ where: { slug: 'introducing-cmstack-ts' } });
+  if (post) {
+    const postTranslations = [
+      {
+        locale: 'de',
+        title: 'Cmstack-TS vorgestellt',
+        excerpt: 'Ein schnelles, typsicheres, SEO-first CMS, das offen entwickelt wird.',
+        metaTitle: 'Cmstack-TS vorgestellt',
+        metaDescription: 'Ein schnelles, typsicheres, SEO-first CMS in TypeScript.',
+      },
+      {
+        locale: 'ru',
+        title: 'Знакомьтесь, Cmstack-TS',
+        excerpt: 'Быстрая, типобезопасная, SEO-ориентированная CMS с открытой разработкой.',
+        metaTitle: 'Знакомьтесь, Cmstack-TS',
+        metaDescription: 'Быстрая типобезопасная CMS на TypeScript с упором на SEO.',
+      },
+    ];
+    for (const t of postTranslations) {
+      await prisma.postTranslation.upsert({
+        where: { postId_locale: { postId: post.id, locale: t.locale } },
+        create: { postId: post.id, ...t },
+        update: t,
+      });
+    }
+  }
+
+  const about = await prisma.page.findUnique({ where: { slug: 'about' } });
+  if (about) {
+    const pageTranslations = [
+      { locale: 'de', title: 'Über uns', metaTitle: 'Über uns' },
+      { locale: 'ru', title: 'О проекте', metaTitle: 'О проекте' },
+    ];
+    for (const t of pageTranslations) {
+      await prisma.pageTranslation.upsert({
+        where: { pageId_locale: { pageId: about.id, locale: t.locale } },
+        create: { pageId: about.id, ...t },
+        update: t,
+      });
+    }
+  }
+}
+
 async function main() {
   // Permissions
   for (const p of PERMISSIONS) {
@@ -371,6 +421,7 @@ async function main() {
   });
 
   await seedContent(admin.id);
+  await seedTranslations();
 
   // Default site settings. `update: {}` keeps an admin's chosen theme on re-seed.
   await prisma.setting.upsert({
