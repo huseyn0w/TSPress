@@ -1,7 +1,7 @@
 # cmstack-ts — HANDOFF
 
-**Updated:** 2026-06-25 — **Task 2 + Task 4 COMPLETE; E2E re-run green; Task 1 IN PROGRESS (item #1 done).** · **Branch:** `refactor/repository-layer` (off `main`)
-**Next phases:** Task 1 (feature parity) continuing per §7 order; Task 3 (UI), Task 5 (README) not started.
+**Updated:** 2026-06-25 — **Task 2 + Task 4 COMPLETE; E2E re-run green; Task 1 IN PROGRESS (§7 #1 + #2 done).** · **Branch:** `refactor/repository-layer` (off `main`)
+**Next phases:** Task 1 (feature parity) continuing per §7 order (next: #3 password-reset+email); Task 3 (UI), Task 5 (README) not started.
 
 ## Task 1 progress (feature parity, `REFACTOR_PLAN.md` §7 — strict order per operator)
 - **E2E baseline re-run (pre-Task-1):** full stack up (docker db + built api + built web),
@@ -31,8 +31,23 @@
   - **Scoped out (logged, not silent):** admin per-locale tab-strip UI → §7 #8; meta `<head>` render +
     canonical/noindex → §7 #2 (columns already in place); multilingual de/ru full-text search → future
     (canon rates ts search non-multilingual); Category/Tag name translation → fast-follow.
-- **Next §7 item:** **#2 — per-content SEO meta** (metaTitle/metaDescription render into `<head>` +
-  canonical/noindex). Meta storage already landed with #1; #2 = surfacing + canonical/noindex.
+- **§7 #2 — Per-content SEO meta: DONE** (2026-06-25). Structural `canonicalUrl` + `noindex` added
+  to Post/Page (migration `20260625..._content_seo_meta`, additive/reversible; NOT per-locale).
+  metaTitle/metaDescription were already translatable from #1. Surfacing: blog post `generateMetadata`
+  uses **localized** metaTitle/metaDescription over title/excerpt, applies a custom canonical override,
+  emits robots `noindex` (index:false, follow kept); `noindex` posts are excluded from the **sitemap**
+  and **llms.txt**. Admin post + page forms gained an **SEO fieldset** (meta title/description,
+  canonical URL, noindex checkbox). **302 tests, typecheck/lint clean, coverage ≥80%, e2e 11/11**;
+  live-verified (custom `<title>`/description/canonical render, `noindex,follow` meta, sitemap excludes
+  the noindex post). Adversarial self-review fixed one SEO nit (`noindex` no longer implies `nofollow`).
+  - **Known pre-existing limitation (not a #2 regression):** the admin forms send empty optional fields
+    as `undefined`, so clearing an existing excerpt/meta/canonical via the form is a no-op (the value
+    persists). Systemic to the form pattern (excerpt already behaved this way); fix later by sending an
+    explicit empty/`null` if field-clearing is required.
+  - **Pages** store meta/canonical/noindex but have **no public route** yet, so page-level meta is not
+    rendered anywhere (wire it when pages get a public surface).
+- **Next §7 item:** **#3 — password reset + transactional email** (brings email infrastructure that
+  contact form + comment-notification email later reuse).
 
 ---
 

@@ -506,8 +506,11 @@ From `../FEATURE_MATRIX.md` ("cmstack-ts needs"); nothing to be silently dropped
       per-field fallback); migration `20260624205514_content_translations`; locale-aware reads +
       CASL-gated translation write endpoints; web forwards `?locale=`; seeded + live-verified.
       Translatable `metaTitle`/`metaDescription` columns landed here too (see §7 #2).
-- [ ] Per-content **SEO meta** (metaTitle/metaDescription/canonical/noindex). *Storage + translatable
-      meta already landed with content translation; remaining = render into `<head>` + canonical/noindex.*
+- [x] Per-content **SEO meta** (metaTitle/metaDescription/canonical/noindex). **DONE** (2026-06-25):
+      structural `canonicalUrl`/`noindex` on Post/Page (migration `20260625..._content_seo_meta`);
+      blog post `<head>` uses localized metaTitle/metaDescription, custom canonical override, and
+      robots `noindex`; noindex excludes a post from the sitemap + llms.txt; admin post/page forms
+      gained an SEO fieldset. Live-verified.
 - [ ] **Password reset** + transactional **email** wiring.
 - [ ] **Menu management** builder + public rendering.
 - [ ] **Contact form** + email delivery (reCAPTCHA-protected).
