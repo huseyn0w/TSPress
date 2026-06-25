@@ -29,6 +29,11 @@ export default function SignInPage() {
         <h1 style={{ fontSize: 28, margin: '0 0 2rem', lineHeight: 1.1 }}>Sign in</h1>
         <SignInForm googleEnabled={googleEnabled} githubEnabled={githubEnabled} />
         <p style={{ marginTop: '1.5rem', color: 'var(--muted)', fontSize: 14 }}>
+          <a href="/forgot-password" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+            Forgot your password?
+          </a>
+        </p>
+        <p style={{ marginTop: '0.5rem', color: 'var(--muted)', fontSize: 14 }}>
           No account?{' '}
           <a href="/signup" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
             Create one →

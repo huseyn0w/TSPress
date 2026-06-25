@@ -6,7 +6,15 @@ import { routing } from './i18n/routing';
 const intlMiddleware = createMiddleware(routing);
 
 /** Routes that stay English and outside locale routing (the panel + auth). */
-const PANEL_PREFIXES = ['/admin', '/account', '/signin', '/signup', '/health'];
+const PANEL_PREFIXES = [
+  '/admin',
+  '/account',
+  '/signin',
+  '/signup',
+  '/forgot-password',
+  '/reset-password',
+  '/health',
+];
 const isPanel = (pathname: string) =>
   PANEL_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 
