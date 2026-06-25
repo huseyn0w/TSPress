@@ -1,7 +1,38 @@
 # cmstack-ts — HANDOFF
 
-**Updated:** 2026-06-24 — **Task 2 (architecture) + Task 4 (tests) COMPLETE.** · **Branch:** `refactor/repository-layer` (off `main`)
-**Next phases:** Task 1 (feature parity) and Task 3 (UI) — not started (architecture-first per operator decision).
+**Updated:** 2026-06-25 — **Task 2 + Task 4 COMPLETE; E2E re-run green; Task 1 IN PROGRESS (item #1 done).** · **Branch:** `refactor/repository-layer` (off `main`)
+**Next phases:** Task 1 (feature parity) continuing per §7 order; Task 3 (UI), Task 5 (README) not started.
+
+## Task 1 progress (feature parity, `REFACTOR_PLAN.md` §7 — strict order per operator)
+- **E2E baseline re-run (pre-Task-1):** full stack up (docker db + built api + built web),
+  `pnpm e2e` = **11/11 green** → repository-layer refactor confirmed black-box-invariant.
+  One pre-existing i18n/a11y drift fixed on the way (search input `aria-label` now a distinct
+  `search.inputLabel` = "Search query"; the e2e test predated the i18n foundation).
+- **§7 #1 — Per-locale content translation (Post + Page): DONE.** Model B3 (operator-chosen):
+  base Post/Page columns are the canonical **en** values; new `PostTranslation`/`PageTranslation`
+  tables hold de/ru overrides (nullable fields, **per-field fallback**); shared slug/status/author.
+  Spec: `docs/superpowers/specs/2026-06-24-per-locale-content-translation-design.md`; plan:
+  `docs/superpowers/plans/2026-06-24-per-locale-content-translation.md`.
+  - Additive reversible migration `20260624205514_content_translations` (+ base `metaTitle`/
+    `metaDescription` on Post/Page — translatable meta folded in now so §7 #2 won't re-migrate).
+  - `@cmstack-ts/config` owns `LOCALES`/`DEFAULT_LOCALE`/`localeSchema` (web i18n routing imports
+    them — no drift) + translation/meta schemas. Pure `localizeContent` resolver (unit-tested).
+  - Repos gained locale-aware finders (`localizedPostInclude`/`localizedPageInclude`) +
+    `findByIdWithTranslations` + full-row `upsertTranslation`/`deleteTranslation` on the
+    `[contentId, locale]` unique; repos stay framework/config-free, never catch P2002/P2025.
+  - Public reads take `?locale=` (junk/absent → default); admin GET returns all translation rows;
+    CASL-gated `PUT/DELETE /{posts,pages}/:id/translations/:locale` (content sanitized; empty field
+    = no override → falls back; all-empty save clears the row; idempotent delete). No observer
+    events (§2.7 — no real side effect). Authors profile + web blog/post/author pages forward locale.
+  - Seed adds de/ru demo translations. **Verified live** (curl + SSR): en base, de/ru overlay with
+    per-field fallback, junk locale → en. **301 tests, typecheck/lint clean, coverage ≥80%, e2e 11/11.**
+  - Adversarial self-review found + fixed **1 MED bug** (empty-string field overlaid base instead of
+    falling back) with a regression test.
+  - **Scoped out (logged, not silent):** admin per-locale tab-strip UI → §7 #8; meta `<head>` render +
+    canonical/noindex → §7 #2 (columns already in place); multilingual de/ru full-text search → future
+    (canon rates ts search non-multilingual); Category/Tag name translation → fast-follow.
+- **Next §7 item:** **#2 — per-content SEO meta** (metaTitle/metaDescription render into `<head>` +
+  canonical/noindex). Meta storage already landed with #1; #2 = surfacing + canonical/noindex.
 
 ---
 

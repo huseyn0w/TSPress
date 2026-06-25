@@ -501,8 +501,13 @@ and **Task 3 UI** per §7–§8.
 
 From `../FEATURE_MATRIX.md` ("cmstack-ts needs"); nothing to be silently dropped:
 
-- [ ] Per-locale **content** translation (Prisma translation tables) — biggest gap.
-- [ ] Per-content **SEO meta** (metaTitle/metaDescription/canonical/noindex).
+- [x] Per-locale **content** translation (Prisma translation tables) — biggest gap.
+      **DONE** (2026-06-25): model B3 (base=en, `PostTranslation`/`PageTranslation` for de/ru,
+      per-field fallback); migration `20260624205514_content_translations`; locale-aware reads +
+      CASL-gated translation write endpoints; web forwards `?locale=`; seeded + live-verified.
+      Translatable `metaTitle`/`metaDescription` columns landed here too (see §7 #2).
+- [ ] Per-content **SEO meta** (metaTitle/metaDescription/canonical/noindex). *Storage + translatable
+      meta already landed with content translation; remaining = render into `<head>` + canonical/noindex.*
 - [ ] **Password reset** + transactional **email** wiring.
 - [ ] **Menu management** builder + public rendering.
 - [ ] **Contact form** + email delivery (reCAPTCHA-protected).
