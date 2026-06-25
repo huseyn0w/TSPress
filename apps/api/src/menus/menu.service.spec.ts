@@ -286,3 +286,146 @@ describe('getMenu (admin)', () => {
     await expect(service.getMenu('nope')).rejects.toBeInstanceOf(NotFoundException);
   });
 });
+
+describe('listMenus', () => {
+  it('maps menu rows to summaries', async () => {
+    menus.list.mockResolvedValue([
+      { id: 'm1', name: 'A', location: 'primary', createdAt: new Date(), updatedAt: new Date() },
+    ]);
+    expect(await service.listMenus()).toEqual([{ id: 'm1', name: 'A', location: 'primary' }]);
+  });
+});
+
+describe('updateMenu', () => {
+  it('returns the updated summary', async () => {
+    menus.update.mockResolvedValue({ id: 'm1', name: 'B', location: 'footer' });
+    expect(await service.updateMenu('m1', { name: 'B' })).toEqual({
+      id: 'm1',
+      name: 'B',
+      location: 'footer',
+    });
+  });
+
+  it('maps P2025 to 404', async () => {
+    menus.update.mockRejectedValue(
+      new Prisma.PrismaClientKnownRequestError('x', { code: 'P2025', clientVersion: '5' }),
+    );
+    await expect(service.updateMenu('m1', { name: 'B' })).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('maps a duplicate location P2002 to 409', async () => {
+    menus.update.mockRejectedValue(
+      new Prisma.PrismaClientKnownRequestError('x', { code: 'P2002', clientVersion: '5' }),
+    );
+    await expect(service.updateMenu('m1', { location: 'primary' })).rejects.toBeInstanceOf(
+      ConflictException,
+    );
+  });
+});
+
+describe('deleteMenu', () => {
+  it('deletes an existing menu', async () => {
+    menus.hardDelete.mockResolvedValue(undefined);
+    await service.deleteMenu('m1');
+    expect(menus.hardDelete).toHaveBeenCalledWith('m1');
+  });
+
+  it('maps P2025 to 404', async () => {
+    menus.hardDelete.mockRejectedValue(
+      new Prisma.PrismaClientKnownRequestError('x', { code: 'P2025', clientVersion: '5' }),
+    );
+    await expect(service.deleteMenu('m1')).rejects.toBeInstanceOf(NotFoundException);
+  });
+});
+
+describe('item create/update/delete', () => {
+  it('creates a PAGE item after validating the target exists', async () => {
+    menus.exists.mockResolvedValue(true);
+    pages.slugsByIds.mockResolvedValue({ pg1: 'about' });
+    menus.maxOrder.mockResolvedValue(-1);
+    menus.createItem.mockResolvedValue(item({ id: 'n', type: 'PAGE', targetId: 'pg1', url: null }));
+    await service.createItem('m1', { type: 'PAGE', label: 'About', targetId: 'pg1' });
+    const arg = menus.createItem.mock.calls[0]?.[0];
+    expect(arg.type).toBe('PAGE');
+    expect(arg.targetId).toBe('pg1');
+    expect(arg.order).toBe(0);
+  });
+
+  it('updates a reference item, validating the new CATEGORY target', async () => {
+    menus.itemExists.mockResolvedValue(true);
+    categories.slugsByIds.mockResolvedValue({ c1: 'guides' });
+    menus.updateItem.mockResolvedValue(
+      item({ id: 'i1', type: 'CATEGORY', targetId: 'c1', url: null }),
+    );
+    await service.updateItem('m1', 'i1', { type: 'CATEGORY', label: 'Guides', targetId: 'c1' });
+    expect(menus.updateItem).toHaveBeenCalled();
+  });
+
+  it('404s updating an item not in the menu', async () => {
+    menus.itemExists.mockResolvedValue(false);
+    await expect(
+      service.updateItem('m1', 'i1', { type: 'CUSTOM', label: 'X', url: '/x' }),
+    ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('deletes an item that belongs to the menu', async () => {
+    menus.itemExists.mockResolvedValue(true);
+    await service.deleteItem('m1', 'i1');
+    expect(menus.deleteItem).toHaveBeenCalledWith('i1');
+  });
+
+  it('404s deleting an item not in the menu', async () => {
+    menus.itemExists.mockResolvedValue(false);
+    await expect(service.deleteItem('m1', 'i1')).rejects.toBeInstanceOf(NotFoundException);
+  });
+});
+
+describe('getPublicMenu reference resolution', () => {
+  it('resolves PAGE and CATEGORY targets to their urls', async () => {
+    pages.slugsByIds.mockResolvedValue({ pg1: 'about' });
+    categories.slugsByIds.mockResolvedValue({ c1: 'guides' });
+    menus.findByLocation.mockResolvedValue(
+      menuTree([
+        item({ id: 'a', type: 'PAGE', targetId: 'pg1', url: null, label: 'About' }),
+        item({ id: 'b', type: 'CATEGORY', targetId: 'c1', url: null, label: 'Guides' }),
+      ]),
+    );
+    const menu = await service.getPublicMenu('primary', 'en');
+    expect(menu.items.map((i) => i.url)).toEqual(['/about', '/blog?category=guides']);
+  });
+
+  it('falls back to the default locale for an unknown locale', async () => {
+    menus.findByLocation.mockResolvedValue(
+      menuTree([
+        item({
+          id: 'a',
+          type: 'CUSTOM',
+          url: '/x',
+          label: 'Base',
+          translations: [
+            {
+              id: 't',
+              menuItemId: 'a',
+              locale: 'de',
+              label: 'DE',
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
+          ],
+        }),
+      ]),
+    );
+    const menu = await service.getPublicMenu('primary', 'zz');
+    expect(menu.items[0]?.label).toBe('Base'); // zz → en (default), no en override → base
+  });
+});
+
+describe('deleteTranslation idempotency', () => {
+  it('swallows P2025 (already absent)', async () => {
+    menus.itemExists.mockResolvedValue(true);
+    menus.deleteTranslation.mockRejectedValue(
+      new Prisma.PrismaClientKnownRequestError('x', { code: 'P2025', clientVersion: '5' }),
+    );
+    await expect(service.deleteTranslation('m1', 'i1', 'de')).resolves.toBeUndefined();
+  });
+});
