@@ -64,6 +64,16 @@ export function canManageMenus(session: Session): boolean {
   );
 }
 
+/** Returns true if the session grants contact-inbox management capability. */
+export function canManageContacts(session: Session): boolean {
+  const permissions = session.user.role?.permissions ?? [];
+  return permissions.some(
+    (p) =>
+      (p.action === 'manage' && p.subject === 'all') ||
+      (p.action === 'manage' && p.subject === 'Contact'),
+  );
+}
+
 /**
  * Server-only guard for /admin routes.
  * Redirects to /signin if unauthenticated, to / if not admin-capable.

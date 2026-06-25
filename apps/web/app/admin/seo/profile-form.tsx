@@ -66,6 +66,19 @@ export function ProfileForm({ profile }: { profile: SiteProfile }) {
             onChange={(e) => set('logoUrl', e.target.value)}
           />
         </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="contactEmail">Contact email</Label>
+          <Input
+            id="contactEmail"
+            type="email"
+            placeholder="hello@example.com"
+            value={form.contactEmail}
+            onChange={(e) => set('contactEmail', e.target.value)}
+          />
+          <p className="text-xs text-muted-foreground">
+            Recipient for contact-form messages. Empty falls back to the server default.
+          </p>
+        </div>
       </div>
 
       <div className="space-y-1.5">

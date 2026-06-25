@@ -1,6 +1,7 @@
 import { AdminShell } from '@/components/admin/admin-shell';
 import { Providers } from '@/components/providers';
 import {
+  canManageContacts,
   canManageMenus,
   canManageSeo,
   canManageSettings,
@@ -22,6 +23,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           canManageSettings={canManageSettings(session)}
           canManageSeo={canManageSeo(session)}
           canManageMenus={canManageMenus(session)}
+          canManageContacts={canManageContacts(session)}
           canModerateComments={canModerateComments(session)}
         >
           {children}

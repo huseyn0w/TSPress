@@ -18,6 +18,7 @@ import {
   Files,
   FolderTree,
   Image,
+  Inbox,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -45,6 +46,7 @@ interface AdminShellProps {
   canManageSettings: boolean;
   canManageSeo: boolean;
   canManageMenus: boolean;
+  canManageContacts: boolean;
   canModerateComments: boolean;
 }
 
@@ -64,6 +66,7 @@ function buildNavGroups(
   canManageSettings: boolean,
   canManageSeo: boolean,
   canManageMenus: boolean,
+  canManageContacts: boolean,
   canModerateComments: boolean,
 ): NavGroup[] {
   const groups: NavGroup[] = [
@@ -114,17 +117,23 @@ function buildNavGroups(
     },
   ];
 
+  const moderationItems: NavItem[] = [];
   if (canModerateComments) {
-    groups.push({
-      heading: 'Moderation',
-      items: [
-        {
-          label: 'Comments',
-          href: '/admin/comments',
-          icon: <MessageSquare className="h-4 w-4" />,
-        },
-      ],
+    moderationItems.push({
+      label: 'Comments',
+      href: '/admin/comments',
+      icon: <MessageSquare className="h-4 w-4" />,
     });
+  }
+  if (canManageContacts) {
+    moderationItems.push({
+      label: 'Contact',
+      href: '/admin/contact',
+      icon: <Inbox className="h-4 w-4" />,
+    });
+  }
+  if (moderationItems.length > 0) {
+    groups.push({ heading: 'Moderation', items: moderationItems });
   }
 
   if (canManageUsers) {
@@ -191,6 +200,7 @@ function getSectionLabel(pathname: string): string {
   if (pathname.startsWith('/admin/seo')) return 'SEO & GEO';
   if (pathname.startsWith('/admin/menus')) return 'Menus';
   if (pathname.startsWith('/admin/comments')) return 'Comments';
+  if (pathname.startsWith('/admin/contact')) return 'Contact';
   return 'Admin';
 }
 
@@ -235,6 +245,7 @@ function Sidebar({
   canManageSettings,
   canManageSeo,
   canManageMenus,
+  canManageContacts,
   canModerateComments,
   onClose,
 }: {
@@ -243,6 +254,7 @@ function Sidebar({
   canManageSettings: boolean;
   canManageSeo: boolean;
   canManageMenus: boolean;
+  canManageContacts: boolean;
   canModerateComments: boolean;
   onClose?: () => void;
 }) {
@@ -251,6 +263,7 @@ function Sidebar({
     canManageSettings,
     canManageSeo,
     canManageMenus,
+    canManageContacts,
     canModerateComments,
   );
 
@@ -313,6 +326,7 @@ export function AdminShell({
   canManageSettings,
   canManageSeo,
   canManageMenus,
+  canManageContacts,
   canModerateComments,
 }: AdminShellProps) {
   const pathname = usePathname();
@@ -330,6 +344,7 @@ export function AdminShell({
           canManageSettings={canManageSettings}
           canManageSeo={canManageSeo}
           canManageMenus={canManageMenus}
+          canManageContacts={canManageContacts}
           canModerateComments={canModerateComments}
         />
       </aside>
@@ -347,6 +362,7 @@ export function AdminShell({
               canManageSettings={canManageSettings}
               canManageSeo={canManageSeo}
               canManageMenus={canManageMenus}
+              canManageContacts={canManageContacts}
               canModerateComments={canModerateComments}
               onClose={() => setMobileOpen(false)}
             />
