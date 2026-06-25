@@ -46,6 +46,8 @@ export type PostCreateData = {
   publishedAt: Date | null;
   metaTitle?: string | null;
   metaDescription?: string | null;
+  canonicalUrl?: string | null;
+  noindex?: boolean;
   authorId: string;
   categoryIds?: string[];
   tagIds?: string[];
@@ -61,6 +63,8 @@ export type PostUpdateData = {
   publishedAt?: Date;
   metaTitle?: string | null;
   metaDescription?: string | null;
+  canonicalUrl?: string | null;
+  noindex?: boolean;
   /** When present, REPLACES the post's categories (set semantics). */
   categoryIds?: string[];
   /** When present, REPLACES the post's tags (set semantics). */
@@ -133,6 +137,8 @@ export class PrismaPostRepository extends PrismaCrudRepository implements PostRe
         publishedAt: data.publishedAt,
         metaTitle: data.metaTitle ?? null,
         metaDescription: data.metaDescription ?? null,
+        canonicalUrl: data.canonicalUrl ?? null,
+        noindex: data.noindex ?? false,
         authorId: data.authorId,
         categories: data.categoryIds
           ? { connect: data.categoryIds.map((id) => ({ id })) }
@@ -215,6 +221,8 @@ export class PrismaPostRepository extends PrismaCrudRepository implements PostRe
     if (data.publishedAt !== undefined) prismaData.publishedAt = data.publishedAt;
     if (data.metaTitle !== undefined) prismaData.metaTitle = data.metaTitle;
     if (data.metaDescription !== undefined) prismaData.metaDescription = data.metaDescription;
+    if (data.canonicalUrl !== undefined) prismaData.canonicalUrl = data.canonicalUrl;
+    if (data.noindex !== undefined) prismaData.noindex = data.noindex;
     // `set` REPLACES the relation (vs `connect` on create) — preserves removal-on-edit.
     if (data.categoryIds !== undefined) {
       prismaData.categories = { set: data.categoryIds.map((cid) => ({ id: cid })) };
