@@ -272,6 +272,10 @@ pnpm e2e                                                  # 11/11 (web-alone; li
 - Vitest resolves `@cmstack-ts/{db,config}` to `src` (no build needed for tests);
   `pnpm typecheck` DOES build packages to `dist` first.
 - `packages/db` is CommonJS; `apps/api` CommonJS (Nest); `apps/web`/`apps/mcp` ESM.
+- **Playwright e2e:** if `pnpm e2e` fails with `Executable doesn't exist … chromium_headless_shell-1148`,
+  install the matching browser once: `pnpm exec playwright install chromium-headless-shell` (the e2e
+  runner pins build **1148**; a generic `playwright install chromium` may fetch a newer build and not
+  satisfy it). Then re-run `pnpm e2e`.
 - Reply to the operator in **Russian**; code/comments/docs in **English**.
 
 ---
