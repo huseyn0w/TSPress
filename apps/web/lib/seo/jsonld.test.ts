@@ -10,6 +10,14 @@ const profile: SiteProfile = {
   logoUrl: 'https://acme.test/logo.png',
   geoStatement: 'geo',
   contactEmail: '',
+  ga4MeasurementId: '',
+  gtmContainerId: '',
+  googleSiteVerification: '',
+  bingSiteVerification: '',
+  yandexVerification: '',
+  facebookDomainVerification: '',
+  pinterestVerification: '',
+  customVerificationTags: [],
 };
 
 describe('organizationJsonLd', () => {

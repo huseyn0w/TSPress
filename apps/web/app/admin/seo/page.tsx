@@ -27,6 +27,14 @@ const DEFAULT_PROFILE: SiteProfile = {
   logoUrl: '',
   geoStatement: '',
   contactEmail: '',
+  ga4MeasurementId: '',
+  gtmContainerId: '',
+  googleSiteVerification: '',
+  bingSiteVerification: '',
+  yandexVerification: '',
+  facebookDomainVerification: '',
+  pinterestVerification: '',
+  customVerificationTags: [],
 };
 
 async function fetchProfile(): Promise<SiteProfile> {

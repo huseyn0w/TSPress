@@ -94,7 +94,7 @@ export const siteProfileSchema = z.object({
   yandexVerification: z.string(),
   facebookDomainVerification: z.string(),
   pinterestVerification: z.string(),
-  customVerificationTags: z.array(verificationTagSchema).default([]),
+  customVerificationTags: z.array(verificationTagSchema),
 });
 export type SiteProfile = z.infer<typeof siteProfileSchema>;
 

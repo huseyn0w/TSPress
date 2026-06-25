@@ -1,7 +1,10 @@
-import { routing } from '@/i18n/routing';
+import { getSeoContent } from '@/lib/seo/fetch';
+import { buildVerificationMeta } from '@cmstack-ts/config';
+import type { Metadata } from 'next';
 import { hasLocale } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
+import { routing } from '@/i18n/routing';
 import type { ReactNode } from 'react';
 
 /**
@@ -11,6 +14,23 @@ import type { ReactNode } from 'react';
  */
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
+}
+
+/**
+ * Search-engine / platform site-verification meta tags — public pages only.
+ * Next merges this with the root layout's metadata; admin/auth (app root) never
+ * see these tags. Tokens are settings-driven and Next escapes the attributes.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const { profile } = await getSeoContent();
+  const v = buildVerificationMeta(profile);
+  return {
+    verification: {
+      ...(v.google ? { google: v.google } : {}),
+      ...(v.yandex ? { yandex: v.yandex } : {}),
+      ...(Object.keys(v.other).length ? { other: v.other } : {}),
+    },
+  };
 }
 
 export default async function LocaleLayout({
