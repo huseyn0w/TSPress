@@ -39,3 +39,6 @@ playwright-report/
 *.log
 npm-debug.log*
 pnpm-debug.log*
+
+# Claude Code personal permissions (do not commit)
+.claude/settings.local.json
