@@ -1,7 +1,7 @@
 # cmstack-ts — HANDOFF
 
-**Updated:** 2026-06-25 — **Task 2 + Task 4 COMPLETE; E2E re-run green; Task 1 IN PROGRESS (§7 #1, #2, #3 done).** · **Branch:** `refactor/repository-layer` (off `main`)
-**Next phases:** Task 1 (feature parity) continuing per §7 order (next: #4 menu management); Task 3 (UI), Task 5 (README) not started.
+**Updated:** 2026-06-25 — **Task 2 + Task 4 COMPLETE; E2E re-run green; Task 1 IN PROGRESS (§7 #1, #2, #3, #4 done).** · **Branch:** `refactor/repository-layer` (off `main`)
+**Next phases:** Task 1 (feature parity) continuing per §7 order (next: #5 contact form); Task 3 (UI), Task 5 (README) not started.
 
 ## Task 1 progress (feature parity, `REFACTOR_PLAN.md` §7 — strict order per operator)
 - **E2E baseline re-run (pre-Task-1):** full stack up (docker db + built api + built web),
@@ -62,8 +62,37 @@
   enumeration leak (above).
   - **New dependency:** `nodemailer` (+ `@types/nodemailer`) in `apps/api` — required for real SMTP
     delivery; justified by the feature (not speculative).
-- **Next §7 item:** **#4 — menu management** (admin drag-sortable builder; items reference
-  posts/pages/categories/custom URLs; per-locale; public rendering).
+- **§7 #4 — Menu management: DONE** (2026-06-25). Spec/plan:
+  `docs/superpowers/{specs,plans}/2026-06-25-menu-management.*`. Model: `Menu` (unique `location`),
+  nested `MenuItem` (self-tree, polymorphic **non-FK** `targetId` for POST/PAGE/CATEGORY, `url` for
+  CUSTOM), `MenuItemTranslation` (label-only, reuses §7 #1 `localizeContent` + per-field fallback).
+  Migration `20260625125551_menu_management` (additive/reversible). New `menus` NestJS module
+  (controller → `MenuService` → `MenuRepository`/`MenuItemRepository`); `Post/Page/CategoryRepository`
+  gained `slugsByIds` (batch, no N+1). Pure `resolveMenuItemUrl` + `normalizeCustomUrl` in
+  `@cmstack-ts/config` (CUSTOM url restricted to `/…` or `http(s)://…`; `javascript:`/`//` rejected).
+  Public `GET /public/menus/:location?locale=` → resolved, localized tree `{label,url,openInNewTab,
+  children}` (unresolved target → link dropped; orphan of a dropped parent dropped; junk/absent locale
+  → default). Admin (CASL subject **`Menu`**, seeded to Administrator + Editor): `GET/POST/PATCH/DELETE
+  /menus`, item CRUD, **`PUT /menus/:id/structure`** (bulk reorder+reparent, validates ids ⊆ menu +
+  no cycle), per-locale label `PUT/DELETE …/items/:itemId/translations/:locale`. New web routes:
+  `/[locale]/[slug]` (public **Page** through the active theme — also starts rendering §7 #2 page meta)
+  and `/blog?category=` filter. `<SiteMenu>` (`components/public/site-menu.tsx`) renders managed nav in
+  **editorial + magazine** (locale-aware `Link` for internal hrefs → `/de/…`, plain `<a>` for external;
+  empty/unavailable → theme's static-link fallback; `.ts-menu` dropdown CSS in globals). Admin
+  drag-sortable builder at `/admin/menus` (HTML5 drag reorder + indent/outdent capped at 2 levels,
+  item editor with target picker, per-locale label fields; Server Actions). Seed adds `primary`
+  (Blog/Services→Search nested/Featured POST) + `footer`, with de/ru labels (idempotent by location).
+  **No observer event** (no real side effect; `menu.changed` recorded for the future cache layer, §2.7).
+  **357 tests, typecheck/lint clean, coverage 87.5% (gate ≥80%)**; live-verified (de/en/junk-locale menu
+  JSON; `/de` header renders localized managed nav with `/de/…` links; `/about` page route + custom
+  `<title>`; `/blog?category=guides` → 200). Adversarial self-review: 0 HIGH/MED (XSS, P2002/P2025,
+  slug-drift, cycle, locale fallback, payload-leak all checked); 1 LOW (PATCH item is full-replace,
+  consistent with the form pattern).
+  - **Scoped out (logged):** pointer-drag polish / nicer dropdowns → Task 3 (UI); the builder reorders
+    via HTML5 drag + indent/outdent buttons (keyboard-usable) which is functional, not yet polished.
+    Category items resolve to `/blog?category=`; a dedicated category archive page is not built.
+- **Next §7 item:** **#5 — contact form** + email delivery (reuses the #3 `MailService`;
+  reCAPTCHA-protected).
 
 ---
 
@@ -228,21 +257,20 @@ pnpm e2e                                                  # 11/11 (web-alone; li
 ## Continuation prompt (paste into a fresh window)
 > You are continuing the `cmstack-ts` engagement (senior TS engineer, autonomous).
 > Working dir `/Users/huseyn0w/Desktop/SWE/cmstack/cmstack-ts`, branch
-> `refactor/repository-layer` (clean tree, all committed; **316 tests, typecheck + biome
-> clean, coverage gate ≥80%**). **DONE:** Task 2 (repository-layer refactor) + Task 4
+> `refactor/repository-layer` (clean tree, all committed; **357 tests, typecheck + biome
+> clean, coverage gate ≥80% (actual ~87.5%)**). **DONE:** Task 2 (repository-layer refactor) + Task 4
 > (tests); the E2E baseline re-run (11/11, refactor confirmed black-box-invariant); and
 > **Task 1 §7 items #1 (per-locale content translation), #2 (per-content SEO meta), #3
-> (password reset + transactional email)** — all live-verified. **Read first:**
+> (password reset + transactional email), #4 (menu management)** — all live-verified. **Read first:**
 > `cmstack-ts/HANDOFF.md` (the Task-1 progress section + "Full stack for LIVE verification"
 > recipe + Gotchas), `cmstack-ts/REFACTOR_PLAN.md` (§2.0 layering, §2.7 observer policy,
-> §7 feature register with #1–#3 checked, §10 invariants), `cmstack-ts/CLAUDE.md`, and the
+> §7 feature register with #1–#4 checked, §10 invariants), `cmstack-ts/CLAUDE.md`, and the
 > read-only canon `../FEATURE_MATRIX.md` + `../DESIGN_SYSTEM.md` (do NOT edit the canon).
 > The design+plan docs for finished items are in `docs/superpowers/{specs,plans}/`.
 >
-> **Resume with Task 1 §7 in strict order (operator directive) — next is #4 menu
-> management** (admin drag-sortable builder; items reference posts/pages/categories/custom
-> URLs; **per-locale**, reusing the #1 translation pattern; public menu rendering). After
-> it: #5 contact form (reuses the #3 `MailService`), #6 GA4/GTM, #7 auto thumbnails, #8
+> **Resume with Task 1 §7 in strict order (operator directive) — next is #5 contact
+> form** (reuses the #3 `MailService`; reCAPTCHA-protected; admin-readable submissions). After
+> it: #6 GA4/GTM, #7 auto thumbnails, #8
 > dashboard translation tab-strip UI (the admin editor for the #1 translation endpoints),
 > #9 plugin admin UI, #10 Redis cache, then the shared net-new. Then Task 3 (UI §8) +
 > Task 5 (full README rewrite).

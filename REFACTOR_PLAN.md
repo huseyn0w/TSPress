@@ -518,7 +518,16 @@ From `../FEATURE_MATRIX.md` ("cmstack-ts needs"); nothing to be silently dropped
       failure can't leak existence); web `/forgot-password` + `/reset-password` pages. Live-verified
       end-to-end (request→email link→confirm→login; reuse→400). Email infra reused by §7 contact
       form + comment-notification email.
-- [ ] **Menu management** builder + public rendering.
+- [x] **Menu management** builder + public rendering. **DONE** (2026-06-25): `Menu`/`MenuItem`
+      (nested, polymorphic non-FK `targetId`)/`MenuItemTranslation` (label-only, §7 #1 pattern);
+      migration `20260625125551_menu_management`. New `menus` module (3-layer); pure
+      `resolveMenuItemUrl`/`normalizeCustomUrl` (XSS-safe custom URLs); public
+      `GET /public/menus/:location?locale=` returns a resolved, localized tree (slug-drift drops
+      the link); admin CRUD + `PUT /menus/:id/structure` (bulk reorder/reparent, cycle-checked) +
+      per-locale label endpoints, CASL subject **`Menu`** (Administrator + Editor). New web routes
+      `/[locale]/[slug]` (public page + #2 meta) and `/blog?category=`; `<SiteMenu>` renders managed
+      nav in editorial + magazine (locale-aware links, fallback to static links). Admin drag-sortable
+      builder at `/admin/menus`. Seeded primary/footer menus (de/ru). Live-verified.
 - [ ] **Contact form** + email delivery (reCAPTCHA-protected).
 - [ ] **GA4/GTM** injection + site-verification tags (public pages only).
 - [ ] **Auto thumbnails / image processing** (decompression-bomb guard).
