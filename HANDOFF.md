@@ -1,7 +1,7 @@
 # cmstack-ts — HANDOFF
 
-**Updated:** 2026-06-25 — **Task 2 + Task 4 COMPLETE; E2E re-run green; Task 1 IN PROGRESS (§7 #1 + #2 done).** · **Branch:** `refactor/repository-layer` (off `main`)
-**Next phases:** Task 1 (feature parity) continuing per §7 order (next: #3 password-reset+email); Task 3 (UI), Task 5 (README) not started.
+**Updated:** 2026-06-25 — **Task 2 + Task 4 COMPLETE; E2E re-run green; Task 1 IN PROGRESS (§7 #1, #2, #3 done).** · **Branch:** `refactor/repository-layer` (off `main`)
+**Next phases:** Task 1 (feature parity) continuing per §7 order (next: #4 menu management); Task 3 (UI), Task 5 (README) not started.
 
 ## Task 1 progress (feature parity, `REFACTOR_PLAN.md` §7 — strict order per operator)
 - **E2E baseline re-run (pre-Task-1):** full stack up (docker db + built api + built web),
@@ -46,8 +46,24 @@
     explicit empty/`null` if field-clearing is required.
   - **Pages** store meta/canonical/noindex but have **no public route** yet, so page-level meta is not
     rendered anywhere (wire it when pages get a public surface).
-- **Next §7 item:** **#3 — password reset + transactional email** (brings email infrastructure that
-  contact form + comment-notification email later reuse).
+- **§7 #3 — Password reset + transactional email: DONE** (2026-06-25). New `mail` module:
+  `MailService` sends through a pluggable `MailTransport` (real SMTP via **nodemailer** when
+  `SMTP_HOST` is set; a logging no-op otherwise, so the demo prints the reset link to the API log
+  and needs no SMTP server) + a pure `passwordResetEmail` builder (HTML-escaped link).
+  `PasswordResetToken` model (migration `20260625..._password_reset_tokens`): only the **SHA-256
+  hash** of the token is stored, single-use (`usedAt`), TTL (`PASSWORD_RESET_TTL_MINUTES`, default
+  60). Rate-limited `POST /auth/password-reset/request` (always 200 — no account enumeration; a mail
+  failure is caught so it can't 500-leak existence) and `/confirm` (validates token unused+unexpired,
+  Argon2id-rehashes, marks used). Web `/forgot-password` + `/reset-password?token=` pages (outside
+  locale routing; added to middleware `PANEL_PREFIXES`) + a "Forgot your password?" link on sign-in.
+  `.env.example` documents the SMTP vars. **316 tests, typecheck/lint clean, coverage ≥80%, e2e
+  11/11**; live-verified end-to-end (request → emailed link from the API log → confirm → login with
+  the new password; reuse of a spent token → 400). Adversarial self-review fixed the mail-failure
+  enumeration leak (above).
+  - **New dependency:** `nodemailer` (+ `@types/nodemailer`) in `apps/api` — required for real SMTP
+    delivery; justified by the feature (not speculative).
+- **Next §7 item:** **#4 — menu management** (admin drag-sortable builder; items reference
+  posts/pages/categories/custom URLs; per-locale; public rendering).
 
 ---
 

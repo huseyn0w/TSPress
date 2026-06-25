@@ -511,7 +511,13 @@ From `../FEATURE_MATRIX.md` ("cmstack-ts needs"); nothing to be silently dropped
       blog post `<head>` uses localized metaTitle/metaDescription, custom canonical override, and
       robots `noindex`; noindex excludes a post from the sitemap + llms.txt; admin post/page forms
       gained an SEO fieldset. Live-verified.
-- [ ] **Password reset** + transactional **email** wiring.
+- [x] **Password reset** + transactional **email** wiring. **DONE** (2026-06-25):
+      provider-agnostic `MailService` (nodemailer SMTP; logs a no-op when `SMTP_HOST` unset, so
+      demo runs keylessly); `PasswordResetToken` (SHA-256-hashed, single-use, TTL); rate-limited
+      `POST /auth/password-reset/{request,confirm}` (request always 200 — no enumeration, mail
+      failure can't leak existence); web `/forgot-password` + `/reset-password` pages. Live-verified
+      end-to-end (request→email link→confirm→login; reuse→400). Email infra reused by §7 contact
+      form + comment-notification email.
 - [ ] **Menu management** builder + public rendering.
 - [ ] **Contact form** + email delivery (reCAPTCHA-protected).
 - [ ] **GA4/GTM** injection + site-verification tags (public pages only).
