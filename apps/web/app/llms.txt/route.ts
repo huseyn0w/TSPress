@@ -9,7 +9,8 @@ export async function GET(): Promise<Response> {
   const [content, posts] = await Promise.all([getSeoContent(), getAllPublicPosts()]);
   const body = buildLlmsTxt(content, {
     siteUrl,
-    posts: posts.map((p) => ({ title: p.title, slug: p.slug })),
+    // noindex posts are kept out of the AI feed too (consistent with the sitemap).
+    posts: posts.filter((p) => !p.noindex).map((p) => ({ title: p.title, slug: p.slug })),
   });
 
   return new Response(body, {

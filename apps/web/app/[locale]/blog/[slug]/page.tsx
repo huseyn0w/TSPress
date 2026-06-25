@@ -52,14 +52,22 @@ export async function generateMetadata({
   const post = await getPost(slug, locale);
   if (!post) return {};
 
+  // Per-content SEO: localized meta title/description override the title/excerpt;
+  // a custom canonical overrides the per-locale default; noindex opts the page out.
+  const title = post.metaTitle ?? post.title;
+  const description = post.metaDescription ?? post.excerpt ?? undefined;
+  const alternates = alternatesFor(locale, `/blog/${post.slug}`);
+  if (post.canonicalUrl) alternates.canonical = post.canonicalUrl;
+
   return {
-    title: post.title,
-    description: post.excerpt ?? undefined,
-    alternates: alternatesFor(locale, `/blog/${post.slug}`),
+    title,
+    description,
+    alternates,
+    robots: post.noindex ? { index: false, follow: false } : undefined,
     openGraph: {
       type: 'article',
-      title: post.title,
-      description: post.excerpt ?? undefined,
+      title,
+      description,
       url: `${siteUrl}/blog/${post.slug}`,
       publishedTime: post.publishedAt ?? undefined,
     },

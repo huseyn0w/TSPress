@@ -33,6 +33,7 @@ export interface PublicPostRef {
   slug: string;
   updatedAt: string;
   publishedAt: string | null;
+  noindex: boolean;
 }
 
 const PER_PAGE = 100;
@@ -60,6 +61,7 @@ export async function getAllPublicPosts(): Promise<PublicPostRef[]> {
           slug: p.slug,
           updatedAt: p.updatedAt,
           publishedAt: p.publishedAt,
+          noindex: p.noindex,
         });
       }
       if (items.length < PER_PAGE) break;

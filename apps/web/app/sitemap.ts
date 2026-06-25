@@ -33,13 +33,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     localizedEntry('/services', { changeFrequency: 'monthly', priority: 0.7 }),
   ];
 
-  const postRoutes: MetadataRoute.Sitemap = posts.map((post) =>
-    localizedEntry(`/blog/${post.slug}`, {
-      lastModified: post.updatedAt,
-      changeFrequency: 'weekly',
-      priority: 0.6,
-    }),
-  );
+  const postRoutes: MetadataRoute.Sitemap = posts
+    // Per-content noindex opts a post out of the sitemap (and search indices).
+    .filter((post) => !post.noindex)
+    .map((post) =>
+      localizedEntry(`/blog/${post.slug}`, {
+        lastModified: post.updatedAt,
+        changeFrequency: 'weekly',
+        priority: 0.6,
+      }),
+    );
 
   return [...staticRoutes, ...postRoutes];
 }
