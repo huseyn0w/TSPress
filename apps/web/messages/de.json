@@ -64,5 +64,16 @@
   "footer": {
     "editorial": "Editorial-Theme",
     "magazine": "Magazine-Theme"
+  },
+  "contact": {
+    "title": "Kontakt",
+    "intro": "Haben Sie eine Frage oder ein Projekt? Schreiben Sie uns.",
+    "name": "Name",
+    "email": "E-Mail",
+    "subject": "Betreff",
+    "message": "Nachricht",
+    "send": "Nachricht senden",
+    "success": "Danke — Ihre Nachricht wurde gesendet.",
+    "error": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
   }
 }

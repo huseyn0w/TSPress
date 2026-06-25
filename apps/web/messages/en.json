@@ -64,5 +64,16 @@
   "footer": {
     "editorial": "Editorial theme",
     "magazine": "Magazine theme"
+  },
+  "contact": {
+    "title": "Contact",
+    "intro": "Have a question or a project in mind? Send us a message.",
+    "name": "Name",
+    "email": "Email",
+    "subject": "Subject",
+    "message": "Message",
+    "send": "Send message",
+    "success": "Thanks — your message has been sent.",
+    "error": "Something went wrong. Please try again."
   }
 }
