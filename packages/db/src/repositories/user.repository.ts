@@ -51,6 +51,8 @@ export interface UserRepository {
   createWithRole(data: UserCreateData): Promise<UserWithRole>;
   createWithRoleAndAccount(data: OAuthUserCreateData): Promise<UserWithRole>;
   updateProfileFields(id: string, data: ProfileFieldsData): Promise<UserPublicFields>;
+  /** Set a new password hash (password reset). */
+  updatePasswordHash(id: string, passwordHash: string): Promise<void>;
   listAndCount(filter: UserListFilter): Promise<{ items: UserWithRoleSummary[]; total: number }>;
   findByIdSummary(id: string): Promise<UserWithRoleSummary | null>;
   updateAdmin(id: string, data: AdminUserUpdateData): Promise<UserWithRoleSummary>;
@@ -105,6 +107,10 @@ export class PrismaUserRepository extends PrismaCrudRepository implements UserRe
       data,
       select: { id: true, name: true, image: true, bio: true },
     });
+  }
+
+  async updatePasswordHash(id: string, passwordHash: string): Promise<void> {
+    await this.prisma.user.update({ where: { id }, data: { passwordHash } });
   }
 
   async listAndCount(filter: UserListFilter): Promise<{

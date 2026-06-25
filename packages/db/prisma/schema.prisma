@@ -15,28 +15,43 @@ datasource db {
 // --- Accounts (Phase 1) ------------------------------------------------------
 
 model User {
-  id            String     @id @default(cuid())
-  email         String     @unique
-  name          String?
+  id                  String               @id @default(cuid())
+  email               String               @unique
+  name                String?
   /// Argon2id hash. Null for users who only sign in via an OAuth provider.
-  passwordHash  String?
-  image         String?
+  passwordHash        String?
+  image               String?
   /// Public author bio, shown on the author profile page.
-  bio           String?
-  emailVerified DateTime?
-  roleId        String?
-  role          Role?      @relation(fields: [roleId], references: [id], onDelete: SetNull)
-  accounts      Account[]
-  posts         Post[]
-  pages         Page[]
-  revisions     Revision[]
-  media         Media[]
-  comments      Comment[]
-  likes         PostLike[]
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  bio                 String?
+  emailVerified       DateTime?
+  roleId              String?
+  role                Role?                @relation(fields: [roleId], references: [id], onDelete: SetNull)
+  accounts            Account[]
+  posts               Post[]
+  pages               Page[]
+  revisions           Revision[]
+  media               Media[]
+  comments            Comment[]
+  likes               PostLike[]
+  passwordResetTokens PasswordResetToken[]
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
 
   @@index([roleId])
+}
+
+/// A single-use, hashed password-reset token with an expiry. Only the SHA-256
+/// hash of the token is stored; the raw token lives only in the emailed link.
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
 }
 
 /// Links a user to an external OAuth identity (Google, GitHub, ...).
