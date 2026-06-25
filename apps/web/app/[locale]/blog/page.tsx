@@ -20,12 +20,13 @@ export async function generateMetadata({
 
 const EMPTY = { items: [], total: 0, page: 1, perPage: 20 };
 
-async function getPosts(locale: string) {
+async function getPosts(locale: string, categorySlug?: string) {
   try {
-    const res = await fetch(
-      `${apiBaseUrl}/public/posts?perPage=20&locale=${encodeURIComponent(locale)}`,
-      { cache: 'no-store' },
-    );
+    const params = new URLSearchParams({ perPage: '20', locale });
+    if (categorySlug) params.set('categorySlug', categorySlug);
+    const res = await fetch(`${apiBaseUrl}/public/posts?${params.toString()}`, {
+      cache: 'no-store',
+    });
     if (!res.ok) return EMPTY;
     const parsed = postListSchema.safeParse(await res.json());
     return parsed.success ? parsed.data : EMPTY;
@@ -35,10 +36,17 @@ async function getPosts(locale: string) {
   }
 }
 
-export default async function BlogIndexPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function BlogIndexPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ category?: string }>;
+}) {
   const { locale } = await params;
+  const { category } = await searchParams;
   const [{ items }, { Layout, BlogIndex }] = await Promise.all([
-    getPosts(locale),
+    getPosts(locale, category),
     getActiveTheme(),
   ]);
 
