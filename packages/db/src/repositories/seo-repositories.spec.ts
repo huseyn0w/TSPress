@@ -27,6 +27,7 @@ describe('PrismaSiteProfileRepository', () => {
       url: '',
       logoUrl: '',
       geoStatement: 'g',
+      contactEmail: '',
     };
     siteProfile.upsert.mockResolvedValue({ id: SITE_PROFILE_ID, ...data });
     await repo.upsert(data);

@@ -21,3 +21,4 @@ export * from './password-reset-token.repository';
 export * from './account.repository';
 export * from './role.repository';
 export * from './menu.repository';
+export * from './contact-submission.repository';
