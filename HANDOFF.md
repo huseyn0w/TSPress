@@ -1,7 +1,7 @@
 # cmstack-ts — HANDOFF
 
-**Updated:** 2026-06-25 — **Task 2 + Task 4 COMPLETE; E2E re-run green; Task 1 IN PROGRESS (§7 #1, #2, #3, #4 done).** · **Branch:** `refactor/repository-layer` (off `main`)
-**Next phases:** Task 1 (feature parity) continuing per §7 order (next: #5 contact form); Task 3 (UI), Task 5 (README) not started.
+**Updated:** 2026-06-25 — **Task 2 + Task 4 COMPLETE; E2E re-run green; Task 1 IN PROGRESS (§7 #1–#5 done).** · **Branch:** `refactor/repository-layer` (off `main`)
+**Next phases:** Task 1 (feature parity) continuing per §7 order (next: #6 GA4/GTM); Task 3 (UI), Task 5 (README) not started.
 
 ## Task 1 progress (feature parity, `REFACTOR_PLAN.md` §7 — strict order per operator)
 - **E2E baseline re-run (pre-Task-1):** full stack up (docker db + built api + built web),
@@ -91,8 +91,30 @@
   - **Scoped out (logged):** pointer-drag polish / nicer dropdowns → Task 3 (UI); the builder reorders
     via HTML5 drag + indent/outdent buttons (keyboard-usable) which is functional, not yet polished.
     Category items resolve to `/blog?category=`; a dedicated category archive page is not built.
-- **Next §7 item:** **#5 — contact form** + email delivery (reuses the #3 `MailService`;
-  reCAPTCHA-protected).
+- **§7 #5 — Contact form + email: DONE** (2026-06-25). Spec/plan:
+  `docs/superpowers/{specs,plans}/2026-06-25-contact-form.*`. New `contact` module (3-layer +
+  observer): public `POST /public/contact` (throttled **5/min**, honeypot `company` → silent 201 drop,
+  reCAPTCHA) → `ContactService` persists `ContactSubmission` then **`hooks.emit('contact.submitted')`**
+  → fault-isolated `ContactMailListener` sends via the #3 `MailService`. Recipient is **settings-driven**:
+  pure `resolveContactRecipient(profile.contactEmail → CONTACT_RECIPIENT_EMAIL → MAIL_FROM)`. Pure
+  `contactNotificationEmail` builder (HTML-escaped). Migration `20260625135931_contact_submissions`
+  (new table + `SiteProfile.contactEmail` column, additive). Admin inbox `GET /contact` (newest-first),
+  `PATCH /contact/:id` (handled toggle, P2025→404), `DELETE /contact/:id` — CASL subject **`Contact`**
+  (Administrator + Editor). Web `/[locale]/contact` localized form (posts **client-side** to the API for
+  real-IP throttle, like comments; honeypot hidden field) + admin `/admin/contact` inbox (mark-handled +
+  delete) + a **Contact email** field on the SEO profile form. `contact.submitted` added to `ActionMap`
+  — **first real side effect wired to the observer per §2.7** (comment-notification email is its sibling,
+  still pending). Seed: `contactEmail` on the profile + 2 demo submissions (one handled; count-guarded).
+  `.env.example` documents `CONTACT_RECIPIENT_EMAIL`. **393 tests, typecheck/lint clean, coverage ~89%
+  (contact module 93%), e2e 11/11**; live-verified end-to-end (real submit stored + emailed to the log;
+  honeypot submit → 201 but not stored; admin inbox lists it; `/contact` + `/de/contact` render localized).
+  Adversarial self-review: 0 HIGH/MED (honeypot/recaptcha order, email-header injection, HTML escape,
+  P2025→404, listener fault-isolation verified in `emit`, recipient fallback, no payload leak, throttle).
+  - **Scoped out (logged):** the seeded "Contact" **content page** (slug `contact`) is shadowed by the
+    static `/[locale]/contact` form route (Next prioritises the static segment) — accepted; the page
+    stays in the DB/admin. No auto-responder to the sender / threaded replies / attachments.
+- **Next §7 item:** **#6 — GA4/GTM** injection + site-verification meta tags (public pages only;
+  settings-driven measurement IDs).
 
 ---
 
@@ -257,23 +279,26 @@ pnpm e2e                                                  # 11/11 (web-alone; li
 ## Continuation prompt (paste into a fresh window)
 > You are continuing the `cmstack-ts` engagement (senior TS engineer, autonomous).
 > Working dir `/Users/huseyn0w/Desktop/SWE/cmstack/cmstack-ts`, branch
-> `refactor/repository-layer` (clean tree, all committed; **357 tests, typecheck + biome
-> clean, coverage gate ≥80% (actual ~87.5%)**). **DONE:** Task 2 (repository-layer refactor) + Task 4
+> `refactor/repository-layer` (clean tree, all committed; **393 tests, typecheck + biome
+> clean, coverage gate ≥80% (actual ~89%)**). **DONE:** Task 2 (repository-layer refactor) + Task 4
 > (tests); the E2E baseline re-run (11/11, refactor confirmed black-box-invariant); and
 > **Task 1 §7 items #1 (per-locale content translation), #2 (per-content SEO meta), #3
-> (password reset + transactional email), #4 (menu management)** — all live-verified. **Read first:**
+> (password reset + transactional email), #4 (menu management), #5 (contact form + email)** — all
+> live-verified. **Read first:**
 > `cmstack-ts/HANDOFF.md` (the Task-1 progress section + "Full stack for LIVE verification"
 > recipe + Gotchas), `cmstack-ts/REFACTOR_PLAN.md` (§2.0 layering, §2.7 observer policy,
-> §7 feature register with #1–#4 checked, §10 invariants), `cmstack-ts/CLAUDE.md`, and the
+> §7 feature register with #1–#5 checked, §10 invariants), `cmstack-ts/CLAUDE.md`, and the
 > read-only canon `../FEATURE_MATRIX.md` + `../DESIGN_SYSTEM.md` (do NOT edit the canon).
 > The design+plan docs for finished items are in `docs/superpowers/{specs,plans}/`.
 >
-> **Resume with Task 1 §7 in strict order (operator directive) — next is #5 contact
-> form** (reuses the #3 `MailService`; reCAPTCHA-protected; admin-readable submissions). After
-> it: #6 GA4/GTM, #7 auto thumbnails, #8
+> **Resume with Task 1 §7 in strict order (operator directive) — next is #6 GA4/GTM**
+> injection + site-verification meta tags (public pages only; settings-driven measurement IDs).
+> After it: #7 auto thumbnails, #8
 > dashboard translation tab-strip UI (the admin editor for the #1 translation endpoints),
 > #9 plugin admin UI, #10 Redis cache, then the shared net-new. Then Task 3 (UI §8) +
-> Task 5 (full README rewrite).
+> Task 5 (full README rewrite). **Observer note:** §7 #5 wired the first real side effect
+> (`contact.submitted` → mail listener); the comment-notification email (shared net-new) is the
+> next observer consumer.
 >
 > Per-feature loop (proven this session): brainstorm scope if unclear → spec+plan under
 > `docs/superpowers/` → TDD by layer (config schema → prisma migration (additive/reversible)

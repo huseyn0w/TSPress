@@ -528,7 +528,15 @@ From `../FEATURE_MATRIX.md` ("cmstack-ts needs"); nothing to be silently dropped
       `/[locale]/[slug]` (public page + #2 meta) and `/blog?category=`; `<SiteMenu>` renders managed
       nav in editorial + magazine (locale-aware links, fallback to static links). Admin drag-sortable
       builder at `/admin/menus`. Seeded primary/footer menus (de/ru). Live-verified.
-- [ ] **Contact form** + email delivery (reCAPTCHA-protected).
+- [x] **Contact form** + email delivery (reCAPTCHA-protected). **DONE** (2026-06-25): public
+      `POST /public/contact` (throttled 5/min, honeypot + reCAPTCHA), persists `ContactSubmission`
+      then **emits `contact.submitted`** → fault-isolated `ContactMailListener` sends via the #3
+      `MailService` to a settings-driven recipient (`SiteProfile.contactEmail` → `CONTACT_RECIPIENT_EMAIL`
+      → `MAIL_FROM`). Migration `20260625135931_contact_submissions` (additive). Admin inbox `GET/PATCH/
+      DELETE /contact` (CASL subject **`Contact`**, Administrator + Editor). Web `/[locale]/contact`
+      localized form (posts client-side to the API for real-IP throttle) + admin inbox `/admin/contact`
+      + SEO `contactEmail` field. First real side effect wired to the observer per §2.7. Live-verified
+      (submit stored, honeypot dropped, notification in the mail log). 393 tests, coverage ~89%, e2e 11/11.
 - [ ] **GA4/GTM** injection + site-verification tags (public pages only).
 - [ ] **Auto thumbnails / image processing** (decompression-bomb guard).
 - [ ] **Dashboard translation editing UI** (per-locale tab strip) — after content i18n.
