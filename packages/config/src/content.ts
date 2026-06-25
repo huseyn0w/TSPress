@@ -29,6 +29,8 @@ export const createPostSchema = z.object({
   status: contentStatusSchema.optional(),
   metaTitle: z.string().trim().max(200).optional(),
   metaDescription: z.string().trim().max(300).optional(),
+  canonicalUrl: z.string().trim().url().max(500).optional(),
+  noindex: z.boolean().optional(),
   categoryIds: idList.optional(),
   tagIds: idList.optional(),
 });
@@ -57,6 +59,8 @@ export const createPageSchema = z.object({
   status: contentStatusSchema.optional(),
   metaTitle: z.string().trim().max(200).optional(),
   metaDescription: z.string().trim().max(300).optional(),
+  canonicalUrl: z.string().trim().url().max(500).optional(),
+  noindex: z.boolean().optional(),
 });
 export type CreatePageInput = z.infer<typeof createPageSchema>;
 
@@ -140,6 +144,7 @@ export const postSummarySchema = z.object({
   excerpt: z.string().nullable(),
   status: contentStatusSchema,
   publishedAt: z.string().datetime().nullable(),
+  noindex: z.boolean(),
   author: contentAuthorSchema.nullable(),
   categories: z.array(termSchema),
   tags: z.array(termSchema),
@@ -152,6 +157,7 @@ export const postDetailSchema = postSummarySchema.extend({
   content: z.string(),
   metaTitle: z.string().nullable(),
   metaDescription: z.string().nullable(),
+  canonicalUrl: z.string().nullable(),
   translations: z.array(postTranslationSchema),
 });
 export type PostDetail = z.infer<typeof postDetailSchema>;
@@ -172,6 +178,8 @@ export const pageDetailSchema = z.object({
   status: contentStatusSchema,
   metaTitle: z.string().nullable(),
   metaDescription: z.string().nullable(),
+  canonicalUrl: z.string().nullable(),
+  noindex: z.boolean(),
   author: contentAuthorSchema.nullable(),
   translations: z.array(pageTranslationSchema),
   createdAt: z.string().datetime(),
