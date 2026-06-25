@@ -51,7 +51,7 @@ export function AnalyticsLoader({
   return (
     <aside
       aria-label="Cookie consent"
-      className="ts-consent fixed inset-x-0 bottom-0 z-50 flex flex-col gap-3 border-t border-[var(--line)] bg-[var(--bg)] p-4 text-sm text-[var(--fg)] sm:flex-row sm:items-center sm:justify-between"
+      className="ts-consent fixed inset-x-0 bottom-0 z-50 flex flex-col gap-3 p-4 text-sm sm:flex-row sm:items-center sm:justify-between"
     >
       <p className="max-w-2xl">{t('message')}</p>
       <div className="flex gap-2">

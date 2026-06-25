@@ -285,7 +285,14 @@ a {
   padding-left: 0.75rem;
 }
 
-/* Cookie-consent banner buttons (public site, theme-scoped vars). */
+/* Cookie-consent banner (public site). It renders outside the per-theme
+   `.theme-<id>` wrapper, so the theme vars may be unset here — always pass a
+   concrete fallback so the banner stays readable on every theme. */
+.ts-consent {
+  background: var(--bg, #ffffff);
+  color: var(--fg, #111111);
+  border-top: 1px solid var(--line, rgba(0, 0, 0, 0.12));
+}
 .ts-consent-btn {
   border: 1px solid var(--line, rgba(0, 0, 0, 0.15));
   border-radius: 0.375rem;

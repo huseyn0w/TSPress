@@ -195,6 +195,10 @@ const SITE_PROFILE = {
     'lighter and faster open-source CMS, especially teams who care about SEO, ' +
     'clean code, and AI/LLM discoverability out of the box.',
   contactEmail: ADMIN_EMAIL,
+  // GA4/GTM left empty so the demo never fires a fake analytics hit; a sample
+  // verification token + custom pair show the feature on the public pages.
+  googleSiteVerification: 'demo-google-site-verification-token',
+  customVerificationTags: [{ name: 'p:domain_verify', content: 'demo-pinterest-token' }],
 };
 
 const SERVICES = [

@@ -10,10 +10,10 @@ import type {
   UpdateSiteProfileInput,
 } from '@cmstack-ts/config';
 import {
-  type Prisma,
   type SiteProfile as DbSiteProfile,
   FAQ_REPOSITORY,
   type FaqRepository,
+  type Prisma,
   SERVICE_REPOSITORY,
   SITE_PROFILE_REPOSITORY,
   type ServiceRepository,

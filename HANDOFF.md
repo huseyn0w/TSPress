@@ -1,7 +1,7 @@
 # cmstack-ts — HANDOFF
 
-**Updated:** 2026-06-25 — **Task 2 + Task 4 COMPLETE; E2E re-run green; Task 1 IN PROGRESS (§7 #1–#5 done).** · **Branch:** `refactor/repository-layer` (off `main`)
-**Next phases:** Task 1 (feature parity) continuing per §7 order (next: #6 GA4/GTM); Task 3 (UI), Task 5 (README) not started.
+**Updated:** 2026-06-26 — **Task 2 + Task 4 COMPLETE; E2E re-run green; Task 1 IN PROGRESS (§7 #1–#6 done).** · **Branch:** `refactor/repository-layer` (off `main`)
+**Next phases:** Task 1 (feature parity) continuing per §7 order (next: #7 auto thumbnails); Task 3 (UI), Task 5 (README) not started.
 
 ## Task 1 progress (feature parity, `REFACTOR_PLAN.md` §7 — strict order per operator)
 - **E2E baseline re-run (pre-Task-1):** full stack up (docker db + built api + built web),
@@ -113,8 +113,32 @@
   - **Scoped out (logged):** the seeded "Contact" **content page** (slug `contact`) is shadowed by the
     static `/[locale]/contact` form route (Next prioritises the static segment) — accepted; the page
     stays in the DB/admin. No auto-responder to the sender / threaded replies / attachments.
-- **Next §7 item:** **#6 — GA4/GTM** injection + site-verification meta tags (public pages only;
-  settings-driven measurement IDs).
+- **§7 #6 — GA4/GTM + site verification + basic consent: DONE** (2026-06-26). Spec/plan:
+  `docs/superpowers/{specs,plans}/2026-06-26-analytics-verification-consent.*`. Eight additive
+  `SiteProfile` columns (migration `20260625230456_analytics_verification`): `ga4MeasurementId`,
+  `gtmContainerId`, named verification tokens (Google/Bing/Yandex/Meta-`facebook-domain-verification`/
+  Pinterest-`p:domain_verify`), and a **Json** `customVerificationTags` (`[{name,content}]`) escape
+  hatch. `@cmstack-ts/config` owns strict schemas (GA4 `^G-[A-Z0-9]+$`, GTM `^GTM-[A-Z0-9]+$`,
+  token charset excludes `<>"'`/whitespace, custom list ≤20) + pure `buildVerificationMeta` (named
+  field wins over a same-named custom pair; empties dropped). Public `GET /public/seo` + admin
+  `GET/PUT /seo/profile` carry the fields; `SeoService` casts the Json via `Prisma.InputJsonValue`,
+  repo `SiteProfileWritableData` overrides that field's type. **No observer event** (no real side
+  effect, §2.7). Web: verification `<meta>` via `generateMetadata` in **`app/[locale]/layout.tsx`**
+  (public-only — admin/auth at the app root never see them). Analytics via **`@next/third-parties`**
+  (pinned to v15 to match Next 15), gated behind a basic consent banner: server reads cookie
+  `ts-consent`, client `<AnalyticsLoader>` shows Accept/Decline (next-intl en/de/ru) and only injects
+  GA4/GTM after Accept. Admin SEO form gained an "Analytics & verification" fieldset incl. an
+  add/remove custom-pairs editor (stable row ids via a ref counter, not array-index keys). Seed sets
+  a demo `googleSiteVerification` + custom pair; GA4/GTM left empty (no fake hits). **404 tests,
+  typecheck/lint clean, coverage 89.55% (gate ≥80%), e2e 11/11**; live-verified (curl `/public/seo`
+  has the fields; home renders google/bing/pinterest metas; `/admin` has **0**; GA absent without
+  consent, injected with `ts-consent=accepted`). Adversarial self-review fixed **1 MED** (consent
+  banner styled via theme vars it sits outside → moved colors to `.ts-consent` with fallbacks).
+  - **Scoped out (logged):** Google Consent Mode v2 / granular cookie categories / consent audit log /
+    persistent "manage cookies" surface → future GDPR module. AI-engine "verification" not faked
+    (LinkedIn/Instagram/UpWork/ChatGPT/Claude/Perplexity/Gemini/xAI have no meta mechanism); their
+    discoverability is already served by `robots.txt`/`llms.txt` (Phase 7).
+- **Next §7 item:** **#7 — Auto thumbnails / image processing** (decompression-bomb guard).
 
 ---
 
@@ -283,21 +307,20 @@ pnpm e2e                                                  # 11/11 (web-alone; li
 ## Continuation prompt (paste into a fresh window)
 > You are continuing the `cmstack-ts` engagement (senior TS engineer, autonomous).
 > Working dir `/Users/huseyn0w/Desktop/SWE/cmstack/cmstack-ts`, branch
-> `refactor/repository-layer` (clean tree, all committed; **393 tests, typecheck + biome
-> clean, coverage gate ≥80% (actual ~89%)**). **DONE:** Task 2 (repository-layer refactor) + Task 4
+> `refactor/repository-layer` (clean tree, all committed; **404 tests, typecheck + biome
+> clean, coverage gate ≥80% (actual 89.55%)**). **DONE:** Task 2 (repository-layer refactor) + Task 4
 > (tests); the E2E baseline re-run (11/11, refactor confirmed black-box-invariant); and
 > **Task 1 §7 items #1 (per-locale content translation), #2 (per-content SEO meta), #3
-> (password reset + transactional email), #4 (menu management), #5 (contact form + email)** — all
-> live-verified. **Read first:**
+> (password reset + transactional email), #4 (menu management), #5 (contact form + email),
+> #6 (GA4/GTM + site verification + basic consent)** — all live-verified. **Read first:**
 > `cmstack-ts/HANDOFF.md` (the Task-1 progress section + "Full stack for LIVE verification"
 > recipe + Gotchas), `cmstack-ts/REFACTOR_PLAN.md` (§2.0 layering, §2.7 observer policy,
-> §7 feature register with #1–#5 checked, §10 invariants), `cmstack-ts/CLAUDE.md`, and the
+> §7 feature register with #1–#6 checked, §10 invariants), `cmstack-ts/CLAUDE.md`, and the
 > read-only canon `../FEATURE_MATRIX.md` + `../DESIGN_SYSTEM.md` (do NOT edit the canon).
 > The design+plan docs for finished items are in `docs/superpowers/{specs,plans}/`.
 >
-> **Resume with Task 1 §7 in strict order (operator directive) — next is #6 GA4/GTM**
-> injection + site-verification meta tags (public pages only; settings-driven measurement IDs).
-> After it: #7 auto thumbnails, #8
+> **Resume with Task 1 §7 in strict order (operator directive) — next is #7 auto thumbnails /
+> image processing** (decompression-bomb guard). After it: #8
 > dashboard translation tab-strip UI (the admin editor for the #1 translation endpoints),
 > #9 plugin admin UI, #10 Redis cache, then the shared net-new. Then Task 3 (UI §8) +
 > Task 5 (full README rewrite). **Observer note:** §7 #5 wired the first real side effect

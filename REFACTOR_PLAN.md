@@ -537,7 +537,15 @@ From `../FEATURE_MATRIX.md` ("cmstack-ts needs"); nothing to be silently dropped
       localized form (posts client-side to the API for real-IP throttle) + admin inbox `/admin/contact`
       + SEO `contactEmail` field. First real side effect wired to the observer per §2.7. Live-verified
       (submit stored, honeypot dropped, notification in the mail log). 393 tests, coverage ~89%, e2e 11/11.
-- [ ] **GA4/GTM** injection + site-verification tags (public pages only).
+- [x] **GA4/GTM** injection + site-verification tags (public pages only). **DONE** (2026-06-26):
+      settings-driven `ga4MeasurementId`/`gtmContainerId` + named (Google/Bing/Yandex/Meta/Pinterest)
+      and arbitrary `customVerificationTags` Json on `SiteProfile` (migration
+      `20260625230456_analytics_verification`, additive). Pure `buildVerificationMeta` → Next
+      `Metadata.verification` in `app/[locale]/layout.tsx` (public-only). GA4/GTM via
+      `@next/third-parties`, gated behind a basic consent banner (cookie `ts-consent`, en/de/ru).
+      Admin SEO form gained the fields incl. an add/remove custom-pairs editor. No observer event.
+      404 tests, coverage 89.55%, e2e 11/11; live-verified (metas render publicly, absent on /admin,
+      GA injected only after consent).
 - [ ] **Auto thumbnails / image processing** (decompression-bomb guard).
 - [ ] **Dashboard translation editing UI** (per-locale tab strip) — after content i18n.
 - [ ] **Plugin admin UI** + runtime enable/disable + render-region hooks.

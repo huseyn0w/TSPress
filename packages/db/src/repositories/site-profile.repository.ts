@@ -8,7 +8,10 @@ export const SITE_PROFILE_ID = 'default';
  * `customVerificationTags` Json column is typed as Prisma's input value (which,
  * unlike the read-side `JsonValue`, excludes `null`) so callers can write it.
  */
-export type SiteProfileWritableData = Omit<SiteProfile, 'id' | 'updatedAt' | 'customVerificationTags'> & {
+export type SiteProfileWritableData = Omit<
+  SiteProfile,
+  'id' | 'updatedAt' | 'customVerificationTags'
+> & {
   customVerificationTags: Prisma.InputJsonValue;
 };
 
