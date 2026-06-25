@@ -24,6 +24,18 @@ export interface ActionMap {
    * post-status transition hook. Listeners that must run once should dedupe.
    */
   'post.published': { id: string; slug: string; title: string };
+  /**
+   * Fired after a contact-form submission is stored. The contact module's mail
+   * listener sends the notification email; fault-isolated, so a mail failure
+   * never fails the public submit.
+   */
+  'contact.submitted': {
+    id: string;
+    name: string;
+    email: string;
+    subject: string | null;
+    message: string;
+  };
 }
 
 export type FilterName = keyof FilterMap;
