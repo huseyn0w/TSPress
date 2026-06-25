@@ -6,7 +6,7 @@ import {
   USER_REPOSITORY,
   type UserRepository,
 } from '@cmstack-ts/db';
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common';
 import { MailService } from '../mail/mail.service';
 import { passwordResetEmail } from '../mail/password-reset-email';
 import { PasswordService } from './password.service';
@@ -25,6 +25,7 @@ function hashToken(rawToken: string): string {
  */
 @Injectable()
 export class PasswordResetService {
+  private readonly logger = new Logger('PasswordResetService');
   private readonly ttlMinutes = Number(process.env.PASSWORD_RESET_TTL_MINUTES ?? 60);
   private readonly webOrigin = process.env.WEB_ORIGIN?.trim() || 'http://localhost:3000';
 
@@ -52,7 +53,13 @@ export class PasswordResetService {
     await this.tokens.create({ userId: user.id, tokenHash: hashToken(rawToken), expiresAt });
 
     const resetUrl = `${this.webOrigin}/reset-password?token=${rawToken}`;
-    await this.mail.send({ to: input.email, ...passwordResetEmail(resetUrl, this.ttlMinutes) });
+    // A mail failure must NOT surface (a 500 only for real accounts would leak
+    // which emails exist) — log it and still resolve like the unknown-email path.
+    try {
+      await this.mail.send({ to: input.email, ...passwordResetEmail(resetUrl, this.ttlMinutes) });
+    } catch (error) {
+      this.logger.error('Failed to send password-reset email', error as Error);
+    }
   }
 
   /** Set a new password if the token is valid, unused, and unexpired. */

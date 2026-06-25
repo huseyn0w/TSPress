@@ -69,6 +69,13 @@ describe('PasswordResetService.request', () => {
     expect(tokens.create).not.toHaveBeenCalled();
     expect(mail.send).not.toHaveBeenCalled();
   });
+
+  it('a mail-send failure does not surface (no 500-only-for-real-accounts leak)', async () => {
+    users.findIdByEmail.mockResolvedValue({ id: 'u1' });
+    mail.send.mockRejectedValueOnce(new Error('SMTP down'));
+    await expect(service.request({ email: 'a@test.local' })).resolves.toBeUndefined();
+    expect(tokens.create).toHaveBeenCalled(); // the token was still issued
+  });
 });
 
 describe('PasswordResetService.confirm', () => {
