@@ -168,6 +168,10 @@ export {
   type MenuNode,
   publicMenuSchema,
   type PublicMenu,
+  adminMenuItemSchema,
+  type AdminMenuItem,
+  adminMenuSchema,
+  type AdminMenu,
   resolveMenuItemUrl,
   normalizeCustomUrl,
 } from './menu';

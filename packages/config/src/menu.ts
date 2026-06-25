@@ -158,4 +158,40 @@ export const publicMenuSchema = z.object({
 });
 export type PublicMenu = z.infer<typeof publicMenuSchema>;
 
+// --- Admin builder tree (GET /menus/:id) -------------------------------------
+
+export type AdminMenuItem = {
+  id: string;
+  parentId: string | null;
+  order: number;
+  type: MenuItemType;
+  label: string;
+  targetId: string | null;
+  url: string | null;
+  openInNewTab: boolean;
+  translations: { locale: string; label: string | null }[];
+  children: AdminMenuItem[];
+};
+export const adminMenuItemSchema: z.ZodType<AdminMenuItem> = z.lazy(() =>
+  z.object({
+    id: z.string(),
+    parentId: z.string().nullable(),
+    order: z.number().int(),
+    type: menuItemTypeSchema,
+    label: z.string(),
+    targetId: z.string().nullable(),
+    url: z.string().nullable(),
+    openInNewTab: z.boolean(),
+    translations: z.array(z.object({ locale: z.string(), label: z.string().nullable() })),
+    children: z.array(adminMenuItemSchema),
+  }),
+);
+export const adminMenuSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  location: z.string(),
+  items: z.array(adminMenuItemSchema),
+});
+export type AdminMenu = z.infer<typeof adminMenuSchema>;
+
 export { localeSchema };

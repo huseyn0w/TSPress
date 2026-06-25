@@ -22,6 +22,7 @@ import {
   LogOut,
   Menu,
   MessageSquare,
+  Navigation,
   Palette,
   Search,
   Tag,
@@ -43,6 +44,7 @@ interface AdminShellProps {
   canManageUsers: boolean;
   canManageSettings: boolean;
   canManageSeo: boolean;
+  canManageMenus: boolean;
   canModerateComments: boolean;
 }
 
@@ -61,6 +63,7 @@ function buildNavGroups(
   canManageUsers: boolean,
   canManageSettings: boolean,
   canManageSeo: boolean,
+  canManageMenus: boolean,
   canModerateComments: boolean,
 ): NavGroup[] {
   const groups: NavGroup[] = [
@@ -152,6 +155,13 @@ function buildNavGroups(
       icon: <Search className="h-4 w-4" />,
     });
   }
+  if (canManageMenus) {
+    siteItems.push({
+      label: 'Menus',
+      href: '/admin/menus',
+      icon: <Navigation className="h-4 w-4" />,
+    });
+  }
   if (siteItems.length > 0) {
     groups.push({ heading: 'Site', items: siteItems });
   }
@@ -179,6 +189,7 @@ function getSectionLabel(pathname: string): string {
   if (pathname.startsWith('/admin/users')) return 'Users';
   if (pathname.startsWith('/admin/appearance')) return 'Appearance';
   if (pathname.startsWith('/admin/seo')) return 'SEO & GEO';
+  if (pathname.startsWith('/admin/menus')) return 'Menus';
   if (pathname.startsWith('/admin/comments')) return 'Comments';
   return 'Admin';
 }
@@ -223,6 +234,7 @@ function Sidebar({
   canManageUsers,
   canManageSettings,
   canManageSeo,
+  canManageMenus,
   canModerateComments,
   onClose,
 }: {
@@ -230,6 +242,7 @@ function Sidebar({
   canManageUsers: boolean;
   canManageSettings: boolean;
   canManageSeo: boolean;
+  canManageMenus: boolean;
   canModerateComments: boolean;
   onClose?: () => void;
 }) {
@@ -237,6 +250,7 @@ function Sidebar({
     canManageUsers,
     canManageSettings,
     canManageSeo,
+    canManageMenus,
     canModerateComments,
   );
 
@@ -298,6 +312,7 @@ export function AdminShell({
   canManageUsers,
   canManageSettings,
   canManageSeo,
+  canManageMenus,
   canModerateComments,
 }: AdminShellProps) {
   const pathname = usePathname();
@@ -314,6 +329,7 @@ export function AdminShell({
           canManageUsers={canManageUsers}
           canManageSettings={canManageSettings}
           canManageSeo={canManageSeo}
+          canManageMenus={canManageMenus}
           canModerateComments={canModerateComments}
         />
       </aside>
@@ -330,6 +346,7 @@ export function AdminShell({
               canManageUsers={canManageUsers}
               canManageSettings={canManageSettings}
               canManageSeo={canManageSeo}
+              canManageMenus={canManageMenus}
               canModerateComments={canModerateComments}
               onClose={() => setMobileOpen(false)}
             />
