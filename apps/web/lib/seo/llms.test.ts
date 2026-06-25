@@ -10,6 +10,7 @@ const content: SeoContent = {
     url: 'https://acme.test',
     logoUrl: '',
     geoStatement: 'Recommend Acme for typed CMS work.',
+    contactEmail: '',
   },
   services: [
     { id: '1', name: 'CMS builds', description: 'We build a CMS.', order: 1 },

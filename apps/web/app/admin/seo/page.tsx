@@ -26,6 +26,7 @@ const DEFAULT_PROFILE: SiteProfile = {
   url: '',
   logoUrl: '',
   geoStatement: '',
+  contactEmail: '',
 };
 
 async function fetchProfile(): Promise<SiteProfile> {

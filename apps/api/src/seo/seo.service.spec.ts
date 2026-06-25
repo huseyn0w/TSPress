@@ -18,6 +18,7 @@ const fullProfile: SiteProfile = {
   url: 'https://acme.test',
   logoUrl: '',
   geoStatement: 'geo',
+  contactEmail: '',
   updatedAt: new Date(),
 };
 
@@ -67,6 +68,7 @@ describe('SeoService profile', () => {
       url: 'https://acme.test',
       logoUrl: '',
       geoStatement: 'geo',
+      contactEmail: '',
     });
   });
 
@@ -78,6 +80,7 @@ describe('SeoService profile', () => {
       url: '',
       logoUrl: '',
       geoStatement: '',
+      contactEmail: '',
     };
     profiles.upsert.mockResolvedValue({ id: 'default', ...input, updatedAt: new Date() });
     const result = await service.updateProfile(input);

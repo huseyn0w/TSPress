@@ -9,6 +9,7 @@ const profile: SiteProfile = {
   url: 'https://acme.test',
   logoUrl: 'https://acme.test/logo.png',
   geoStatement: 'geo',
+  contactEmail: '',
 };
 
 describe('organizationJsonLd', () => {

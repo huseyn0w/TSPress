@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AccountsModule } from './auth/accounts.module';
 import { CommentsModule } from './comments/comments.module';
+import { ContactModule } from './contact/contact.module';
 import { ContentModule } from './content/content.module';
 import { HealthModule } from './health/health.module';
 import { MediaModule } from './media/media.module';
@@ -28,6 +29,7 @@ import { SpamModule } from './spam/spam.module';
     SpamModule,
     CommentsModule,
     MenusModule,
+    ContactModule,
   ],
 })
 export class AppModule {}

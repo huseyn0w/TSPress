@@ -27,6 +27,7 @@ const DEFAULT_PROFILE: SiteProfile = {
   url: '',
   logoUrl: '',
   geoStatement: '',
+  contactEmail: '',
 };
 
 @Injectable()
@@ -138,6 +139,7 @@ export class SeoService {
       url: row.url,
       logoUrl: row.logoUrl,
       geoStatement: row.geoStatement,
+      contactEmail: row.contactEmail,
     };
   }
 

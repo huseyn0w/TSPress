@@ -11,6 +11,7 @@ const FALLBACK: SeoContent = {
     url: '',
     logoUrl: '',
     geoStatement: '',
+    contactEmail: '',
   },
   services: [],
   faqs: [],
