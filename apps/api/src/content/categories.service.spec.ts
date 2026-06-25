@@ -23,6 +23,7 @@ let service: CategoriesService;
 beforeEach(() => {
   categories = {
     create: vi.fn(),
+    slugsByIds: vi.fn(),
     findById: vi.fn(),
     list: vi.fn(),
     update: vi.fn(),

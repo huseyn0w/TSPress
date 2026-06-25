@@ -39,6 +39,7 @@ let service: PostsService;
 beforeEach(() => {
   posts = {
     findPublishedIdBySlug: vi.fn(),
+    slugsByIds: vi.fn(),
     create: vi.fn(),
     findById: vi.fn(),
     findActiveById: vi.fn(),

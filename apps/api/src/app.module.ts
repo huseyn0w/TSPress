@@ -5,6 +5,7 @@ import { CommentsModule } from './comments/comments.module';
 import { ContentModule } from './content/content.module';
 import { HealthModule } from './health/health.module';
 import { MediaModule } from './media/media.module';
+import { MenusModule } from './menus/menus.module';
 import { PluginsModule } from './plugins/plugins.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { SeoModule } from './seo/seo.module';
@@ -26,6 +27,7 @@ import { SpamModule } from './spam/spam.module';
     SeoModule,
     SpamModule,
     CommentsModule,
+    MenusModule,
   ],
 })
 export class AppModule {}

@@ -32,6 +32,7 @@ let service: PagesService;
 beforeEach(() => {
   pages = {
     create: vi.fn(),
+    slugsByIds: vi.fn(),
     findById: vi.fn(),
     findActiveById: vi.fn(),
     findByIdWithTranslations: vi.fn(),

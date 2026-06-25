@@ -114,7 +114,7 @@ describe('getPublicMenu', () => {
       menuTree([item({ id: 'a', type: 'CUSTOM', url: '/x', label: 'Base' })]),
     );
     const menu = await service.getPublicMenu('primary', 'ru');
-    expect(menu.items[0].label).toBe('Base');
+    expect(menu.items[0]?.label).toBe('Base');
   });
 
   it('returns an empty tree for an unknown location', async () => {
@@ -183,7 +183,7 @@ describe('createItem', () => {
     menus.maxOrder.mockResolvedValue(2);
     menus.createItem.mockResolvedValue(item({ id: 'new', order: 3, url: '/x', translations: [] }));
     await service.createItem('m1', { type: 'CUSTOM', label: 'X', url: '/x' });
-    const arg = menus.createItem.mock.calls[0][0];
+    const arg = menus.createItem.mock.calls[0]?.[0];
     expect(arg.order).toBe(3);
     expect(arg.url).toBe('/x');
     expect(arg.targetId).toBeNull();
@@ -277,8 +277,8 @@ describe('getMenu (admin)', () => {
     expect(posts.slugsByIds).not.toHaveBeenCalled();
     expect(menu.items).toHaveLength(1);
     expect(menu.items[0]).toMatchObject({ id: 'a', type: 'POST', targetId: 'p1' });
-    expect(menu.items[0].translations).toEqual([{ locale: 'de', label: 'DE' }]);
-    expect(menu.items[0].children[0]).toMatchObject({ id: 'b', url: '/b' });
+    expect(menu.items[0]?.translations).toEqual([{ locale: 'de', label: 'DE' }]);
+    expect(menu.items[0]?.children[0]).toMatchObject({ id: 'b', url: '/b' });
   });
 
   it('404s for an unknown menu', async () => {
