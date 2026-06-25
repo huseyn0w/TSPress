@@ -1,10 +1,16 @@
-import type { PrismaClient, SiteProfile } from '@prisma/client';
+import type { Prisma, PrismaClient, SiteProfile } from '@prisma/client';
 
 /** The singleton SiteProfile row id (a persistence detail). */
 export const SITE_PROFILE_ID = 'default';
 
-/** Writable profile fields (everything except the id and managed timestamp). */
-export type SiteProfileWritableData = Omit<SiteProfile, 'id' | 'updatedAt'>;
+/**
+ * Writable profile fields (everything except the id and managed timestamp). The
+ * `customVerificationTags` Json column is typed as Prisma's input value (which,
+ * unlike the read-side `JsonValue`, excludes `null`) so callers can write it.
+ */
+export type SiteProfileWritableData = Omit<SiteProfile, 'id' | 'updatedAt' | 'customVerificationTags'> & {
+  customVerificationTags: Prisma.InputJsonValue;
+};
 
 /**
  * Data access for the singleton {@link SiteProfile}. Framework-free; returns the

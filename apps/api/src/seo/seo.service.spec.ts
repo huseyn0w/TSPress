@@ -19,6 +19,14 @@ const fullProfile: SiteProfile = {
   logoUrl: '',
   geoStatement: 'geo',
   contactEmail: '',
+  ga4MeasurementId: '',
+  gtmContainerId: '',
+  googleSiteVerification: '',
+  bingSiteVerification: '',
+  yandexVerification: '',
+  facebookDomainVerification: '',
+  pinterestVerification: '',
+  customVerificationTags: [],
   updatedAt: new Date(),
 };
 
@@ -69,6 +77,14 @@ describe('SeoService profile', () => {
       logoUrl: '',
       geoStatement: 'geo',
       contactEmail: '',
+      ga4MeasurementId: '',
+      gtmContainerId: '',
+      googleSiteVerification: '',
+      bingSiteVerification: '',
+      yandexVerification: '',
+      facebookDomainVerification: '',
+      pinterestVerification: '',
+      customVerificationTags: [],
     });
   });
 
@@ -81,11 +97,45 @@ describe('SeoService profile', () => {
       logoUrl: '',
       geoStatement: '',
       contactEmail: '',
+      ga4MeasurementId: '',
+      gtmContainerId: '',
+      googleSiteVerification: '',
+      bingSiteVerification: '',
+      yandexVerification: '',
+      facebookDomainVerification: '',
+      pinterestVerification: '',
+      customVerificationTags: [],
     };
     profiles.upsert.mockResolvedValue({ id: 'default', ...input, updatedAt: new Date() });
     const result = await service.updateProfile(input);
     expect(profiles.upsert).toHaveBeenCalledWith(input);
     expect(result.organizationName).toBe('New');
+  });
+
+  it('persists and returns analytics + verification fields', async () => {
+    const input = {
+      organizationName: 'Acme',
+      tagline: '',
+      description: '',
+      url: '',
+      logoUrl: '',
+      geoStatement: '',
+      contactEmail: '',
+      ga4MeasurementId: 'G-ABC123',
+      gtmContainerId: 'GTM-XYZ99',
+      googleSiteVerification: 'g-tok',
+      bingSiteVerification: '',
+      yandexVerification: '',
+      facebookDomainVerification: '',
+      pinterestVerification: '',
+      customVerificationTags: [{ name: 'p:domain_verify', content: 'pin' }],
+    };
+    profiles.upsert.mockResolvedValue({ id: 'default', ...input, updatedAt: new Date() });
+    const result = await service.updateProfile(input);
+    expect(profiles.upsert).toHaveBeenCalledWith(input);
+    expect(result.ga4MeasurementId).toBe('G-ABC123');
+    expect(result.gtmContainerId).toBe('GTM-XYZ99');
+    expect(result.customVerificationTags).toEqual([{ name: 'p:domain_verify', content: 'pin' }]);
   });
 });
 

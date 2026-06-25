@@ -28,6 +28,14 @@ describe('PrismaSiteProfileRepository', () => {
       logoUrl: '',
       geoStatement: 'g',
       contactEmail: '',
+      ga4MeasurementId: 'G-ABC123',
+      gtmContainerId: '',
+      googleSiteVerification: 'g-tok',
+      bingSiteVerification: '',
+      yandexVerification: '',
+      facebookDomainVerification: '',
+      pinterestVerification: '',
+      customVerificationTags: [{ name: 'p:domain_verify', content: 'pin' }],
     };
     siteProfile.upsert.mockResolvedValue({ id: SITE_PROFILE_ID, ...data });
     await repo.upsert(data);

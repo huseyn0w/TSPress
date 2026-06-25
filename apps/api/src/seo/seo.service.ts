@@ -10,6 +10,7 @@ import type {
   UpdateSiteProfileInput,
 } from '@cmstack-ts/config';
 import {
+  type Prisma,
   type SiteProfile as DbSiteProfile,
   FAQ_REPOSITORY,
   type FaqRepository,
@@ -28,6 +29,14 @@ const DEFAULT_PROFILE: SiteProfile = {
   logoUrl: '',
   geoStatement: '',
   contactEmail: '',
+  ga4MeasurementId: '',
+  gtmContainerId: '',
+  googleSiteVerification: '',
+  bingSiteVerification: '',
+  yandexVerification: '',
+  facebookDomainVerification: '',
+  pinterestVerification: '',
+  customVerificationTags: [],
 };
 
 @Injectable()
@@ -46,7 +55,12 @@ export class SeoService {
   }
 
   async updateProfile(input: UpdateSiteProfileInput): Promise<SiteProfile> {
-    const row = await this.profiles.upsert(input);
+    // The Json column wants Prisma's input value (the validated array is already
+    // a plain JSON-safe shape); everything else maps 1:1 to the writable row.
+    const row = await this.profiles.upsert({
+      ...input,
+      customVerificationTags: input.customVerificationTags as Prisma.InputJsonValue,
+    });
     return this.toProfile(row);
   }
 
@@ -140,6 +154,15 @@ export class SeoService {
       logoUrl: row.logoUrl,
       geoStatement: row.geoStatement,
       contactEmail: row.contactEmail,
+      ga4MeasurementId: row.ga4MeasurementId,
+      gtmContainerId: row.gtmContainerId,
+      googleSiteVerification: row.googleSiteVerification,
+      bingSiteVerification: row.bingSiteVerification,
+      yandexVerification: row.yandexVerification,
+      facebookDomainVerification: row.facebookDomainVerification,
+      pinterestVerification: row.pinterestVerification,
+      customVerificationTags:
+        (row.customVerificationTags as SiteProfile['customVerificationTags']) ?? [],
     };
   }
 
