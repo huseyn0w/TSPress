@@ -28,6 +28,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { CACHE_NS, cacheKey } from '../cache/cache.keys';
+import { CacheService } from '../cache/cache.service';
 import { HookRegistry } from '../plugins/hook-registry';
 import { HtmlSanitizerService } from './html-sanitizer.service';
 import { localizeContent } from './localize';
@@ -56,6 +58,7 @@ export class PostsService {
     @Inject(REVISION_REPOSITORY) private readonly revisionRepo: RevisionRepository,
     private readonly sanitizer: HtmlSanitizerService,
     private readonly hooks: HookRegistry,
+    private readonly cache: CacheService,
   ) {}
 
   async create(input: CreatePostInput, authorId: string): Promise<PostDetail> {
@@ -84,6 +87,7 @@ export class PostsService {
           title: post.title,
         });
       }
+      await this.hooks.emit('content.changed', { type: 'post', id: post.id, slug: post.slug });
       return this.toDetail(post, []);
     } catch (error) {
       throw this.mapRelationError(error);
@@ -132,6 +136,7 @@ export class PostsService {
           title: post.title,
         });
       }
+      await this.hooks.emit('content.changed', { type: 'post', id: post.id, slug: post.slug });
       return this.toDetail(post, []);
     } catch (error) {
       throw this.mapRelationError(error);
@@ -142,6 +147,19 @@ export class PostsService {
     query: PostListQuery,
     opts: { publicOnly: boolean },
     locale: string = DEFAULT_LOCALE,
+  ): Promise<PostList> {
+    // Only the public list is cached; admin reads (draft/trashed) bypass the cache.
+    if (!opts.publicOnly) return this.computeList(query, opts, locale);
+    const disc = `list:${locale}:${JSON.stringify(query)}`;
+    return this.cache.getOrSet(cacheKey(CACHE_NS.POSTS, disc), () =>
+      this.computeList(query, opts, locale),
+    );
+  }
+
+  private async computeList(
+    query: PostListQuery,
+    opts: { publicOnly: boolean },
+    locale: string,
   ): Promise<PostList> {
     const { items, total } = await this.posts.listAndCount(
       {
@@ -179,10 +197,17 @@ export class PostsService {
   }
 
   async findPublicBySlug(slug: string, locale: string = DEFAULT_LOCALE): Promise<PostDetail> {
-    const post = await this.posts.findPublicBySlug(slug, this.translationLocale(locale));
-    if (!post) throw new NotFoundException('Post not found.');
-    // Public detail is already localized; the raw translation rows are not leaked.
-    const detail = this.toDetail(this.localize(post), []);
+    // Cache the pre-filter localized detail; the plugin filter runs on every read
+    // (after the cache) so runtime plugin toggles are never frozen into the cache.
+    const detail = await this.cache.getOrSet(
+      cacheKey(CACHE_NS.POSTS, `detail:${slug}:${locale}`),
+      async () => {
+        const post = await this.posts.findPublicBySlug(slug, this.translationLocale(locale));
+        if (!post) throw new NotFoundException('Post not found.');
+        // Public detail is already localized; the raw translation rows are not leaked.
+        return this.toDetail(this.localize(post), []);
+      },
+    );
     // Let plugins transform the public post just before it is returned.
     return this.hooks.applyFilters('public.post.render', detail);
   }
@@ -205,6 +230,7 @@ export class PostsService {
       return;
     }
     await this.posts.upsertTranslation(id, locale, data);
+    await this.hooks.emit('content.changed', { type: 'post', id });
   }
 
   /** Remove a post's translation for a locale (idempotent). */
@@ -217,22 +243,26 @@ export class PostsService {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') return;
       throw error;
     }
+    await this.hooks.emit('content.changed', { type: 'post', id });
   }
 
   async softDelete(id: string): Promise<void> {
     await this.ensureExists(id);
     await this.posts.setDeletedAt(id, new Date());
+    await this.hooks.emit('content.changed', { type: 'post', id });
   }
 
   async restore(id: string): Promise<PostDetail> {
     await this.ensureExists(id);
     const post = await this.posts.restore(id);
+    await this.hooks.emit('content.changed', { type: 'post', id: post.id, slug: post.slug });
     return this.toDetail(post, []);
   }
 
   async destroy(id: string): Promise<void> {
     await this.ensureExists(id);
     await this.posts.hardDelete(id);
+    await this.hooks.emit('content.changed', { type: 'post', id });
   }
 
   async revisions(postId: string): Promise<RevisionView[]> {

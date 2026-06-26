@@ -18,6 +18,7 @@ import {
 } from '@cmstack-ts/db';
 import { Module } from '@nestjs/common';
 import { AccountsModule } from '../auth/accounts.module';
+import { CacheModule } from '../cache/cache.module';
 import { provideRepository } from '../persistence/repository.providers';
 import { PluginsModule } from '../plugins/plugins.module';
 import { AuthorsService } from './authors.service';
@@ -41,7 +42,8 @@ import { TagsService } from './tags.service';
   // AccountsModule provides the JwtAuthGuard/PoliciesGuard (and their deps) used
   // to protect the authoring controllers below. PluginsModule provides the
   // HookRegistry the post service uses to run content filters / emit events.
-  imports: [AccountsModule, PluginsModule],
+  // CacheModule caches the public post/page reads and is invalidated on writes.
+  imports: [AccountsModule, PluginsModule, CacheModule],
   controllers: [
     PostsController,
     PagesController,

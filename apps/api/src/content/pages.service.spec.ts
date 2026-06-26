@@ -1,6 +1,8 @@
 import type { PageRepository, PageWithAuthor, RevisionRepository } from '@cmstack-ts/db';
 import { NotFoundException } from '@nestjs/common';
 import { type Mock, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { CacheService } from '../cache/cache.service';
+import type { HookRegistry } from '../plugins/hook-registry';
 import type { HtmlSanitizerService } from './html-sanitizer.service';
 import { PagesService } from './pages.service';
 
@@ -27,6 +29,8 @@ function pageRow(over: Partial<PageWithAuthor> = {}): PageWithAuthor {
 let pages: Record<keyof PageRepository, Mock>;
 let revisionRepo: Record<keyof RevisionRepository, Mock>;
 let sanitizer: { sanitize: Mock };
+let hooks: { emit: Mock };
+let cache: { getOrSet: Mock; invalidate: Mock };
 let service: PagesService;
 
 beforeEach(() => {
@@ -49,10 +53,17 @@ beforeEach(() => {
   };
   revisionRepo = { create: vi.fn(), listForPost: vi.fn(), listForPage: vi.fn() };
   sanitizer = { sanitize: vi.fn((s: string) => `clean:${s}`) };
+  hooks = { emit: vi.fn().mockResolvedValue(undefined) };
+  cache = {
+    getOrSet: vi.fn((_key: string, factory: () => Promise<unknown>) => factory()),
+    invalidate: vi.fn(),
+  };
   service = new PagesService(
     pages as unknown as PageRepository,
     revisionRepo as unknown as RevisionRepository,
     sanitizer as unknown as HtmlSanitizerService,
+    hooks as unknown as HookRegistry,
+    cache as unknown as CacheService,
   );
 });
 
@@ -121,6 +132,19 @@ describe('PagesService', () => {
     expect(pages.findPublicBySlug).toHaveBeenLastCalledWith('about', 'de');
     expect(detail.title).toBe('Über'); // overlaid
     expect(detail.content).toBe('body'); // fallback
+  });
+
+  it('caches the public page read and emits content.changed on create', async () => {
+    pages.findPublicBySlug.mockResolvedValue(pageRow({ status: 'PUBLISHED' }));
+    await service.findPublicBySlug('about', 'en');
+    expect(cache.getOrSet).toHaveBeenCalled();
+
+    pages.create.mockResolvedValue(pageRow());
+    await service.create({ title: 'A', content: '' }, 'u1');
+    expect(hooks.emit).toHaveBeenCalledWith(
+      'content.changed',
+      expect.objectContaining({ type: 'page', id: 'pg1' }),
+    );
   });
 
   it('findById returns the page with its translation rows', async () => {

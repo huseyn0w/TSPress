@@ -254,7 +254,12 @@ describe('SeoService invalidation', () => {
   });
 
   it('emits seo.changed after creating a service', async () => {
-    services.create.mockResolvedValue({ id: 's1', name: 'n', description: 'd', order: 0 } as Service);
+    services.create.mockResolvedValue({
+      id: 's1',
+      name: 'n',
+      description: 'd',
+      order: 0,
+    } as Service);
     await service.createService({ name: 'n', description: 'd' });
     expect(hooks.emit).toHaveBeenCalledWith('seo.changed', {});
   });

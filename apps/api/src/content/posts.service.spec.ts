@@ -2,6 +2,7 @@ import type { PostRepository, PostWithRelations, RevisionRepository } from '@cms
 import { Prisma } from '@cmstack-ts/db';
 import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { type Mock, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { CacheService } from '../cache/cache.service';
 import type { HookRegistry } from '../plugins/hook-registry';
 import type { HtmlSanitizerService } from './html-sanitizer.service';
 import { PostsService } from './posts.service';
@@ -34,6 +35,7 @@ let posts: Record<keyof PostRepository, Mock>;
 let revisionRepo: Record<keyof RevisionRepository, Mock>;
 let sanitizer: { sanitize: Mock };
 let hooks: { emit: Mock; applyFilters: Mock };
+let cache: { getOrSet: Mock; invalidate: Mock };
 let service: PostsService;
 
 beforeEach(() => {
@@ -58,24 +60,37 @@ beforeEach(() => {
   };
   revisionRepo = { create: vi.fn(), listForPost: vi.fn(), listForPage: vi.fn() };
   sanitizer = { sanitize: vi.fn((s: string) => `clean:${s}`) };
-  hooks = { emit: vi.fn(), applyFilters: vi.fn((_n: string, v: unknown) => v) };
+  hooks = {
+    emit: vi.fn().mockResolvedValue(undefined),
+    applyFilters: vi.fn((_n: string, v: unknown) => v),
+  };
+  cache = {
+    getOrSet: vi.fn((_key: string, factory: () => Promise<unknown>) => factory()),
+    invalidate: vi.fn(),
+  };
   service = new PostsService(
     posts as unknown as PostRepository,
     revisionRepo as unknown as RevisionRepository,
     sanitizer as unknown as HtmlSanitizerService,
     hooks as unknown as HookRegistry,
+    cache as unknown as CacheService,
   );
 });
 
 describe('PostsService.create', () => {
-  it('a draft is not stamped published and emits no hook', async () => {
+  it('a draft is not stamped published and fires no post.published hook', async () => {
     posts.create.mockResolvedValue(postRow());
     await service.create({ title: 'T', content: '<p>x</p>' }, 'u1');
     const data = posts.create.mock.calls[0]?.[0];
     expect(data.status).toBe('DRAFT');
     expect(data.publishedAt).toBeNull();
     expect(data.content).toBe('clean:<p>x</p>'); // sanitized
-    expect(hooks.emit).not.toHaveBeenCalled();
+    expect(hooks.emit).not.toHaveBeenCalledWith('post.published', expect.anything());
+    // content.changed still fires so the cache is invalidated.
+    expect(hooks.emit).toHaveBeenCalledWith(
+      'content.changed',
+      expect.objectContaining({ type: 'post' }),
+    );
   });
 
   it('a published post is date-stamped and emits post.published', async () => {
@@ -148,7 +163,7 @@ describe('PostsService.update', () => {
     posts.update.mockResolvedValue(postRow({ status: 'PUBLISHED' }));
     await service.update('p1', { status: 'PUBLISHED', title: 'x' }, 'u1');
     expect(posts.update.mock.calls[0]?.[1].publishedAt).toBeUndefined();
-    expect(hooks.emit).not.toHaveBeenCalled();
+    expect(hooks.emit).not.toHaveBeenCalledWith('post.published', expect.anything());
   });
 
   it('passes category/tag id arrays straight through to the repo', async () => {
@@ -169,6 +184,27 @@ describe('PostsService reads & lifecycle', () => {
   it('findPublicBySlug throws NotFound when absent', async () => {
     posts.findPublicBySlug.mockResolvedValue(null);
     await expect(service.findPublicBySlug('x')).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('caches the public list read', async () => {
+    posts.listAndCount.mockResolvedValue({ items: [], total: 0 });
+    await service.list({ page: 1, perPage: 10 } as never, { publicOnly: true });
+    expect(cache.getOrSet).toHaveBeenCalled();
+  });
+
+  it('does NOT cache the admin list read', async () => {
+    posts.listAndCount.mockResolvedValue({ items: [], total: 0 });
+    await service.list({ page: 1, perPage: 10 } as never, { publicOnly: false });
+    expect(cache.getOrSet).not.toHaveBeenCalled();
+  });
+
+  it('emits content.changed after creating a post', async () => {
+    posts.create.mockResolvedValue(postRow());
+    await service.create({ title: 'T', content: '' }, 'u1');
+    expect(hooks.emit).toHaveBeenCalledWith(
+      'content.changed',
+      expect.objectContaining({ type: 'post', id: 'p1' }),
+    );
   });
 
   it('softDelete stamps deletedAt after an existence check', async () => {

@@ -19,6 +19,9 @@ import {
   type RevisionRepository,
 } from '@cmstack-ts/db';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { CACHE_NS, cacheKey } from '../cache/cache.keys';
+import { CacheService } from '../cache/cache.service';
+import { HookRegistry } from '../plugins/hook-registry';
 import { HtmlSanitizerService } from './html-sanitizer.service';
 import { localizeContent } from './localize';
 import type { RevisionView } from './posts.service';
@@ -33,6 +36,8 @@ export class PagesService {
     @Inject(PAGE_REPOSITORY) private readonly pages: PageRepository,
     @Inject(REVISION_REPOSITORY) private readonly revisionRepo: RevisionRepository,
     private readonly sanitizer: HtmlSanitizerService,
+    private readonly hooks: HookRegistry,
+    private readonly cache: CacheService,
   ) {}
 
   async create(input: CreatePageInput, authorId: string): Promise<PageDetail> {
@@ -48,6 +53,7 @@ export class PagesService {
       noindex: input.noindex ?? false,
       authorId,
     });
+    await this.hooks.emit('content.changed', { type: 'page', id: page.id, slug: page.slug });
     return this.toDetail(page, []);
   }
 
@@ -68,6 +74,7 @@ export class PagesService {
     if (input.noindex !== undefined) data.noindex = input.noindex;
 
     const page = await this.pages.update(id, data);
+    await this.hooks.emit('content.changed', { type: 'page', id: page.id, slug: page.slug });
     return this.toDetail(page, []);
   }
 
@@ -84,9 +91,11 @@ export class PagesService {
   }
 
   async findPublicBySlug(slug: string, locale: string = DEFAULT_LOCALE): Promise<PageDetail> {
-    const page = await this.pages.findPublicBySlug(slug, this.translationLocale(locale));
-    if (!page) throw new NotFoundException('Page not found.');
-    return this.toDetail(this.localize(page), []);
+    return this.cache.getOrSet(cacheKey(CACHE_NS.PAGES, `detail:${slug}:${locale}`), async () => {
+      const page = await this.pages.findPublicBySlug(slug, this.translationLocale(locale));
+      if (!page) throw new NotFoundException('Page not found.');
+      return this.toDetail(this.localize(page), []);
+    });
   }
 
   /** Create or replace a page's translation for a non-default locale. */
@@ -105,6 +114,7 @@ export class PagesService {
       return;
     }
     await this.pages.upsertTranslation(id, locale, data);
+    await this.hooks.emit('content.changed', { type: 'page', id });
   }
 
   /** Remove a page's translation for a locale (idempotent). */
@@ -116,22 +126,26 @@ export class PagesService {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') return;
       throw error;
     }
+    await this.hooks.emit('content.changed', { type: 'page', id });
   }
 
   async softDelete(id: string): Promise<void> {
     await this.ensureExists(id);
     await this.pages.setDeletedAt(id, new Date());
+    await this.hooks.emit('content.changed', { type: 'page', id });
   }
 
   async restore(id: string): Promise<PageDetail> {
     await this.ensureExists(id);
     const page = await this.pages.restore(id);
+    await this.hooks.emit('content.changed', { type: 'page', id: page.id, slug: page.slug });
     return this.toDetail(page, []);
   }
 
   async destroy(id: string): Promise<void> {
     await this.ensureExists(id);
     await this.pages.hardDelete(id);
+    await this.hooks.emit('content.changed', { type: 'page', id });
   }
 
   async revisions(pageId: string): Promise<RevisionView[]> {
