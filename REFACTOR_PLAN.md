@@ -576,7 +576,25 @@ From `../FEATURE_MATRIX.md` ("cmstack-ts needs"); nothing to be silently dropped
       region. New demo plugin `site-footer-note`. 432 tests, coverage 89.93%, e2e 11/11; live-verified
       (reading-time badge + footer note both gate on/off at runtime; unknown id → 404; admin 401
       without token). Out of scope: more regions, user-uploaded plugin code, per-plugin config.
-- [ ] **Caching layer** (Redis + page/fragment cache, invalidate on publish via `HookRegistry`).
+- [x] **Caching layer** (Redis + page/fragment cache, invalidate on publish via `HookRegistry`).
+      **DONE** (2026-06-26): new `cache` module exposes `CacheService` over a pluggable `CacheStore`
+      (`CACHE_STORE`); `RedisCacheStore` (ioredis, SCAN-based prefix flush) when `REDIS_URL` is set,
+      else `MemoryCacheStore` (so the cache is demonstrable/testable without Redis). `getOrSet` is
+      **fault-isolated** — any store error falls through to the source (a read never fails); the
+      `factory` runs outside the try, so a `NotFoundException` propagates and is never cached.
+      Cached hot public reads (locale + query in the key): `settings/theme`, `public/seo`,
+      `public/posts` list + `:slug` detail (detail cached **pre-`applyFilters`** so plugin toggles
+      aren't frozen), `public/pages/:slug`, `public/menus/:location`. Invalidation via four new core
+      `HookRegistry` action events — `content.changed`/`settings.theme.changed`/`menu.changed`/
+      `seo.changed` — each flushing one namespace; the `CacheInvalidationListener` subscribes
+      un-owned (never gated off by the plugin toggle). New env `REDIS_URL`/`CACHE_TTL_SECONDS`/
+      `CACHE_ENABLED` (read directly in the module factory; also in `envSchema`); `redis` service in
+      dev+prod compose. **463 tests, typecheck/lint clean, coverage 90.19% (gate ≥80%), e2e 11/11**;
+      live-verified (Redis keys populate; PATCH post flushes only `content:posts:*`, leaving
+      seo/settings; theme PUT flushes `settings`; reading-time badge present on a cache **hit**;
+      memory fallback banner without `REDIS_URL`). Adversarial self-review: 0 HIGH/MED.
+      Out of scope (logged): caching search/authors/comments/likes; per-namespace TTLs; single-flight/
+      stampede locks; HTTP response caching; web/Next caching beyond `revalidatePath`.
 - [ ] Shared net-new: **revision-restore UI**, **scheduled publishing**, **RSS/Atom
       feeds**, **comment-notification email** (attaches to `HookRegistry`), **coverage
       reporting** (folded into Task 4).

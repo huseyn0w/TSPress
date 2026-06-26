@@ -1,7 +1,7 @@
 # cmstack-ts — HANDOFF
 
-**Updated:** 2026-06-26 — **Task 2 + Task 4 COMPLETE; E2E re-run green; Task 1 IN PROGRESS (§7 #1–#9 done).** · **Branch:** `refactor/repository-layer` (off `main`)
-**Next phases:** Task 1 (feature parity) continuing per §7 order (next: #10 Redis cache); Task 3 (UI), Task 5 (README) not started.
+**Updated:** 2026-06-26 — **Task 2 + Task 4 COMPLETE; E2E re-run green; Task 1 IN PROGRESS (§7 #1–#10 done).** · **Branch:** `refactor/repository-layer` (off `main`)
+**Next phases:** Task 1 (feature parity) continuing — §7 register fully ticked; next is the **shared net-new** (revision-restore UI, scheduled publishing, RSS/Atom, comment-notification email). Task 3 (UI), Task 5 (README) not started.
 
 ## Task 1 progress (feature parity, `REFACTOR_PLAN.md` §7 — strict order per operator)
 - **E2E baseline re-run (pre-Task-1):** full stack up (docker db + built api + built web),
@@ -214,8 +214,36 @@
   - **Scoped out (logged):** regions beyond `site.footer` (extensible — a few lines each); loading
     user-uploaded plugin code (in-repo only by design); per-plugin settings/config screens;
     inter-plugin dependencies beyond `priority`.
-- **Next §7 item:** **#10 — Caching layer** (Redis + page/fragment cache; invalidate on publish via
-  `HookRegistry`).
+- **§7 #10 — Caching layer (Redis + page/fragment cache, invalidate via `HookRegistry`): DONE**
+  (2026-06-26). Spec/plan: `docs/superpowers/{specs,plans}/2026-06-26-caching-layer.*`. New `cache`
+  module: `CacheService` over a pluggable `CacheStore` (`CACHE_STORE` token) — `RedisCacheStore`
+  (**new dep `ioredis`**, non-blocking `SCAN`+`DEL` prefix flush) when `REDIS_URL` is set, else
+  `MemoryCacheStore` (Map+TTL) so the cache runs/tests without Redis (like the logging mail
+  transport). `getOrSet(key, factory, ttl?)` is **fault-isolated** — a store error is logged and
+  falls through to the source (a read never fails); the `factory` runs **outside** the try so a
+  `NotFoundException` propagates and is never cached; `CACHE_ENABLED=false` is a pure passthrough.
+  Cached hot public reads (locale + query in the discriminator): `settings/theme` (ns `settings`),
+  `public/seo` (`seo`), `public/posts` list + `:slug` detail (`content:posts`), `public/pages/:slug`
+  (`content:pages`), `public/menus/:location` (`menus`). **Post detail is cached pre-`applyFilters`**
+  — the plugin filter runs after the cache, so runtime plugin toggles are never frozen in. Four new
+  **core** `ActionMap` events (`content.changed`/`settings.theme.changed`/`menu.changed`/`seo.changed`)
+  emitted by the write services; `CacheInvalidationListener` (un-owned → never gated off by the
+  plugin toggle) flushes one namespace per event. New env `REDIS_URL`/`CACHE_TTL_SECONDS` (300)/
+  `CACHE_ENABLED` (read directly in the module factory + in `envSchema`); `redis` service added to
+  dev+prod compose; `.env.example` documented. **No migration** (cache is not persisted). **463
+  tests, typecheck/lint clean, coverage 90.19% (gate ≥80%), e2e 11/11**; live-verified (Redis keys
+  populate on public reads; admin PATCH post flushes only `content:posts:*`, leaving seo/settings;
+  theme PUT flushes `settings`; reading-time badge present on a cache **hit**; memory-fallback banner
+  without `REDIS_URL`). Adversarial self-review: 0 HIGH/MED (NotFound-not-cached, store-down
+  fall-through, no secret in keys/values, plugin filter on hit, namespace-scoped flush, disable
+  bypass all checked).
+  - **Scoped out (logged):** caching search/authors/comments/likes; per-namespace TTLs; single-flight/
+    stampede locks (TTL bounds staleness); HTTP response caching (`Cache-Control`); web/Next-side
+    caching beyond the existing `revalidatePath`. Draft writes also emit `content.changed`
+    (over-eager but safe — over-invalidation never serves stale).
+- **Next §7 item:** none — the §7 register is fully ticked. Next is the **shared net-new**
+  (revision-restore UI, scheduled publishing, RSS/Atom feeds, comment-notification email — the next
+  `HookRegistry` consumer after `contact.submitted`).
 
 ---
 
@@ -384,26 +412,29 @@ pnpm e2e                                                  # 11/11 (web-alone; li
 ## Continuation prompt (paste into a fresh window)
 > You are continuing the `cmstack-ts` engagement (senior TS engineer, autonomous).
 > Working dir `/Users/huseyn0w/Desktop/SWE/cmstack/cmstack-ts`, branch
-> `refactor/repository-layer` (clean tree, all committed; **432 tests, typecheck + biome
-> clean, coverage gate ≥80% (actual 89.93%)**). **DONE:** Task 2 (repository-layer refactor) + Task 4
+> `refactor/repository-layer` (clean tree, all committed; **463 tests, typecheck + biome
+> clean, coverage gate ≥80% (actual 90.19%)**). **DONE:** Task 2 (repository-layer refactor) + Task 4
 > (tests); the E2E baseline re-run (11/11, refactor confirmed black-box-invariant); and
 > **Task 1 §7 items #1 (per-locale content translation), #2 (per-content SEO meta), #3
 > (password reset + transactional email), #4 (menu management), #5 (contact form + email),
 > #6 (GA4/GTM + site verification + basic consent), #7 (auto thumbnails / image processing),
-> #8 (dashboard translation editing UI), #9 (plugin admin UI + runtime toggle + render regions)** —
-> all live-verified. **Read first:**
+> #8 (dashboard translation editing UI), #9 (plugin admin UI + runtime toggle + render regions),
+> #10 (caching layer — Redis/memory, event-driven invalidation via `HookRegistry`)** —
+> all live-verified. **The §7 register is now fully ticked.** **Read first:**
 > `cmstack-ts/HANDOFF.md` (the Task-1 progress section + "Full stack for LIVE verification"
 > recipe + Gotchas), `cmstack-ts/REFACTOR_PLAN.md` (§2.0 layering, §2.7 observer policy,
-> §7 feature register with #1–#9 checked, §10 invariants), `cmstack-ts/CLAUDE.md`, and the
+> §7 feature register with #1–#10 checked, §10 invariants), `cmstack-ts/CLAUDE.md`, and the
 > read-only canon `../FEATURE_MATRIX.md` + `../DESIGN_SYSTEM.md` (do NOT edit the canon).
 > The design+plan docs for finished items are in `docs/superpowers/{specs,plans}/`.
 >
-> **Resume with Task 1 §7 in strict order (operator directive) — next is #10
-> Redis caching layer** (page/fragment cache; invalidate on publish via `HookRegistry`). After it:
-> the shared net-new. Then Task 3 (UI §8) +
+> **Resume with the Task 1 shared net-new** (operator directive): revision-restore UI,
+> scheduled publishing, RSS/Atom feeds, comment-notification email. Then Task 3 (UI §8) +
 > Task 5 (full README rewrite). **Observer note:** §7 #5 wired the first real side effect
-> (`contact.submitted` → mail listener); the comment-notification email (shared net-new) is the
-> next observer consumer.
+> (`contact.submitted` → mail listener); §7 #10 added four cache-invalidation events
+> (`content.changed`/`settings.theme.changed`/`menu.changed`/`seo.changed`); the
+> comment-notification email (shared net-new) is the next observer consumer. **Cache note:**
+> a new side effect that changes a cached public read should `emit` the matching `*.changed`
+> event (or add a new one + a `CacheInvalidationListener` line) so the cache stays correct.
 >
 > Per-feature loop (proven this session): brainstorm scope if unclear → spec+plan under
 > `docs/superpowers/` → TDD by layer (config schema → prisma migration (additive/reversible)
