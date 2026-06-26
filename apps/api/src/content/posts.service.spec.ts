@@ -334,6 +334,44 @@ describe('PostsService meta + localization', () => {
   });
 });
 
+describe('PostsService.restoreRevision', () => {
+  it('restores a revision by reusing update with the snapshot fields', async () => {
+    revisionRepo.findById.mockResolvedValue({
+      id: 'r1',
+      postId: 'p1',
+      pageId: null,
+      authorId: 'u1',
+      snapshot: { title: 'Old', slug: 'old', excerpt: null, content: 'oldbody', status: 'DRAFT' },
+      createdAt: new Date(),
+    });
+    posts.findActiveById.mockResolvedValue(postRow());
+    posts.update.mockResolvedValue(postRow({ title: 'Old' }));
+    const detail = await service.restoreRevision('p1', 'r1', 'editor-1');
+    // content is re-sanitized on the shared update path (clean: prefix from the fake).
+    expect(posts.update).toHaveBeenCalledWith(
+      'p1',
+      expect.objectContaining({ title: 'Old', slug: 'old', content: 'clean:oldbody', status: 'DRAFT' }),
+    );
+    // the pre-restore snapshot is attributed to the restoring user.
+    expect(revisionRepo.create).toHaveBeenCalledWith(
+      expect.objectContaining({ postId: 'p1', authorId: 'editor-1' }),
+    );
+    expect(detail.title).toBe('Old');
+  });
+
+  it('404s when the revision is missing', async () => {
+    revisionRepo.findById.mockResolvedValue(null);
+    await expect(service.restoreRevision('p1', 'rX', 'u1')).rejects.toBeInstanceOf(NotFoundException);
+    expect(posts.update).not.toHaveBeenCalled();
+  });
+
+  it('404s when the revision belongs to a different post', async () => {
+    revisionRepo.findById.mockResolvedValue({ id: 'r1', postId: 'other', snapshot: {} });
+    await expect(service.restoreRevision('p1', 'r1', 'u1')).rejects.toBeInstanceOf(NotFoundException);
+    expect(posts.update).not.toHaveBeenCalled();
+  });
+});
+
 describe('PostsService.upsertTranslation', () => {
   it('sanitizes translated content and passes other fields through', async () => {
     posts.findActiveById.mockResolvedValue(postRow());

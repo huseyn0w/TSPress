@@ -179,4 +179,35 @@ describe('PagesService', () => {
     );
     expect(pages.upsertTranslation).not.toHaveBeenCalled();
   });
+
+  it('restoreRevision restores a page revision via update', async () => {
+    revisionRepo.findById.mockResolvedValue({
+      id: 'r1',
+      postId: null,
+      pageId: 'pg1',
+      authorId: 'u1',
+      snapshot: { title: 'Old', slug: 'old', content: 'b', status: 'DRAFT' },
+      createdAt: new Date(),
+    });
+    pages.findActiveById.mockResolvedValue(pageRow());
+    pages.update.mockResolvedValue(pageRow({ title: 'Old' }));
+    const detail = await service.restoreRevision('pg1', 'r1', 'editor-1');
+    // content is re-sanitized on the shared update path (clean: prefix from the fake).
+    expect(pages.update).toHaveBeenCalledWith(
+      'pg1',
+      expect.objectContaining({ title: 'Old', slug: 'old', content: 'clean:b', status: 'DRAFT' }),
+    );
+    expect(revisionRepo.create).toHaveBeenCalledWith(
+      expect.objectContaining({ pageId: 'pg1', authorId: 'editor-1' }),
+    );
+    expect(detail.title).toBe('Old');
+  });
+
+  it('restoreRevision 404s when the revision belongs to another page', async () => {
+    revisionRepo.findById.mockResolvedValue({ id: 'r1', pageId: 'other', snapshot: {} });
+    await expect(service.restoreRevision('pg1', 'r1', 'u1')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+    expect(pages.update).not.toHaveBeenCalled();
+  });
 });

@@ -25,6 +25,7 @@ import { HookRegistry } from '../plugins/hook-registry';
 import { HtmlSanitizerService } from './html-sanitizer.service';
 import { localizeContent } from './localize';
 import type { RevisionView } from './posts.service';
+import { revisionToPageUpdate } from './revision-snapshot';
 import { slugify } from './slug';
 
 /** Fields that carry a per-locale translation (pages have no excerpt). */
@@ -157,6 +158,13 @@ export class PagesService {
       snapshot: r.snapshot,
       createdAt: r.createdAt.toISOString(),
     }));
+  }
+
+  /** Restore a prior page revision's scalar fields (reuses update → reversible). */
+  async restoreRevision(id: string, revisionId: string, authorId: string): Promise<PageDetail> {
+    const revision = await this.revisionRepo.findById(revisionId);
+    if (!revision || revision.pageId !== id) throw new NotFoundException('Revision not found.');
+    return this.update(id, revisionToPageUpdate(revision.snapshot), authorId);
   }
 
   private async ensureExists(id: string): Promise<void> {

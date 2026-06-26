@@ -33,6 +33,7 @@ import { CacheService } from '../cache/cache.service';
 import { HookRegistry } from '../plugins/hook-registry';
 import { HtmlSanitizerService } from './html-sanitizer.service';
 import { localizeContent } from './localize';
+import { revisionToPostUpdate } from './revision-snapshot';
 import { slugify } from './slug';
 
 export interface RevisionView {
@@ -274,6 +275,14 @@ export class PostsService {
       snapshot: r.snapshot,
       createdAt: r.createdAt.toISOString(),
     }));
+  }
+
+  /** Restore a prior revision's scalar fields. Reuses update (snapshots the
+   * current state first → reversible; sanitizes content; emits content.changed). */
+  async restoreRevision(id: string, revisionId: string, authorId: string): Promise<PostDetail> {
+    const revision = await this.revisionRepo.findById(revisionId);
+    if (!revision || revision.postId !== id) throw new NotFoundException('Revision not found.');
+    return this.update(id, revisionToPostUpdate(revision.snapshot), authorId);
   }
 
   private async ensureExists(id: string): Promise<void> {
