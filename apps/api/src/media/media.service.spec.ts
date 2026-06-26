@@ -1,8 +1,17 @@
 import type { Media, MediaRepository } from '@cmstack-ts/db';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import sharp from 'sharp';
 import { type Mock, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { ImageProcessor } from './image-processor';
 import { MediaService, type UploadFile, extensionForMime } from './media.service';
 import type { StorageDriver } from './storage';
+
+/** A real PNG whose header `image-size` can read (1000x800, under the guard). */
+async function makeTinyPng(): Promise<Buffer> {
+  return sharp({ create: { width: 1000, height: 800, channels: 3, background: '#abc' } })
+    .png()
+    .toBuffer();
+}
 
 describe('extensionForMime', () => {
   it('maps each allowed MIME type to a safe extension', () => {
@@ -36,6 +45,7 @@ function mediaRow(over: Partial<Media> = {}): Media {
     caption: null,
     url: '/uploads/k.pdf',
     uploaderId: 'u1',
+    thumbnails: [],
     createdAt: new Date('2026-01-01T00:00:00Z'),
     updatedAt: new Date('2026-01-02T00:00:00Z'),
     ...over,
@@ -44,6 +54,7 @@ function mediaRow(over: Partial<Media> = {}): Media {
 
 let media: Record<keyof MediaRepository, Mock>;
 let storage: Record<keyof StorageDriver, Mock>;
+let processor: { makeThumbnails: Mock };
 let service: MediaService;
 
 beforeEach(() => {
@@ -57,9 +68,12 @@ beforeEach(() => {
     hardDelete: vi.fn(),
   };
   storage = { save: vi.fn(), delete: vi.fn(), pathFor: vi.fn(), root: vi.fn() };
+  // Default: no derivatives produced (individual tests override).
+  processor = { makeThumbnails: vi.fn().mockResolvedValue([]) };
   service = new MediaService(
     media as unknown as MediaRepository,
     storage as unknown as StorageDriver,
+    processor as unknown as ImageProcessor,
   );
 });
 
@@ -96,6 +110,87 @@ describe('MediaService.upload', () => {
     await expect(service.upload(pdf, 'u1')).rejects.toThrow('db down');
 
     expect(storage.delete).toHaveBeenCalledWith(firstArg(storage.save));
+  });
+});
+
+describe('MediaService.upload thumbnails', () => {
+  it('generates derivatives, stores them, and records the thumbnails JSON', async () => {
+    processor.makeThumbnails.mockResolvedValue([
+      { label: 'thumb', width: 400, height: 320, data: Buffer.from('a') },
+      { label: 'medium', width: 1000, height: 800, data: Buffer.from('bb') },
+    ]);
+    media.create.mockImplementation((d) =>
+      Promise.resolve({
+        id: 'm1',
+        alt: null,
+        title: null,
+        caption: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        ...d,
+      }),
+    );
+    const png = await makeTinyPng();
+    const res = await service.upload(
+      { originalname: 'a.png', mimetype: 'image/png', size: png.length, buffer: png },
+      'u1',
+    );
+    // original + 2 derivatives saved
+    expect(storage.save).toHaveBeenCalledTimes(3);
+    expect(res.thumbnails).toHaveLength(2);
+    expect(res.thumbnails[0]).toMatchObject({
+      label: 'thumb',
+      width: 400,
+      url: expect.stringContaining('-thumb.webp'),
+    });
+  });
+
+  it('rejects an image above the megapixel guard before saving', async () => {
+    const huge = await sharp({
+      create: { width: 8000, height: 6000, channels: 3, background: '#fff' },
+    })
+      .png()
+      .toBuffer();
+    await expect(
+      service.upload(
+        { originalname: 'h.png', mimetype: 'image/png', size: huge.length, buffer: huge },
+        'u1',
+      ),
+    ).rejects.toBeInstanceOf(BadRequestException); // 48 MP > 40 MP default
+    expect(storage.save).not.toHaveBeenCalled();
+  });
+
+  it('still uploads with thumbnails: [] when generation fails (fault-isolated)', async () => {
+    processor.makeThumbnails.mockRejectedValue(new Error('boom'));
+    media.create.mockImplementation((d) =>
+      Promise.resolve({
+        id: 'm2',
+        alt: null,
+        title: null,
+        caption: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        ...d,
+      }),
+    );
+    const png = await makeTinyPng();
+    const res = await service.upload(
+      { originalname: 'a.png', mimetype: 'image/png', size: png.length, buffer: png },
+      'u1',
+    );
+    expect(res.thumbnails).toEqual([]);
+    expect(storage.save).toHaveBeenCalledTimes(1); // only the original
+  });
+
+  it('remove deletes the original and every derivative key', async () => {
+    media.findFilename.mockResolvedValue({
+      filename: 'k.png',
+      thumbnails: [{ label: 'thumb', width: 1, height: 1, url: '/uploads/k-thumb.webp', size: 1 }],
+    });
+    media.hardDelete.mockResolvedValue(undefined);
+    await service.remove('m1');
+    expect(storage.delete).toHaveBeenCalledWith('k.png');
+    expect(storage.delete).toHaveBeenCalledWith('k-thumb.webp');
   });
 });
 

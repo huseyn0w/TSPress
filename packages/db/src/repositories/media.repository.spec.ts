@@ -16,13 +16,13 @@ function make() {
 }
 
 describe('PrismaMediaRepository', () => {
-  it('findFilename() selects only the filename', async () => {
+  it('findFilename() selects the filename and thumbnails (for storage cleanup)', async () => {
     const { repo, media } = make();
-    media.findUnique.mockResolvedValue({ filename: 'a.png' });
-    expect(await repo.findFilename('m1')).toEqual({ filename: 'a.png' });
+    media.findUnique.mockResolvedValue({ filename: 'a.png', thumbnails: [] });
+    expect(await repo.findFilename('m1')).toEqual({ filename: 'a.png', thumbnails: [] });
     expect(media.findUnique).toHaveBeenCalledWith({
       where: { id: 'm1' },
-      select: { filename: true },
+      select: { filename: true, thumbnails: true },
     });
   });
 
@@ -57,6 +57,7 @@ describe('PrismaMediaRepository', () => {
       height: 3,
       url: '/uploads/k',
       uploaderId: 'u1',
+      thumbnails: [],
     };
     expect(await repo.create(data)).toBe(created);
     expect(media.create).toHaveBeenCalledWith({ data });

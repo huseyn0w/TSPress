@@ -1,4 +1,4 @@
-import type { Media, PrismaClient } from '@prisma/client';
+import type { Media, Prisma, PrismaClient } from '@prisma/client';
 import { PrismaCrudRepository } from './crud.repository';
 
 export type MediaCreateData = {
@@ -10,6 +10,7 @@ export type MediaCreateData = {
   height: number | null;
   url: string;
   uploaderId: string;
+  thumbnails: Prisma.InputJsonValue;
 };
 
 export type MediaUpdateData = {
@@ -22,8 +23,8 @@ export type MediaUpdateData = {
 export interface MediaRepository {
   create(data: MediaCreateData): Promise<Media>;
   findById(id: string): Promise<Media | null>;
-  /** Returns just the stored filename (for storage cleanup on delete), or null. */
-  findFilename(id: string): Promise<{ filename: string } | null>;
+  /** Returns the stored filename + derivatives (for storage cleanup on delete), or null. */
+  findFilename(id: string): Promise<{ filename: string; thumbnails: unknown } | null>;
   listAndCount(query: { page: number; perPage: number }): Promise<{
     items: Media[];
     total: number;
@@ -48,8 +49,11 @@ export class PrismaMediaRepository extends PrismaCrudRepository implements Media
     return this.prisma.media.findUnique({ where: { id } });
   }
 
-  findFilename(id: string): Promise<{ filename: string } | null> {
-    return this.prisma.media.findUnique({ where: { id }, select: { filename: true } });
+  findFilename(id: string): Promise<{ filename: string; thumbnails: unknown } | null> {
+    return this.prisma.media.findUnique({
+      where: { id },
+      select: { filename: true, thumbnails: true },
+    });
   }
 
   async listAndCount(query: {

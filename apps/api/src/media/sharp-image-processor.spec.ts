@@ -22,6 +22,7 @@ describe('SharpImageProcessor', () => {
     const out = await processor.makeThumbnails(png, sizes);
     expect(out.map((t) => t.label)).toEqual(['thumb', 'medium']);
     const thumb = out[0];
+    if (!thumb) throw new Error('expected a thumb derivative');
     expect(Math.max(thumb.width, thumb.height)).toBeLessThanOrEqual(400);
     // WebP magic: bytes 0-3 'RIFF', 8-11 'WEBP'.
     expect(thumb.data.subarray(0, 4).toString('latin1')).toBe('RIFF');
@@ -31,6 +32,7 @@ describe('SharpImageProcessor', () => {
   it('does not upscale beyond the source size', async () => {
     const out = await processor.makeThumbnails(png, sizes);
     const medium = out[1];
+    if (!medium) throw new Error('expected a medium derivative');
     // Source is 1000px wide < 1024 max → output stays 1000, not enlarged.
     expect(medium.width).toBe(1000);
   });
