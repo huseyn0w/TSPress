@@ -1,7 +1,11 @@
 'use server';
 
 import { apiSend } from '@/lib/admin/api';
-import type { CreatePageInput, UpdatePageInput } from '@cmstack-ts/config';
+import {
+  type CreatePageInput,
+  type UpdatePageInput,
+  pageTranslationInputSchema,
+} from '@cmstack-ts/config';
 import { revalidatePath } from 'next/cache';
 
 type ActionResult<T = undefined> = T extends undefined
@@ -61,5 +65,36 @@ export async function permanentDeletePageAction(id: string): Promise<ActionResul
       ok: false,
       error: err instanceof Error ? err.message : 'Failed to permanently delete page',
     };
+  }
+}
+
+export async function upsertPageTranslationAction(
+  id: string,
+  locale: string,
+  input: unknown,
+): Promise<ActionResult> {
+  const parsed = pageTranslationInputSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: 'Please check the translation fields.' };
+  try {
+    await apiSend('PUT', `/pages/${id}/translations/${locale}`, parsed.data);
+    revalidatePath('/admin/pages');
+    revalidatePath('/', 'layout');
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Failed to save translation' };
+  }
+}
+
+export async function deletePageTranslationAction(
+  id: string,
+  locale: string,
+): Promise<ActionResult> {
+  try {
+    await apiSend('DELETE', `/pages/${id}/translations/${locale}`);
+    revalidatePath('/admin/pages');
+    revalidatePath('/', 'layout');
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Failed to clear translation' };
   }
 }

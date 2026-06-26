@@ -1,7 +1,11 @@
 'use server';
 
 import { apiSend } from '@/lib/admin/api';
-import type { CreatePostInput, UpdatePostInput } from '@cmstack-ts/config';
+import {
+  type CreatePostInput,
+  type UpdatePostInput,
+  postTranslationInputSchema,
+} from '@cmstack-ts/config';
 import { revalidatePath } from 'next/cache';
 
 type ActionResult<T = undefined> = T extends undefined
@@ -75,5 +79,36 @@ export async function togglePostStatusAction(
     return { ok: true };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : 'Failed to update status' };
+  }
+}
+
+export async function upsertPostTranslationAction(
+  id: string,
+  locale: string,
+  input: unknown,
+): Promise<ActionResult> {
+  const parsed = postTranslationInputSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: 'Please check the translation fields.' };
+  try {
+    await apiSend('PUT', `/posts/${id}/translations/${locale}`, parsed.data);
+    revalidatePath('/admin/posts');
+    revalidatePath('/', 'layout');
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Failed to save translation' };
+  }
+}
+
+export async function deletePostTranslationAction(
+  id: string,
+  locale: string,
+): Promise<ActionResult> {
+  try {
+    await apiSend('DELETE', `/posts/${id}/translations/${locale}`);
+    revalidatePath('/admin/posts');
+    revalidatePath('/', 'layout');
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Failed to clear translation' };
   }
 }
