@@ -1,7 +1,7 @@
 # cmstack-ts — HANDOFF
 
-**Updated:** 2026-06-26 — **Task 2 + Task 4 COMPLETE; E2E re-run green; Task 1 IN PROGRESS (§7 #1–#10 done).** · **Branch:** `refactor/repository-layer` (off `main`)
-**Next phases:** Task 1 (feature parity) continuing — §7 register fully ticked; next is the **shared net-new** (revision-restore UI, scheduled publishing, RSS/Atom, comment-notification email). Task 3 (UI), Task 5 (README) not started.
+**Updated:** 2026-06-26 — **Task 2 + Task 4 COMPLETE; E2E re-run green; Task 1 IN PROGRESS (§7 #1–#10 done + shared net-new: revision-restore UI done).** · **Branch:** `refactor/repository-layer` (off `main`)
+**Next phases:** Task 1 shared net-new continuing — next is **scheduled publishing** (then RSS/Atom, comment-notification email). Task 3 (UI), Task 5 (README) not started.
 
 ## Task 1 progress (feature parity, `REFACTOR_PLAN.md` §7 — strict order per operator)
 - **E2E baseline re-run (pre-Task-1):** full stack up (docker db + built api + built web),
@@ -241,9 +241,38 @@
     stampede locks (TTL bounds staleness); HTTP response caching (`Cache-Control`); web/Next-side
     caching beyond the existing `revalidatePath`. Draft writes also emit `content.changed`
     (over-eager but safe — over-invalidation never serves stale).
-- **Next §7 item:** none — the §7 register is fully ticked. Next is the **shared net-new**
-  (revision-restore UI, scheduled publishing, RSS/Atom feeds, comment-notification email — the next
-  `HookRegistry` consumer after `contact.submitted`).
+- **Next §7 item:** none — the §7 register is fully ticked.
+- **Shared net-new #1 — Revision restore UI: DONE** (2026-06-26). Spec/plan:
+  `docs/superpowers/{specs,plans}/2026-06-26-revision-restore.*`. Canon `../FEATURE_MATRIX.md`
+  rows 23–24 flagged this as a gap in all three stacks. **No migration, no new observer event.**
+  `RevisionRepository.findById` → `PostsService.restoreRevision(id, revisionId, authorId)` /
+  `PagesService.restoreRevision(...)` which **reuse the existing `update`** — that single reuse
+  buys three invariants free: (1) the current state is snapshotted **before** the overwrite →
+  restore is **reversible**; (2) content is re-sanitized; (3) `content.changed` fires → the §7 #10
+  cache invalidates. Pure parsers `revisionToPostUpdate`/`revisionToPageUpdate` (in
+  `content/revision-snapshot.ts`) carry only the scalar snapshot fields (title/slug/[excerpt]/
+  content/status); unknown/`null` fields are omitted (the systemic optional-clear limitation from
+  §7 #2 — a snapshot's empty excerpt won't clear a current one). New endpoints
+  `POST /{posts,pages}/:id/revisions/:revisionId/restore` (CASL `update Post`/`update Page`);
+  the revision must belong to the target (`postId`/`pageId` match) else **404**; missing → 404;
+  the pre-restore snapshot is attributed to the restoring user. Web: reusable
+  `components/admin/revisions-panel.tsx` mounted below the post/page edit form (edit-only) —
+  lists revisions (date/author/—), selecting one shows **field-level compare** (current vs
+  snapshot, changed highlighted, content as truncated **escaped** text), Restore via new Server
+  Actions `restore{Post,Page}RevisionAction` (`useTransition` + toast, `revalidatePath`). Pure
+  `lib/admin/revision-compare.ts` (`compareRevisionFields`). **475 tests, typecheck/lint clean,
+  coverage 90.24% (gate ≥80%), e2e 11/11**; live-verified (two edits → restore oldest reverts the
+  title AND adds a revision of the pre-restore state → reversible; cross-item restore → 404;
+  unauthenticated → 401; valid → 201). Adversarial self-review: 0 HIGH/MED (cross-item 404,
+  trashed-target 404 via `update`, sanitized, cache-invalidated, escaped render, CASL+JWT all
+  checked); 1 LOW (excerpt-clear limitation, documented).
+  - **Scoped out (logged):** taxonomy/translation restore (not in the snapshot — by design); rich
+    visual text diff (field-level compare chosen); revision pruning/retention; per-revision
+    preview route.
+- **Next shared net-new:** **scheduled publishing** (publish a post/page at a future time — needs
+  a `scheduledAt`/status transition + a scheduler tick; observer: emits `post.published` when the
+  scheduled transition fires). Then RSS/Atom feeds, comment-notification email (next `HookRegistry`
+  consumer after `contact.submitted`).
 
 ---
 
@@ -412,23 +441,25 @@ pnpm e2e                                                  # 11/11 (web-alone; li
 ## Continuation prompt (paste into a fresh window)
 > You are continuing the `cmstack-ts` engagement (senior TS engineer, autonomous).
 > Working dir `/Users/huseyn0w/Desktop/SWE/cmstack/cmstack-ts`, branch
-> `refactor/repository-layer` (clean tree, all committed; **463 tests, typecheck + biome
-> clean, coverage gate ≥80% (actual 90.19%)**). **DONE:** Task 2 (repository-layer refactor) + Task 4
+> `refactor/repository-layer` (clean tree, all committed; **475 tests, typecheck + biome
+> clean, coverage gate ≥80% (actual 90.24%)**). **DONE:** Task 2 (repository-layer refactor) + Task 4
 > (tests); the E2E baseline re-run (11/11, refactor confirmed black-box-invariant); and
 > **Task 1 §7 items #1 (per-locale content translation), #2 (per-content SEO meta), #3
 > (password reset + transactional email), #4 (menu management), #5 (contact form + email),
 > #6 (GA4/GTM + site verification + basic consent), #7 (auto thumbnails / image processing),
 > #8 (dashboard translation editing UI), #9 (plugin admin UI + runtime toggle + render regions),
 > #10 (caching layer — Redis/memory, event-driven invalidation via `HookRegistry`)** —
-> all live-verified. **The §7 register is now fully ticked.** **Read first:**
+> all live-verified. **The §7 register is now fully ticked**, and the **first shared net-new —
+> revision-restore UI** — is also done (restore reuses `update` → reversible + sanitized +
+> cache-invalidating; field-level compare panel on the post/page edit pages). **Read first:**
 > `cmstack-ts/HANDOFF.md` (the Task-1 progress section + "Full stack for LIVE verification"
 > recipe + Gotchas), `cmstack-ts/REFACTOR_PLAN.md` (§2.0 layering, §2.7 observer policy,
 > §7 feature register with #1–#10 checked, §10 invariants), `cmstack-ts/CLAUDE.md`, and the
 > read-only canon `../FEATURE_MATRIX.md` + `../DESIGN_SYSTEM.md` (do NOT edit the canon).
 > The design+plan docs for finished items are in `docs/superpowers/{specs,plans}/`.
 >
-> **Resume with the Task 1 shared net-new** (operator directive): revision-restore UI,
-> scheduled publishing, RSS/Atom feeds, comment-notification email. Then Task 3 (UI §8) +
+> **Resume with the Task 1 shared net-new** (operator directive) — revision-restore UI is DONE;
+> next is **scheduled publishing**, then RSS/Atom feeds, comment-notification email. Then Task 3 (UI §8) +
 > Task 5 (full README rewrite). **Observer note:** §7 #5 wired the first real side effect
 > (`contact.submitted` → mail listener); §7 #10 added four cache-invalidation events
 > (`content.changed`/`settings.theme.changed`/`menu.changed`/`seo.changed`); the

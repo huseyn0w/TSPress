@@ -595,9 +595,22 @@ From `../FEATURE_MATRIX.md` ("cmstack-ts needs"); nothing to be silently dropped
       memory fallback banner without `REDIS_URL`). Adversarial self-review: 0 HIGH/MED.
       Out of scope (logged): caching search/authors/comments/likes; per-namespace TTLs; single-flight/
       stampede locks; HTTP response caching; web/Next caching beyond `revalidatePath`.
-- [ ] Shared net-new: **revision-restore UI**, **scheduled publishing**, **RSS/Atom
-      feeds**, **comment-notification email** (attaches to `HookRegistry`), **coverage
-      reporting** (folded into Task 4).
+- [ ] Shared net-new: ~~revision-restore UI~~ (**DONE** 2026-06-26), **scheduled publishing**,
+      **RSS/Atom feeds**, **comment-notification email** (attaches to `HookRegistry`),
+      **coverage reporting** (folded into Task 4).
+      - **Revision restore UI — DONE** (2026-06-26): `RevisionRepository.findById` →
+        `Posts/PagesService.restoreRevision(id, revisionId, authorId)` which **reuses `update`**
+        (snapshots current state first → reversible; re-sanitizes content; emits `content.changed`
+        → §7 #10 cache invalidates). New endpoints `POST /{posts,pages}/:id/revisions/:revisionId/
+        restore` (CASL `update`); cross-item or missing revision → 404. Pure snapshot parsers
+        (`revisionToPostUpdate`/`revisionToPageUpdate`) carry only scalar fields. Web: reusable
+        `RevisionsPanel` on the post/page edit pages — lists revisions, **field-level compare**
+        (current vs snapshot, changed highlighted, escaped text), Restore via Server Actions
+        (`restore{Post,Page}RevisionAction`). **475 tests, typecheck/lint clean, coverage 90.24%,
+        e2e 11/11**; live-verified (restore reverts fields + adds a revision → reversible; cross-item
+        404; unauth 401). No migration, no new observer event (rides `content.changed`).
+        Out of scope: taxonomy/translation restore (not in snapshot); rich visual diff; revision
+        pruning.
 
 ### Matrix gaps / errors to flag to the operator
 - **None found yet.** The matrix's "ts" claims match the code as inventoried. Any
