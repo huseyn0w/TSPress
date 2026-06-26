@@ -1,5 +1,6 @@
 import { AnalyticsLoader } from '@/components/public/analytics-loader';
 import { routing } from '@/i18n/routing';
+import { getPluginRegions } from '@/lib/plugins/regions';
 import { getSeoContent } from '@/lib/seo/fetch';
 import { buildVerificationMeta } from '@cmstack-ts/config';
 import type { Metadata } from 'next';
@@ -50,10 +51,16 @@ export default async function LocaleLayout({
   const consentCookie = (await cookies()).get('ts-consent')?.value;
   const initialConsent =
     consentCookie === 'accepted' || consentCookie === 'declined' ? consentCookie : 'undecided';
+  const regions = await getPluginRegions();
+  const footerRegion = regions['site.footer'];
 
   return (
     <>
       {children}
+      {footerRegion ? (
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: plugin region HTML is sanitized by the API.
+        <div className="ts-plugin-region" dangerouslySetInnerHTML={{ __html: footerRegion }} />
+      ) : null}
       <AnalyticsLoader
         gaId={profile.ga4MeasurementId}
         gtmId={profile.gtmContainerId}

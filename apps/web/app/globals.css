@@ -285,6 +285,15 @@ a {
   padding-left: 0.75rem;
 }
 
+/* Plugin render-region (e.g. `site.footer`). Sits outside the per-theme wrapper;
+   keep it unobtrusive and theme-var-aware with a fallback. */
+.ts-plugin-region {
+  padding: 1.5rem 1rem;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--muted, rgba(0, 0, 0, 0.55));
+}
+
 /* Cookie-consent banner (public site). It renders outside the per-theme
    `.theme-<id>` wrapper, so the theme vars may be unset here — always pass a
    concrete fallback so the banner stays readable on every theme. */
