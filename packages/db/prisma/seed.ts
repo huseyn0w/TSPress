@@ -24,6 +24,7 @@ const PERMISSIONS = [
   { action: 'manage', subject: 'Comment' },
   { action: 'manage', subject: 'Menu' },
   { action: 'manage', subject: 'Contact' },
+  { action: 'manage', subject: 'Plugin' },
 ] as const;
 
 // Roles and the permissions they grant. `Member` is the safe default for new
@@ -556,6 +557,16 @@ async function main() {
   await prisma.setting.upsert({
     where: { key: 'activeTheme' },
     create: { key: 'activeTheme', value: DEFAULT_ACTIVE_THEME },
+    update: {},
+  });
+
+  // Enabled plugins (runtime-toggleable). `update: {}` preserves admin toggles on re-seed.
+  await prisma.setting.upsert({
+    where: { key: 'enabledPlugins' },
+    create: {
+      key: 'enabledPlugins',
+      value: JSON.stringify(['reading-time', 'site-footer-note']),
+    },
     update: {},
   });
 

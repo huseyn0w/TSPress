@@ -1,7 +1,7 @@
 # cmstack-ts — HANDOFF
 
-**Updated:** 2026-06-26 — **Task 2 + Task 4 COMPLETE; E2E re-run green; Task 1 IN PROGRESS (§7 #1–#8 done).** · **Branch:** `refactor/repository-layer` (off `main`)
-**Next phases:** Task 1 (feature parity) continuing per §7 order (next: #9 plugin admin UI); Task 3 (UI), Task 5 (README) not started.
+**Updated:** 2026-06-26 — **Task 2 + Task 4 COMPLETE; E2E re-run green; Task 1 IN PROGRESS (§7 #1–#9 done).** · **Branch:** `refactor/repository-layer` (off `main`)
+**Next phases:** Task 1 (feature parity) continuing per §7 order (next: #10 Redis cache); Task 3 (UI), Task 5 (README) not started.
 
 ## Task 1 progress (feature parity, `REFACTOR_PLAN.md` §7 — strict order per operator)
 - **E2E baseline re-run (pre-Task-1):** full stack up (docker db + built api + built web),
@@ -185,7 +185,37 @@
     translating slug/status/taxonomy (shared by design); machine translation; completeness indicator.
   - **Gotcha hit during live verify:** the Docker daemon had stopped (DB unreachable, API 500s) —
     `open -a Docker`, wait for `docker info`, `docker compose up -d db`, restart the API.
-- **Next §7 item:** **#9 — Plugin admin UI** + runtime enable/disable + render-region hooks.
+- **§7 #9 — Plugin admin UI + runtime enable/disable + render-region hooks: DONE** (2026-06-26).
+  Spec/plan: `docs/superpowers/{specs,plans}/2026-06-26-plugin-admin-ui.*`. **Runtime toggle (no
+  restart):** every in-repo plugin registers at boot via a **scoped `PluginApi` facade** that tags its
+  handlers with the plugin `id` (`owner`); `HookRegistry` gained `owner?` on `addFilter/addAction/
+  addRegion`, a `setEnabledPlugins(ids)` gate, and `isActive(owner)` — owned handlers run only if
+  enabled, **un-owned (core) handlers always run** (so the `contact.submitted` mail listener, which
+  calls `hooks.addAction` directly with no owner, is never disableable). **Render regions:** new hook
+  kind — `RegionMap` (ships `site.footer`, extensible), `addRegion`/`renderRegion` (concatenates
+  enabled contributors by priority, fault-isolated). `CmstackTsPlugin` gained `id` + `description`;
+  `enabled-plugins.ts` → `available-plugins.ts` (all in-repo plugins). `PluginService` (list/setEnabled/
+  loadEnabled/renderRegions) persists the enabled set in `Setting['enabledPlugins']` (JSON, **no
+  migration**) and drives the registry; `renderRegions` sanitizes region HTML via `HtmlSanitizerService`.
+  Admin `GET /plugins` + `PUT /plugins/:id {enabled}` (CASL subject **`Plugin`**, Administrator-only);
+  public `GET /public/plugins/regions`. Web: `/admin/plugins` toggle screen (Administrator-only,
+  `canManageSettings`) + nav link; public `[locale]` layout renders the `site.footer` region via
+  sanitized `dangerouslySetInnerHTML` (after children, like the consent banner). New demo plugin
+  `samples/site-footer-note.plugin.ts`. Seed: `enabledPlugins=["reading-time","site-footer-note"]`
+  + `Plugin` permission. **No observer event** (toggle = config write, §2.7). **432 tests,
+  typecheck/lint clean, coverage 89.93% (gate ≥80%), e2e 11/11**; live-verified end-to-end (both the
+  reading-time **filter** badge and the footer **region** gate on/off at runtime with no restart;
+  regions `{}` when disabled; unknown id → 404; admin `/plugins` → 401 without token; public regions
+  → 200). Adversarial self-review: 0 HIGH/MED.
+  - **Known interaction (logged):** `HtmlSanitizerService` strips the `class` attribute from region
+    HTML (not in its allowlist), so style plugin regions via the React-rendered **`.ts-plugin-region`**
+    wrapper, not inner element classes. The `RegionMap` value type is a `true` marker (biome's
+    `noConfusingVoidType` rejects `void`).
+  - **Scoped out (logged):** regions beyond `site.footer` (extensible — a few lines each); loading
+    user-uploaded plugin code (in-repo only by design); per-plugin settings/config screens;
+    inter-plugin dependencies beyond `priority`.
+- **Next §7 item:** **#10 — Caching layer** (Redis + page/fragment cache; invalidate on publish via
+  `HookRegistry`).
 
 ---
 
@@ -354,22 +384,23 @@ pnpm e2e                                                  # 11/11 (web-alone; li
 ## Continuation prompt (paste into a fresh window)
 > You are continuing the `cmstack-ts` engagement (senior TS engineer, autonomous).
 > Working dir `/Users/huseyn0w/Desktop/SWE/cmstack/cmstack-ts`, branch
-> `refactor/repository-layer` (clean tree, all committed; **419 tests, typecheck + biome
-> clean, coverage gate ≥80% (actual 89.75%)**). **DONE:** Task 2 (repository-layer refactor) + Task 4
+> `refactor/repository-layer` (clean tree, all committed; **432 tests, typecheck + biome
+> clean, coverage gate ≥80% (actual 89.93%)**). **DONE:** Task 2 (repository-layer refactor) + Task 4
 > (tests); the E2E baseline re-run (11/11, refactor confirmed black-box-invariant); and
 > **Task 1 §7 items #1 (per-locale content translation), #2 (per-content SEO meta), #3
 > (password reset + transactional email), #4 (menu management), #5 (contact form + email),
 > #6 (GA4/GTM + site verification + basic consent), #7 (auto thumbnails / image processing),
-> #8 (dashboard translation editing UI)** — all live-verified. **Read first:**
+> #8 (dashboard translation editing UI), #9 (plugin admin UI + runtime toggle + render regions)** —
+> all live-verified. **Read first:**
 > `cmstack-ts/HANDOFF.md` (the Task-1 progress section + "Full stack for LIVE verification"
 > recipe + Gotchas), `cmstack-ts/REFACTOR_PLAN.md` (§2.0 layering, §2.7 observer policy,
-> §7 feature register with #1–#8 checked, §10 invariants), `cmstack-ts/CLAUDE.md`, and the
+> §7 feature register with #1–#9 checked, §10 invariants), `cmstack-ts/CLAUDE.md`, and the
 > read-only canon `../FEATURE_MATRIX.md` + `../DESIGN_SYSTEM.md` (do NOT edit the canon).
 > The design+plan docs for finished items are in `docs/superpowers/{specs,plans}/`.
 >
-> **Resume with Task 1 §7 in strict order (operator directive) — next is #9
-> plugin admin UI** + runtime enable/disable + render-region hooks. After it:
-> #10 Redis cache, then the shared net-new. Then Task 3 (UI §8) +
+> **Resume with Task 1 §7 in strict order (operator directive) — next is #10
+> Redis caching layer** (page/fragment cache; invalidate on publish via `HookRegistry`). After it:
+> the shared net-new. Then Task 3 (UI §8) +
 > Task 5 (full README rewrite). **Observer note:** §7 #5 wired the first real side effect
 > (`contact.submitted` → mail listener); the comment-notification email (shared net-new) is the
 > next observer consumer.

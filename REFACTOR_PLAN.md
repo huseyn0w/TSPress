@@ -564,7 +564,18 @@ From `../FEATURE_MATRIX.md` ("cmstack-ts needs"); nothing to be silently dropped
       = fallback, all-empty clears the row). Content stays server-sanitized on the same write path.
       419 tests, coverage 89.75%, e2e 11/11; live-verified (PUT de → /de shows override, en falls
       back; DELETE → /de falls back). Out of scope: Category/Tag translation (no API — fast-follow).
-- [ ] **Plugin admin UI** + runtime enable/disable + render-region hooks.
+- [x] **Plugin admin UI** + runtime enable/disable + render-region hooks. **DONE** (2026-06-26):
+      all in-repo plugins register at boot with handlers tagged by plugin id (`owner`, via a scoped
+      `PluginApi` facade); `HookRegistry` gates owned handlers by a runtime enabled-set
+      (`setEnabledPlugins`) so a plugin toggles **without restart** — core un-owned handlers (e.g. the
+      contact mail listener) always run. New **render-region** hook (`addRegion`/`renderRegion`,
+      `RegionMap` extensible, ships `site.footer`); plugin HTML is server-sanitized. Enabled state
+      persists in `Setting['enabledPlugins']` (JSON; no migration). Admin `GET /plugins` + `PUT
+      /plugins/:id` (CASL `Plugin`, Administrator-only); public `GET /public/plugins/regions`. Admin
+      `/admin/plugins` screen with enable/disable toggles; public `[locale]` layout renders the footer
+      region. New demo plugin `site-footer-note`. 432 tests, coverage 89.93%, e2e 11/11; live-verified
+      (reading-time badge + footer note both gate on/off at runtime; unknown id → 404; admin 401
+      without token). Out of scope: more regions, user-uploaded plugin code, per-plugin config.
 - [ ] **Caching layer** (Redis + page/fragment cache, invalidate on publish via `HookRegistry`).
 - [ ] Shared net-new: **revision-restore UI**, **scheduled publishing**, **RSS/Atom
       feeds**, **comment-notification email** (attaches to `HookRegistry`), **coverage
