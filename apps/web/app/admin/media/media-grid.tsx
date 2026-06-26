@@ -42,7 +42,9 @@ interface MediaTileProps {
 }
 
 function MediaTile({ item, onSelect }: MediaTileProps) {
-  const absUrl = absoluteUrl(item.url);
+  // Prefer the generated thumb derivative for the grid (smaller, faster).
+  const thumb = item.thumbnails.find((t) => t.label === 'thumb');
+  const absUrl = absoluteUrl(thumb?.url ?? item.url);
   const image = isImage(item.mimeType);
 
   return (
