@@ -12,6 +12,7 @@ export interface RevisionRepository {
   create(data: RevisionCreateData): Promise<void>;
   listForPost(postId: string): Promise<Revision[]>;
   listForPage(pageId: string): Promise<Revision[]>;
+  findById(id: string): Promise<Revision | null>;
 }
 
 export const REVISION_REPOSITORY = Symbol('REVISION_REPOSITORY');
@@ -29,5 +30,9 @@ export class PrismaRevisionRepository implements RevisionRepository {
 
   listForPage(pageId: string): Promise<Revision[]> {
     return this.prisma.revision.findMany({ where: { pageId }, orderBy: { createdAt: 'desc' } });
+  }
+
+  findById(id: string): Promise<Revision | null> {
+    return this.prisma.revision.findUnique({ where: { id } });
   }
 }

@@ -58,7 +58,7 @@ beforeEach(() => {
     exists: vi.fn(),
     hardDelete: vi.fn(),
   };
-  revisionRepo = { create: vi.fn(), listForPost: vi.fn(), listForPage: vi.fn() };
+  revisionRepo = { create: vi.fn(), listForPost: vi.fn(), listForPage: vi.fn(), findById: vi.fn() };
   sanitizer = { sanitize: vi.fn((s: string) => `clean:${s}`) };
   hooks = {
     emit: vi.fn().mockResolvedValue(undefined),
