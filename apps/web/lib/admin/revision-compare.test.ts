@@ -21,6 +21,12 @@ describe('compareRevisionFields', () => {
 
   it('treats null/undefined as empty strings', () => {
     const [title] = compareRevisionFields({ title: null }, {}, [{ key: 'title', label: 'Title' }]);
-    expect(title).toEqual({ key: 'title', label: 'Title', current: '', revision: '', changed: false });
+    expect(title).toEqual({
+      key: 'title',
+      label: 'Title',
+      current: '',
+      revision: '',
+      changed: false,
+    });
   });
 });

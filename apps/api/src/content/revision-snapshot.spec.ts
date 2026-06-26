@@ -21,7 +21,9 @@ describe('revisionToPostUpdate', () => {
   });
 
   it('omits a null excerpt and an unknown status', () => {
-    expect(revisionToPostUpdate({ title: 'T', excerpt: null, status: 'WAT' })).toEqual({ title: 'T' });
+    expect(revisionToPostUpdate({ title: 'T', excerpt: null, status: 'WAT' })).toEqual({
+      title: 'T',
+    });
   });
 
   it('tolerates a non-object snapshot', () => {

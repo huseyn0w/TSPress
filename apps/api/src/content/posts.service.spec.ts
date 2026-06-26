@@ -350,7 +350,12 @@ describe('PostsService.restoreRevision', () => {
     // content is re-sanitized on the shared update path (clean: prefix from the fake).
     expect(posts.update).toHaveBeenCalledWith(
       'p1',
-      expect.objectContaining({ title: 'Old', slug: 'old', content: 'clean:oldbody', status: 'DRAFT' }),
+      expect.objectContaining({
+        title: 'Old',
+        slug: 'old',
+        content: 'clean:oldbody',
+        status: 'DRAFT',
+      }),
     );
     // the pre-restore snapshot is attributed to the restoring user.
     expect(revisionRepo.create).toHaveBeenCalledWith(
@@ -361,13 +366,17 @@ describe('PostsService.restoreRevision', () => {
 
   it('404s when the revision is missing', async () => {
     revisionRepo.findById.mockResolvedValue(null);
-    await expect(service.restoreRevision('p1', 'rX', 'u1')).rejects.toBeInstanceOf(NotFoundException);
+    await expect(service.restoreRevision('p1', 'rX', 'u1')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
     expect(posts.update).not.toHaveBeenCalled();
   });
 
   it('404s when the revision belongs to a different post', async () => {
     revisionRepo.findById.mockResolvedValue({ id: 'r1', postId: 'other', snapshot: {} });
-    await expect(service.restoreRevision('p1', 'r1', 'u1')).rejects.toBeInstanceOf(NotFoundException);
+    await expect(service.restoreRevision('p1', 'r1', 'u1')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
     expect(posts.update).not.toHaveBeenCalled();
   });
 });
