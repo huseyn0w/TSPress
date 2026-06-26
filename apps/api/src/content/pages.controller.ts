@@ -53,6 +53,16 @@ export class PagesController {
     return this.pages.revisions(id);
   }
 
+  @Post(':id/revisions/:revisionId/restore')
+  @CheckPolicies((ability) => ability.can('update', 'Page'))
+  restoreRevision(
+    @Param('id') id: string,
+    @Param('revisionId') revisionId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<PageDetail> {
+    return this.pages.restoreRevision(id, revisionId, user.id);
+  }
+
   @Post()
   @CheckPolicies((ability) => ability.can('create', 'Page'))
   create(
