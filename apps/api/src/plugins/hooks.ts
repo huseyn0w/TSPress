@@ -38,10 +38,13 @@ export interface ActionMap {
   };
 }
 
-/** Render-region hooks: a named slot on the public site plugins inject HTML into. */
+/**
+ * Render-region hooks: a named slot on the public site plugins inject HTML into.
+ * The value type is an unused marker — only the keys (region names) matter.
+ */
 export interface RegionMap {
   /** Appended to the public site footer area. */
-  'site.footer': void;
+  'site.footer': true;
 }
 
 export type FilterName = keyof FilterMap;

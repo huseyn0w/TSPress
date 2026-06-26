@@ -25,6 +25,7 @@ import {
   MessageSquare,
   Navigation,
   Palette,
+  Puzzle,
   Search,
   Tag,
   Users,
@@ -156,6 +157,11 @@ function buildNavGroups(
       href: '/admin/appearance',
       icon: <Palette className="h-4 w-4" />,
     });
+    siteItems.push({
+      label: 'Plugins',
+      href: '/admin/plugins',
+      icon: <Puzzle className="h-4 w-4" />,
+    });
   }
   if (canManageSeo) {
     siteItems.push({
@@ -197,6 +203,7 @@ function getSectionLabel(pathname: string): string {
   if (pathname.startsWith('/admin/media')) return 'Media';
   if (pathname.startsWith('/admin/users')) return 'Users';
   if (pathname.startsWith('/admin/appearance')) return 'Appearance';
+  if (pathname.startsWith('/admin/plugins')) return 'Plugins';
   if (pathname.startsWith('/admin/seo')) return 'SEO & GEO';
   if (pathname.startsWith('/admin/menus')) return 'Menus';
   if (pathname.startsWith('/admin/comments')) return 'Comments';
