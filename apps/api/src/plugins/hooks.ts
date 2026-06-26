@@ -36,6 +36,18 @@ export interface ActionMap {
     subject: string | null;
     message: string;
   };
+  /**
+   * Fired after any write to a post or page (create/update/delete/restore/
+   * publish/translation). The caching layer flushes the matching content
+   * namespace. `slug` is best-effort (absent on delete-by-id paths).
+   */
+  'content.changed': { type: 'post' | 'page'; id: string; slug?: string };
+  /** Fired after the active theme changes. Flushes the settings cache. */
+  'settings.theme.changed': Record<string, never>;
+  /** Fired after any menu/item/structure/translation write. Flushes the menu cache. */
+  'menu.changed': { location?: string };
+  /** Fired after any SEO profile/service/FAQ write. Flushes the SEO cache. */
+  'seo.changed': Record<string, never>;
 }
 
 /**
