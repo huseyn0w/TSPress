@@ -153,6 +153,10 @@ export {
   type Media,
   mediaListSchema,
   type MediaList,
+  thumbnailSchema,
+  type Thumbnail,
+  THUMBNAIL_SIZES,
+  thumbnailKey,
 } from './media';
 export {
   menuItemTypeSchema,

@@ -15,6 +15,29 @@ export const ALLOWED_MEDIA_MIME_TYPES = [
   'application/pdf',
 ] as const;
 
+/** A generated, downscaled WebP derivative of an uploaded image. */
+export const thumbnailSchema = z.object({
+  label: z.string(),
+  width: z.number().int().positive(),
+  height: z.number().int().positive(),
+  url: z.string(),
+  size: z.number().int().nonnegative(),
+});
+export type Thumbnail = z.infer<typeof thumbnailSchema>;
+
+/** Derivative sizes generated on image upload (max edge, resize-to-fit, no upscale). */
+export const THUMBNAIL_SIZES = [
+  { label: 'thumb', max: 400 },
+  { label: 'medium', max: 1024 },
+] as const;
+
+/** Storage key for a derivative: `<base-without-ext>-<label>.webp`. */
+export function thumbnailKey(baseKey: string, label: string): string {
+  const dot = baseKey.lastIndexOf('.');
+  const stem = dot > 0 ? baseKey.slice(0, dot) : baseKey;
+  return `${stem}-${label}.webp`;
+}
+
 export const updateMediaSchema = z.object({
   alt: z.string().trim().max(300).nullable().optional(),
   title: z.string().trim().max(300).nullable().optional(),
@@ -40,6 +63,7 @@ export const mediaSchema = z.object({
   title: z.string().nullable(),
   caption: z.string().nullable(),
   url: z.string(),
+  thumbnails: z.array(thumbnailSchema),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });

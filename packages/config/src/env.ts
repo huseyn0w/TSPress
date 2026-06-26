@@ -24,6 +24,8 @@ export const envSchema = z.object({
   // Media uploads: directory on disk and the maximum accepted file size (MB).
   UPLOAD_DIR: z.string().default('uploads'),
   MEDIA_MAX_SIZE_MB: z.coerce.number().int().positive().max(100).default(10),
+  // Reject images above this many megapixels before decoding (decompression-bomb guard).
+  MEDIA_MAX_MEGAPIXELS: z.coerce.number().int().positive().max(500).default(40),
 
   // Web (Next.js) — browser-facing API base URL.
   NEXT_PUBLIC_API_URL: z.string().url().default('http://localhost:4000'),
