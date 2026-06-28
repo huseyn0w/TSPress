@@ -1,7 +1,30 @@
 # cmstack-ts — HANDOFF
 
-**Updated:** 2026-06-28 — **Task 2 + Task 4 COMPLETE; E2E re-run green; Task 1 §7 #1–#10 done + ALL shared net-new done (revision-restore UI + scheduled publishing + RSS/Atom feeds + comment-notification email).** · **Branch:** `refactor/repository-layer` (off `main`)
-**Next phases:** Task 1 feature register fully ticked → **Task 3 (UI §8)** + **Task 5 (README rewrite)** remain.
+**Updated:** 2026-06-28 — **Task 2 + Task 4 COMPLETE; Task 1 (§7 #1–#10 + ALL shared net-new) COMPLETE; Task 3 (UI) IN PROGRESS — increment 1 (token + typography foundation) done.** · **Branch:** `refactor/repository-layer` (off `main`)
+**Next phases:** Task 3 increments 2–5 (public themes → canon · admin UI kit → §5 · admin shell · Lighthouse/WCAG measured) + **Task 5 (README rewrite)**.
+
+## Task 3 (UI conformance to `../DESIGN_SYSTEM.md`) progress
+Plan: `docs/superpowers/plans/2026-06-28-task3-ui-design-system.md` (5 increments, one commit each).
+Canon is the cross-stack visual contract: quiet-luxury editorial, LIGHT default ("warm paper"
+`#FBFAF7`, garnet `--primary #B23A2E`), Newsreader serif + Inter UI + Geist Mono.
+- **Increment 1 — token + typography foundation: DONE** (2026-06-28). `apps/web/app/globals.css`
+  now defines the canon §2 color tokens (light `:root` + `.dark`) under canon names
+  (`--surface/--surface-2/--text/--text-muted/--text-subtle/--primary/--primary-hover/
+  --primary-contrast/--border-strong/--success*/--warning*/--error*`) plus §4 radius +
+  §6 motion + container tokens; the shadcn-style **admin utility aliases** (`--background/--card/
+  --primary-foreground/--secondary/--muted-*/--destructive/--input/--ring`) are **re-pointed onto
+  the canon tokens**, so the admin re-skins to canon colors with **zero component rewrites**.
+  `@theme inline` adds canon-named utilities (`bg-surface`, `text-text-muted`, `border-strong`,
+  `text-success`…) and canon `--radius-*` (6/10/16/24px). **Fonts** (`layout.tsx`): Inter (UI) +
+  Newsreader (serif, normal+italic) via `next/font/google` (self-hosted at build, no runtime CDN,
+  preload+swap free), Geist Mono kept; `h1–h3` + `.prose` now use the serif face (§3). The public
+  theme system (`editorial`/`magazine` + `--bg/--fg/--muted/--accent/--line`) is **untouched this
+  increment** (→ increment 2, which flips the default to canon light). **519 tests, typecheck/lint
+  clean, e2e 11/11**; live-verified (compiled CSS has 16 `@font-face`, canon `#b23a2e`/`#fbfaf7`/
+  `#f4f1ea`, `h1,h2,h3{font-family:var(--font-serif)…}`, Inter on `<body>`).
+  - **Next (increment 2):** re-skin the public `editorial` (canon dark) + `magazine`/new default
+    (canon light) palettes to §2; public header/footer/cards/prose/pagination/breadcrumbs to §5;
+    flip the seeded default theme to the canon light one.
 
 ## Task 1 progress (feature parity, `REFACTOR_PLAN.md` §7 — strict order per operator)
 - **E2E baseline re-run (pre-Task-1):** full stack up (docker db + built api + built web),

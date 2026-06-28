@@ -13,49 +13,96 @@
   --accent: #e8c372;
   --line: #26262a;
 
-  /* --- Admin design system (light) --- */
-  --background: #faf9f7;
-  --foreground: #1c1917;
-  --card: #ffffff;
-  --card-foreground: #1c1917;
-  --popover: #ffffff;
-  --popover-foreground: #1c1917;
-  --primary: #b8862f;
-  --primary-foreground: #fffdf7;
-  --secondary: #f0eee9;
-  --secondary-foreground: #1c1917;
-  --muted-surface: #f0eee9;
-  --muted-foreground: #78716c;
-  --accent-surface: #f3efe6;
-  --accent-foreground: #1c1917;
-  --destructive: #b4271f;
-  --destructive-foreground: #fffdf7;
-  --border: #e7e5e4;
-  --input: #e7e5e4;
-  --ring: #b8862f;
+  /* --- Canonical design tokens (../DESIGN_SYSTEM.md §2) — Light (default) ---
+     Shared base for admin + (via the public-theme wrappers) the public site.
+     The shadcn-style admin utility names below are re-pointed onto these. --- */
+  --surface: #ffffff;
+  --surface-2: #f4f1ea;
+  --text: #1a1a18;
+  --text-muted: #6b6760;
+  --text-subtle: #94908a;
+  --primary: #b23a2e;
+  --primary-hover: #992f25;
+  --primary-contrast: #ffffff;
+  --border-strong: #d2ccbe;
+  --success: #2f7d5b;
+  --success-bg: #e7f1ea;
+  --warning: #a9701a;
+  --warning-bg: #f6eedd;
+  --error: #b4271f;
+  --error-bg: #f7e7e5;
+
+  /* Motion (§6) */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 320ms;
+
+  /* Reading containers (§4) */
+  --container-prose: 720px;
+  --container-content: 1080px;
+  --container-wide: 1280px;
+
+  /* --- Admin utility aliases → canon tokens (light) --- */
+  --background: #fbfaf7;
+  --foreground: var(--text);
+  --card: var(--surface);
+  --card-foreground: var(--text);
+  --popover: var(--surface);
+  --popover-foreground: var(--text);
+  --primary-foreground: var(--primary-contrast);
+  --secondary: var(--surface-2);
+  --secondary-foreground: var(--text);
+  --muted-surface: var(--surface-2);
+  --muted-foreground: var(--text-muted);
+  --accent-surface: var(--surface-2);
+  --accent-foreground: var(--text);
+  --destructive: var(--error);
+  --destructive-foreground: var(--primary-contrast);
+  --border: #e6e1d7;
+  --input: var(--border-strong);
+  --ring: var(--primary);
   --radius: 0.625rem;
 }
 
 .dark {
-  --background: #0b0b0c;
-  --foreground: #f5f5f4;
-  --card: #161617;
-  --card-foreground: #f5f5f4;
-  --popover: #161617;
-  --popover-foreground: #f5f5f4;
-  --primary: #e8c372;
-  --primary-foreground: #1c1917;
-  --secondary: #26262a;
-  --secondary-foreground: #f5f5f4;
-  --muted-surface: #1c1c1f;
-  --muted-foreground: #a1a1aa;
-  --accent-surface: #26262a;
-  --accent-foreground: #f5f5f4;
-  --destructive: #ef4444;
-  --destructive-foreground: #fafafa;
-  --border: #26262a;
-  --input: #2a2a2e;
-  --ring: #e8c372;
+  /* Canon §2 — Dark */
+  --surface: #17171a;
+  --surface-2: #202024;
+  --text: #f4f2ec;
+  --text-muted: #a7a29a;
+  --text-subtle: #6e6a63;
+  --primary: #e0795f;
+  --primary-hover: #ec8b72;
+  --primary-contrast: #1a1110;
+  --border-strong: #3a3a40;
+  --success: #5fb98c;
+  --success-bg: #16271f;
+  --warning: #d6a24c;
+  --warning-bg: #2a2113;
+  --error: #e8675c;
+  --error-bg: #2a1513;
+
+  /* Admin utility aliases → canon tokens (dark) */
+  --background: #0f0f10;
+  --foreground: var(--text);
+  --card: var(--surface);
+  --card-foreground: var(--text);
+  --popover: var(--surface);
+  --popover-foreground: var(--text);
+  --primary-foreground: var(--primary-contrast);
+  --secondary: var(--surface-2);
+  --secondary-foreground: var(--text);
+  --muted-surface: var(--surface-2);
+  --muted-foreground: var(--text-muted);
+  --accent-surface: var(--surface-2);
+  --accent-foreground: var(--text);
+  --destructive: var(--error);
+  --destructive-foreground: var(--primary-contrast);
+  --border: #2a2a2e;
+  --input: var(--border-strong);
+  --ring: var(--primary);
 }
 
 /* ---------------------------------------------------------------------------
@@ -127,13 +174,33 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  /* Canon-named color utilities (bg-surface, text-text-muted, border-strong…) */
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-text-subtle: var(--text-subtle);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-contrast: var(--primary-contrast);
+  --color-strong: var(--border-strong);
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
+  --color-warning: var(--warning);
+  --color-warning-bg: var(--warning-bg);
+  --color-error: var(--error);
+  --color-error-bg: var(--error-bg);
+
+  /* Self-hosted variable fonts (§3): Inter UI, Newsreader serif, Geist Mono. */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-newsreader), ui-serif, Georgia, serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  /* Radius scale (§4) */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
 }
 
 * {
@@ -152,6 +219,15 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   line-height: 1.5;
+}
+
+/* Editorial signature (§3): display + section headings in the serif face. */
+h1,
+h2,
+h3 {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  letter-spacing: -0.01em;
 }
 
 a {
@@ -203,7 +279,12 @@ a {
   pointer-events: none;
 }
 
-/* Rendered post content (public + admin preview) */
+/* Rendered post content (public + admin preview). Editorial prose reads in the
+   serif face at a comfortable measure (§3 / §5 Prose). */
+.prose {
+  font-family: var(--font-serif);
+  line-height: 1.7;
+}
 .prose :where(h2) {
   font-size: 1.5rem;
   font-weight: 600;

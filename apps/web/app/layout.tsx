@@ -1,12 +1,27 @@
 import { getSeoContent } from '@/lib/seo/fetch';
 import { siteUrl } from '@/lib/seo/site';
 import { GeistMono } from 'geist/font/mono';
-import { GeistSans } from 'geist/font/sans';
 import type { Metadata } from 'next';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale } from 'next-intl/server';
+import { Inter, Newsreader } from 'next/font/google';
 import type { ReactNode } from 'react';
 import './globals.css';
+
+// Canonical design-system fonts (§3), self-hosted at build time by next/font
+// (no runtime CDN): Inter for UI, Newsreader (serif) for display + prose, Geist
+// Mono for metadata. font-display: swap + preload come for free.
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+const newsreader = Newsreader({
+  subsets: ['latin'],
+  variable: '--font-newsreader',
+  display: 'swap',
+  style: ['normal', 'italic'],
+});
 
 export async function generateMetadata(): Promise<Metadata> {
   const { profile } = await getSeoContent();
@@ -37,7 +52,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
 
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body className={`${GeistSans.variable} ${GeistMono.variable}`}>
+      <body className={`${inter.variable} ${newsreader.variable} ${GeistMono.variable}`}>
         <NextIntlClientProvider>{children}</NextIntlClientProvider>
       </body>
     </html>
