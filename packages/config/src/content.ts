@@ -9,6 +9,17 @@ import { z } from 'zod';
 export const contentStatusSchema = z.enum(['DRAFT', 'PUBLISHED']);
 export type ContentStatus = z.infer<typeof contentStatusSchema>;
 
+/** UI label for an item's publish state. A future-dated DRAFT is "scheduled". */
+export function scheduleLabel(
+  status: ContentStatus,
+  scheduledAt: string | Date | null | undefined,
+  now: Date,
+): 'scheduled' | 'published' | 'draft' {
+  if (status === 'PUBLISHED') return 'published';
+  if (scheduledAt && new Date(scheduledAt).getTime() > now.getTime()) return 'scheduled';
+  return 'draft';
+}
+
 /** URL-friendly slug: lowercase words separated by single hyphens. */
 export const slugSchema = z
   .string()
@@ -31,6 +42,7 @@ export const createPostSchema = z.object({
   metaDescription: z.string().trim().max(300).optional(),
   canonicalUrl: z.string().trim().url().max(500).optional(),
   noindex: z.boolean().optional(),
+  scheduledAt: z.string().datetime().nullable().optional(),
   categoryIds: idList.optional(),
   tagIds: idList.optional(),
 });
@@ -61,6 +73,7 @@ export const createPageSchema = z.object({
   metaDescription: z.string().trim().max(300).optional(),
   canonicalUrl: z.string().trim().url().max(500).optional(),
   noindex: z.boolean().optional(),
+  scheduledAt: z.string().datetime().nullable().optional(),
 });
 export type CreatePageInput = z.infer<typeof createPageSchema>;
 

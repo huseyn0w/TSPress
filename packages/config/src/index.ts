@@ -37,6 +37,7 @@ export {
 export {
   contentStatusSchema,
   type ContentStatus,
+  scheduleLabel,
   slugSchema,
   createPostSchema,
   type CreatePostInput,
