@@ -50,7 +50,11 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   const locale = await getLocale();
 
   return (
-    <html lang={locale} suppressHydrationWarning>
+    // `newsreader.className` on <html> makes next/font preload the serif face —
+    // it's the LCP font on content pages (hero + prose). The <body> rule in
+    // globals.css resets body copy to Inter, so this only triggers the preload;
+    // it doesn't change the UI font. `inter.className` does the same for the UI face.
+    <html lang={locale} className={newsreader.className} suppressHydrationWarning>
       <body
         className={`${inter.variable} ${newsreader.variable} ${GeistMono.variable} ${inter.className}`}
       >
