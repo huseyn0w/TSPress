@@ -1,12 +1,27 @@
 'use server';
 
-import { apiSend, apiUpload } from '@/lib/admin/api';
-import type { UpdateMediaInput } from '@cmstack-ts/config';
+import { apiGet, apiSend, apiUpload } from '@/lib/admin/api';
+import type { MediaList, UpdateMediaInput } from '@cmstack-ts/config';
+import { mediaListSchema } from '@cmstack-ts/config';
 import { revalidatePath } from 'next/cache';
 
 type ActionResult<T = undefined> = T extends undefined
   ? { ok: true } | { ok: false; error: string }
   : { ok: true; data: T } | { ok: false; error: string };
+
+/**
+ * List media for the in-editor picker. Runs server-side (the admin API needs the
+ * session bearer token), so client components reach it through this action.
+ */
+export async function listMediaForPicker(page = 1, perPage = 24): Promise<ActionResult<MediaList>> {
+  try {
+    const query = new URLSearchParams({ page: String(page), perPage: String(perPage) });
+    const data = await apiGet(`/media?${query.toString()}`, mediaListSchema);
+    return { ok: true, data };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Failed to load media' };
+  }
+}
 
 export async function uploadMedia(
   formData: FormData,

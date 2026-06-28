@@ -1,6 +1,8 @@
 'use client';
 
+import { MediaPickerDialog } from '@/components/admin/media-picker-dialog';
 import { cn } from '@/lib/utils';
+import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import { EditorContent, useEditor } from '@tiptap/react';
@@ -9,6 +11,7 @@ import {
   Bold,
   Heading2,
   Heading3,
+  ImagePlus,
   Italic,
   Link2,
   List,
@@ -17,6 +20,7 @@ import {
   Redo2,
   Undo2,
 } from 'lucide-react';
+import { useState } from 'react';
 
 interface RichTextEditorProps {
   value: string;
@@ -61,6 +65,7 @@ function ToolbarDivider() {
 }
 
 export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorProps) {
+  const [pickerOpen, setPickerOpen] = useState(false);
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -68,6 +73,9 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
         openOnClick: false,
         HTMLAttributes: { rel: 'noopener noreferrer' },
       }),
+      // Block images inserted from the media library. The API sanitizer keeps
+      // only src/alt/title/width/height on <img> (http/https), so no class here.
+      Image.configure({ inline: false }),
       Placeholder.configure({
         placeholder: placeholder ?? 'Start writing…',
       }),
@@ -165,6 +173,9 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
         <ToolbarButton onClick={handleSetLink} isActive={editor.isActive('link')} title="Link">
           <Link2 className="h-3.5 w-3.5" />
         </ToolbarButton>
+        <ToolbarButton onClick={() => setPickerOpen(true)} title="Insert image">
+          <ImagePlus className="h-3.5 w-3.5" />
+        </ToolbarButton>
 
         <ToolbarDivider />
 
@@ -188,6 +199,12 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
       <EditorContent
         editor={editor}
         className="tiptap prose px-4 py-3 min-h-[280px] text-sm text-foreground focus:outline-none"
+      />
+
+      <MediaPickerDialog
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        onInsert={({ src, alt }) => editor.chain().focus().setImage({ src, alt }).run()}
       />
     </div>
   );
