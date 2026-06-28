@@ -14,6 +14,7 @@ export async function EditorialHome() {
             textTransform: 'uppercase',
             fontSize: 12,
             color: 'var(--accent)',
+            fontFamily: 'var(--font-mono)',
           }}
         >
           Cmstack-TS
@@ -29,8 +30,8 @@ export async function EditorialHome() {
             style={{
               display: 'inline-block',
               padding: '0.7rem 1.4rem',
-              border: '1px solid var(--line)',
-              borderRadius: 999,
+              border: '1px solid var(--border-strong)',
+              borderRadius: 10,
               color: 'var(--fg)',
               textDecoration: 'none',
             }}

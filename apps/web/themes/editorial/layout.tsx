@@ -23,11 +23,18 @@ export async function EditorialLayout({ children }: { children: ReactNode }) {
     >
       <header
         style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 40,
+          height: 64,
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          padding: '1.25rem 2rem',
+          padding: '0 2rem',
           borderBottom: '1px solid var(--line)',
+          background: 'color-mix(in srgb, var(--bg) 82%, transparent)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
         }}
       >
         <Link
@@ -38,6 +45,7 @@ export async function EditorialLayout({ children }: { children: ReactNode }) {
             letterSpacing: '0.3em',
             textTransform: 'uppercase',
             fontSize: 12,
+            fontFamily: 'var(--font-mono)',
           }}
         >
           Cmstack-TS
@@ -86,7 +94,7 @@ export async function EditorialLayout({ children }: { children: ReactNode }) {
         }}
       >
         <SiteMenu location="footer" fallback={null} />
-        <span>
+        <span style={{ fontFamily: 'var(--font-mono)' }}>
           © {new Date().getFullYear()} Cmstack-TS · {tf('editorial')}
         </span>
       </footer>

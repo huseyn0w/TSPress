@@ -14,6 +14,7 @@ export async function EditorialBlogIndex({ posts }: { posts: PostSummary[] }) {
           textTransform: 'uppercase',
           fontSize: 12,
           color: 'var(--accent)',
+          fontFamily: 'var(--font-mono)',
         }}
       >
         Cmstack-TS
@@ -42,7 +43,16 @@ export async function EditorialBlogIndex({ posts }: { posts: PostSummary[] }) {
               )}
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                 {post.categories.map((c) => (
-                  <span key={c.id} style={{ fontSize: 12, color: 'var(--accent)' }}>
+                  <span
+                    key={c.id}
+                    style={{
+                      fontSize: 12,
+                      color: 'var(--accent)',
+                      fontFamily: 'var(--font-mono)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.08em',
+                    }}
+                  >
                     {c.name}
                   </span>
                 ))}
