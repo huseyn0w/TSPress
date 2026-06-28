@@ -1,7 +1,7 @@
 # cmstack-ts — HANDOFF
 
-**Updated:** 2026-06-28 — **Task 2 + Task 4 COMPLETE; Task 1 (§7 #1–#10 + ALL shared net-new) COMPLETE; Task 3 (UI) IN PROGRESS — increments 1 (foundation) + 2 (public themes → canon + light default) done.** · **Branch:** `refactor/repository-layer` (off `main`)
-**Next phases:** Task 3 increments 3–5 (admin UI kit → §5 · admin shell · Lighthouse/WCAG measured) + public-chrome §5 polish + **Task 5 (README rewrite)**.
+**Updated:** 2026-06-28 — **Task 2 + Task 4 COMPLETE; Task 1 (§7 #1–#10 + ALL shared net-new) COMPLETE; Task 3 (UI) IN PROGRESS — increments 1 (foundation), 2 (public themes → light default), 3 (UI kit → §5) done.** · **Branch:** `refactor/repository-layer` (off `main`)
+**Next phases:** Task 3 increment 4 (admin shell) · 2c (public chrome §5) · 5 (Lighthouse/WCAG **measured** — acceptance gate) + new canon components as screens need them + **Task 5 (README rewrite)**.
 
 ## Task 3 (UI conformance to `../DESIGN_SYSTEM.md`) progress
 Plan: `docs/superpowers/plans/2026-06-28-task3-ui-design-system.md` (5 increments, one commit each).
@@ -49,11 +49,21 @@ Canon is the cross-stack visual contract: quiet-luxury editorial, LIGHT default 
   on garnet. ⚠️ **Watch-out for future increments:** any hand-rolled element putting fixed text on
   `var(--accent)` as a *background* has the same regression — audit per screen (text/link uses of
   `--accent` are fine: garnet on paper).
-  - **Next (increment 3b):** remaining UI kit — table (+bulk bar), dialog/modal, dropdown-menu,
-    select, sonner/toasts, skeleton, + NEW: tabs (translation editor), breadcrumbs, avatar, alert
-    banner, empty-state, pagination — each states + a11y. Then increment 4 (admin shell: sidebar/
-    topbar/skip-link), increment 2c (public chrome §5), increment 5 (Lighthouse ≥95 mobile +
-    WCAG AA, **measured**).
+- **Increment 3b — select/table/dropdown → §5: DONE** (2026-06-28). Select trigger conformed to the
+  Input spec (h40, radius-sm, surface bg, focus offset 1px, text-subtle placeholder); Table `thead`
+  gets the `--surface-2` fill + mono-eyebrow column labels; Dropdown/Select section labels use the
+  mono face. Dialog + DropdownMenu were already §5 (radius/border/shadow/focus/labels) post-reskin.
+  Translation-editor tab strip already has `role=tablist/tab`+`aria-selected` (functional; a full
+  roving-tabindex Tabs primitive deferred — admin-only, marginal gain). **e2e 11/11, clean.**
+  - **Remaining Task 3:** (a) **NEW canon components only when a consumer exists** (Alert banner,
+    Empty-state, Breadcrumbs, Avatar, Pagination, Tabs-primitive) — don't build speculatively
+    (CLAUDE.md); wire as screens need them. (b) **Increment 4 — admin shell** (sidebar 260px /
+    topbar 56px / skip-to-content / landmarks). (c) **Increment 2c — public chrome §5 structure**
+    (sticky-header scroll states, cards 16:9 + eyebrow, prose 68ch). (d) **Increment 5 — Lighthouse
+    ≥95 mobile + WCAG AA, MEASURED** (install lighthouse + axe tooling; this is the acceptance gate —
+    fix font preload/subset, JS/CSS budget, image srcset, CLS, contrast, focus, landmarks against
+    real numbers). **Contrast watch-out** (from 3a) still applies: audit any hand-rolled fixed text
+    on `var(--accent)` background per screen.
 
 ## Task 1 progress (feature parity, `REFACTOR_PLAN.md` §7 — strict order per operator)
 - **E2E baseline re-run (pre-Task-1):** full stack up (docker db + built api + built web),
