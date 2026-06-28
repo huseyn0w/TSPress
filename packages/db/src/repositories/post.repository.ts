@@ -44,6 +44,7 @@ export type PostCreateData = {
   content: string;
   status: ContentStatus;
   publishedAt: Date | null;
+  scheduledAt?: Date | null;
   metaTitle?: string | null;
   metaDescription?: string | null;
   canonicalUrl?: string | null;
@@ -61,6 +62,7 @@ export type PostUpdateData = {
   status?: ContentStatus;
   /** Set only when the service stamps the first-publish date. */
   publishedAt?: Date;
+  scheduledAt?: Date | null;
   metaTitle?: string | null;
   metaDescription?: string | null;
   canonicalUrl?: string | null;
@@ -105,6 +107,8 @@ export interface PostRepository {
   setDeletedAt(id: string, when: Date | null): Promise<void>;
   restore(id: string): Promise<PostWithRelations>;
   findIdBySlug(slug: string): Promise<{ id: string } | null>;
+  /** Ids of DRAFT, non-trashed posts whose scheduledAt has passed (worker query). */
+  findDueScheduledIds(now: Date): Promise<{ id: string }[]>;
   /** Create or replace the post's translation for `locale` (full-row replace). */
   upsertTranslation(postId: string, locale: string, data: PostTranslationData): Promise<void>;
   /** Remove the post's translation for `locale` (no-op semantics handled by the service). */
@@ -146,6 +150,7 @@ export class PrismaPostRepository extends PrismaCrudRepository implements PostRe
         content: data.content,
         status: data.status,
         publishedAt: data.publishedAt,
+        scheduledAt: data.scheduledAt ?? null,
         metaTitle: data.metaTitle ?? null,
         metaDescription: data.metaDescription ?? null,
         canonicalUrl: data.canonicalUrl ?? null,
@@ -230,6 +235,7 @@ export class PrismaPostRepository extends PrismaCrudRepository implements PostRe
     if (data.content !== undefined) prismaData.content = data.content;
     if (data.status !== undefined) prismaData.status = data.status;
     if (data.publishedAt !== undefined) prismaData.publishedAt = data.publishedAt;
+    if (data.scheduledAt !== undefined) prismaData.scheduledAt = data.scheduledAt;
     if (data.metaTitle !== undefined) prismaData.metaTitle = data.metaTitle;
     if (data.metaDescription !== undefined) prismaData.metaDescription = data.metaDescription;
     if (data.canonicalUrl !== undefined) prismaData.canonicalUrl = data.canonicalUrl;
@@ -242,6 +248,13 @@ export class PrismaPostRepository extends PrismaCrudRepository implements PostRe
       prismaData.tags = { set: data.tagIds.map((tid) => ({ id: tid })) };
     }
     return this.prisma.post.update({ where: { id }, data: prismaData, include: postInclude });
+  }
+
+  findDueScheduledIds(now: Date): Promise<{ id: string }[]> {
+    return this.prisma.post.findMany({
+      where: { status: 'DRAFT', deletedAt: null, scheduledAt: { lte: now } },
+      select: { id: true },
+    });
   }
 
   async setDeletedAt(id: string, when: Date | null): Promise<void> {

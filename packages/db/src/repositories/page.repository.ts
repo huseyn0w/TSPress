@@ -27,6 +27,7 @@ export type PageCreateData = {
   slug: string;
   content: string;
   status: ContentStatus;
+  scheduledAt?: Date | null;
   metaTitle?: string | null;
   metaDescription?: string | null;
   canonicalUrl?: string | null;
@@ -39,6 +40,7 @@ export type PageUpdateData = {
   slug?: string;
   content?: string;
   status?: ContentStatus;
+  scheduledAt?: Date | null;
   metaTitle?: string | null;
   metaDescription?: string | null;
   canonicalUrl?: string | null;
@@ -60,6 +62,8 @@ export interface PageRepository {
   setDeletedAt(id: string, when: Date | null): Promise<void>;
   restore(id: string): Promise<PageWithAuthor>;
   findIdBySlug(slug: string): Promise<{ id: string } | null>;
+  /** Ids of DRAFT, non-trashed pages whose scheduledAt has passed (worker query). */
+  findDueScheduledIds(now: Date): Promise<{ id: string }[]>;
   /** Map of id → slug for the given ids (menu item URL resolution; no N+1). */
   slugsByIds(ids: string[]): Promise<Record<string, string>>;
   /** Create or replace the page's translation for `locale` (full-row replace). */
@@ -125,6 +129,7 @@ export class PrismaPageRepository extends PrismaCrudRepository implements PageRe
     if (data.slug !== undefined) prismaData.slug = data.slug;
     if (data.content !== undefined) prismaData.content = data.content;
     if (data.status !== undefined) prismaData.status = data.status;
+    if (data.scheduledAt !== undefined) prismaData.scheduledAt = data.scheduledAt;
     if (data.metaTitle !== undefined) prismaData.metaTitle = data.metaTitle;
     if (data.metaDescription !== undefined) prismaData.metaDescription = data.metaDescription;
     if (data.canonicalUrl !== undefined) prismaData.canonicalUrl = data.canonicalUrl;
@@ -146,6 +151,13 @@ export class PrismaPageRepository extends PrismaCrudRepository implements PageRe
 
   findIdBySlug(slug: string): Promise<{ id: string } | null> {
     return this.prisma.page.findUnique({ where: { slug }, select: { id: true } });
+  }
+
+  findDueScheduledIds(now: Date): Promise<{ id: string }[]> {
+    return this.prisma.page.findMany({
+      where: { status: 'DRAFT', deletedAt: null, scheduledAt: { lte: now } },
+      select: { id: true },
+    });
   }
 
   async upsertTranslation(

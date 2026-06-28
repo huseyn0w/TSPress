@@ -340,3 +340,29 @@ describe('PrismaRevisionRepository', () => {
     });
   });
 });
+
+describe('findDueScheduledIds', () => {
+  it('PostRepository queries due drafts', async () => {
+    const findMany = vi.fn().mockResolvedValue([{ id: 'p1' }]);
+    const prisma = { post: { findMany } } as unknown as PrismaClient;
+    const now = new Date('2026-06-28T12:00:00.000Z');
+    const rows = await new PrismaPostRepository(prisma).findDueScheduledIds(now);
+    expect(findMany).toHaveBeenCalledWith({
+      where: { status: 'DRAFT', deletedAt: null, scheduledAt: { lte: now } },
+      select: { id: true },
+    });
+    expect(rows).toEqual([{ id: 'p1' }]);
+  });
+
+  it('PageRepository queries due drafts', async () => {
+    const findMany = vi.fn().mockResolvedValue([{ id: 'pg1' }]);
+    const prisma = { page: { findMany } } as unknown as PrismaClient;
+    const now = new Date('2026-06-28T12:00:00.000Z');
+    const rows = await new PrismaPageRepository(prisma).findDueScheduledIds(now);
+    expect(findMany).toHaveBeenCalledWith({
+      where: { status: 'DRAFT', deletedAt: null, scheduledAt: { lte: now } },
+      select: { id: true },
+    });
+    expect(rows).toEqual([{ id: 'pg1' }]);
+  });
+});
