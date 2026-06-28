@@ -103,6 +103,8 @@ model Post {
   content         String
   status          ContentStatus     @default(DRAFT)
   publishedAt     DateTime?
+  /// When set on a DRAFT, the scheduler auto-publishes once this time passes.
+  scheduledAt     DateTime?
   /// Default-locale (en) SEO meta; per-locale overrides live in PostTranslation.
   metaTitle       String?
   metaDescription String?
@@ -123,6 +125,7 @@ model Post {
   deletedAt       DateTime?
 
   @@index([status, publishedAt])
+  @@index([status, scheduledAt])
   @@index([authorId])
 }
 
@@ -166,6 +169,8 @@ model Page {
   slug            String            @unique
   content         String
   status          ContentStatus     @default(DRAFT)
+  /// When set on a DRAFT, the scheduler auto-publishes once this time passes.
+  scheduledAt     DateTime?
   /// Default-locale (en) SEO meta; per-locale overrides live in PageTranslation.
   metaTitle       String?
   metaDescription String?
@@ -181,6 +186,7 @@ model Page {
   deletedAt       DateTime?
 
   @@index([status])
+  @@index([status, scheduledAt])
 }
 
 /// Per-locale translation of a Page (see PostTranslation). Pages have no excerpt.
