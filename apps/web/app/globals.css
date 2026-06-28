@@ -106,24 +106,65 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Public theme palettes (Phase 5). Each theme's chrome wrapper carries its
-   class and sets the public tokens (--bg/--fg/--muted/--accent/--line) for its
-   subtree only. These are scoped to the themed wrapper so they never leak into
-   the admin token system (--background/--foreground/...).
+   Public theme palettes (Phase 5), conformed to the canon §2 token set. Each
+   theme wrapper sets BOTH the legacy public tokens (--bg/--fg/--muted/--accent/
+   --line, used by the existing theme components) AND the full canon set
+   (--surface/--text/--primary/--border-strong/…), so canon-named utilities
+   (bg-surface, text-text-muted…) resolve correctly inside a themed subtree.
+   Scoped to the wrapper so they never leak into the admin token system.
+   `editorial` = canon Dark · `magazine` = canon Light.
 --------------------------------------------------------------------------- */
 .theme-editorial {
-  --bg: #0b0b0c;
-  --fg: #f5f5f4;
-  --muted: #a1a1aa;
-  --accent: #e8c372;
-  --line: #26262a;
+  /* legacy public tokens (existing components) */
+  --bg: #0f0f10;
+  --fg: #f4f2ec;
+  --muted: #a7a29a;
+  --accent: #e0795f; /* canon primary (dark) — links/CTA */
+  --line: #2a2a2e;
+  /* canon §2 — Dark */
+  --surface: #17171a;
+  --surface-2: #202024;
+  --text: #f4f2ec;
+  --text-muted: #a7a29a;
+  --text-subtle: #6e6a63;
+  --primary: #e0795f;
+  --primary-hover: #ec8b72;
+  --primary-contrast: #1a1110;
+  --border: #2a2a2e;
+  --border-strong: #3a3a40;
+  --ring: #e0795f;
+  --success: #5fb98c;
+  --success-bg: #16271f;
+  --warning: #d6a24c;
+  --warning-bg: #2a2113;
+  --error: #e8675c;
+  --error-bg: #2a1513;
 }
 .theme-magazine {
-  --bg: #f7f4ec;
-  --fg: #1b1a17;
-  --muted: #6f6a60;
-  --accent: #9e3b2e;
-  --line: #ddd6c7;
+  /* legacy public tokens (existing components) */
+  --bg: #fbfaf7;
+  --fg: #1a1a18;
+  --muted: #6b6760;
+  --accent: #b23a2e; /* canon primary (light) — links/CTA */
+  --line: #e6e1d7;
+  /* canon §2 — Light */
+  --surface: #ffffff;
+  --surface-2: #f4f1ea;
+  --text: #1a1a18;
+  --text-muted: #6b6760;
+  --text-subtle: #94908a;
+  --primary: #b23a2e;
+  --primary-hover: #992f25;
+  --primary-contrast: #ffffff;
+  --border: #e6e1d7;
+  --border-strong: #d2ccbe;
+  --ring: #b23a2e;
+  --success: #2f7d5b;
+  --success-bg: #e7f1ea;
+  --warning: #a9701a;
+  --warning-bg: #f6eedd;
+  --error: #b4271f;
+  --error-bg: #f7e7e5;
 }
 
 /* Restrained public-site motion (Phase 9). Honors reduced-motion. */
