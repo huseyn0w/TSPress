@@ -45,9 +45,25 @@ plus a sample `reading-time` plugin. Phase 7 (SEO/GEO): sitemap/robots/llms.txt,
   (web on the domain, api on an `api.` subdomain, `/uploads` proxied to the API), web Dockerfile
   build args for `NEXT_PUBLIC_*`, VPS + shared-hosting guides under `docs/deployment/`, and an
   enriched demo seed. **i18n foundation** (next-intl): the public site is localized in en/de/ru with
-  locale routing, a translated UI + locale switcher, and hreflang; the admin stays English. Remaining
-  (optional): per-locale **content** translation. The full
+  locale routing, a translated UI + locale switcher, and hreflang; the admin stays English. The full
   phased roadmap and feature mapping live in [README.md](README.md).
+
+**Cross-stack convergence engagement (COMPLETE — 2026-06):** brought cmstack-ts to the shared
+standard defined by the read-only canon `../FEATURE_MATRIX.md` + `../DESIGN_SYSTEM.md`.
+Delivered: a full **repository layer** (`controller → service → repository → Prisma`, DI via
+`provideRepository`, ≥80% coverage gate — see "Architecture conventions" + `REFACTOR_PLAN.md`);
+**feature parity** additions — per-locale **content** translation (PostTranslation/PageTranslation
++ admin per-locale tabs), per-content SEO meta + canonical/noindex, password reset + transactional
+email (`mail` module), menu management, contact form, GA4/GTM + verification + consent, auto image
+thumbnails (sharp), plugin admin UI with **runtime enable/disable + render regions**, a **caching
+layer** (Redis/in-memory behind `CacheStore`, event-driven invalidation), revision-restore UI,
+scheduled publishing, **RSS/Atom feeds**, and comment-notification email; and a **design-system UI
+pass** (canon tokens + Newsreader/Inter/Geist-Mono, light "warm paper" default, §5 components,
+skip-to-content; Lighthouse measured: A11y/SEO 100, BP 96 every public page). **Remaining
+feature-parity gaps (NEXT):** media picker in the editor, bulk admin list actions, related posts,
+search scope→pages+locale, self-service password change + email verification, comment author
+self-edit — full prioritized list with file pointers in `HANDOFF.md` → "Remaining functional
+parity gaps".
 
 ## Auth & authorization (Phase 1)
 

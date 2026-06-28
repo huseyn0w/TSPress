@@ -1,7 +1,47 @@
 # cmstack-ts — HANDOFF
 
-**Updated:** 2026-06-28 — **Task 2 + Task 4 COMPLETE; Task 1 (§7 #1–#10 + ALL shared net-new) COMPLETE; ALL ENGAGEMENT TASKS COMPLETE — Task 1 (feature parity) · Task 2 (repository layer) · Task 3 (UI) · Task 4 (tests) · Task 5 (README).** · **Branch:** `refactor/repository-layer` (off `main`)
-**Final state:** 519 tests, typecheck + biome clean, coverage 90.42% (gate ≥80%), e2e 11/11. Measured Lighthouse (mobile): A11y 100 / SEO 100 / BP 96 every public page; Perf home 98, content ~93–94 (web-font LCP under throttle — font-preload follow-up noted in §Task 3 #5). README rewritten to the shared cross-stack structure. **Remaining (optional follow-ups only):** content-page Perf font-preload to fully clear ≥95; new canon components (Alert/Empty/Avatar/Pagination/Tabs primitive) as screens need them; magazine-theme §5 component polish.
+**Updated:** 2026-06-28 — **ALL FIVE ENGAGEMENT TASKS COMPLETE — Task 1 (feature parity §7 #1–#10 + all shared net-new) · Task 2 (repository layer) · Task 3 (UI, measured) · Task 4 (tests) · Task 5 (README). MERGED to `main` (fast-forward) and PUSHED to `origin/main`.** · **Branch:** now on `main` (the work branch `refactor/repository-layer` still points at the same tip).
+**Final state:** 519 tests, typecheck + biome clean, coverage 90.42% (gate ≥80%), e2e 11/11. Measured Lighthouse (mobile): A11y 100 / SEO 100 / BP 96 every public page; Perf home 98, content ~93–94 (web-font LCP under throttle — see §Task 3 #5). README rewritten to the shared cross-stack structure.
+**Next phase (operator directive): close the remaining cross-stack feature-parity gaps** — see **"## Remaining functional parity gaps"** below and the continuation prompt at the end. **Note:** `../FEATURE_MATRIX.md`'s `ts` column was refreshed to reflect this engagement (ts status cells only; Canonical/Target/other-stack columns untouched).
+
+## Remaining functional parity gaps (NEXT PHASE — operator directive)
+Cross-checked against the canon `../FEATURE_MATRIX.md` AND the real code (the matrix was a
+stale pre-Task-1 snapshot; almost all its `ts` ❌/⚠️ are now DONE). These are the genuine
+remaining gaps vs the richest sibling (laravel). **Suggested order (highest value first):**
+1. **Media picker inside the rich-text editor** — a toolbar "insert image" button that opens
+   the media library (Modal) and inserts `<img src alt>` into Tiptap. Today the editor
+   (`apps/web/components/admin/rich-text-editor.tsx`) is Bold/H2/H3/Link only — no image
+   insert. Spec: `DESIGN_SYSTEM.md` §5 Rich-text editor (media-insert button). Web-only (the
+   API already sanitizes + the media list endpoint exists); no migration.
+2. **Bulk admin list actions** — multi-select (leading checkbox column + select-all) + a
+   bulk-action bar (delete/restore/publish) on the admin tables (posts/pages/categories/
+   comments/users). Spec: `DESIGN_SYSTEM.md` §5 Tables (bulk-action bar, `aria-live`). Likely
+   needs batch endpoints on the services (loop existing single-item ops, or add a batch repo
+   method) + the UI. This is also where the canon **Tables bulk bar** component lands.
+3. **Related posts** — a "Related posts" block on the post detail (by shared taxonomy).
+   Public read; add a `PostRepository.findRelated(postId, categoryIds/tagIds, limit)` +
+   surface it on `/blog/[slug]` through the theme. No migration.
+4. **Search scope + multilingual** — `SearchService`/`SearchRepository`
+   (`apps/api/src/content/search.{service,controller}.ts`) currently searches **posts only**;
+   canon target is posts **+ pages (+ services)**, with results **scoped to the active locale**
+   (§7 #1 logged multilingual FTS as future). Extend the `$queryRaw` FTS (keep the bound
+   param) + the public `/search` UI.
+5. **Self-service password change** (logged-in `/account`: current+new password → API) and an
+   **enforced email-verification flow** (the field exists; the flow isn't wired). django/laravel
+   have both; lower priority.
+6. **Comment author self-edit** (laravel-only, optional) — author edits/deletes their own
+   comment within a window.
+
+**Out of v1 scope per the matrix (do NOT build unless asked):** custom content types,
+comments on pages, external search engine (ES/Algolia), custom form builder, GraphQL/tRPC,
+built-in analytics dashboard. **Acceptable as-is:** swappable storage (the `StorageDriver`
+interface ships; the S3 driver is a one-line provider swap); reading-time (a bundled plugin —
+canon allows native *or* bundled plugin).
+
+**Non-functional follow-ups (already logged, optional):** content-page Lighthouse Perf ≥95
+(web-font LCP under throttle — would need fewer font faces or a system LCP font, a canon
+trade-off); new canon UI components (Alert/Empty-state/Avatar/Pagination + a Tabs primitive)
+as a consumer appears; magazine-theme §5 component polish.
 
 ## Task 3 (UI conformance to `../DESIGN_SYSTEM.md`) progress
 Plan: `docs/superpowers/plans/2026-06-28-task3-ui-design-system.md` (5 increments, one commit each).
@@ -603,40 +643,42 @@ pnpm e2e                                                  # 11/11 (web-alone; li
 
 ## Continuation prompt (paste into a fresh window)
 > You are continuing the `cmstack-ts` engagement (senior TS engineer, autonomous).
-> Working dir `/Users/huseyn0w/Desktop/SWE/cmstack/cmstack-ts`, branch
-> `refactor/repository-layer` (clean tree, all committed; **519 tests, typecheck + biome
-> clean, coverage gate ≥80% (actual 90.42%)**). **DONE:** Task 2 (repository-layer refactor) + Task 4
-> (tests); the E2E baseline re-run (11/11, refactor confirmed black-box-invariant); and
-> **Task 1 §7 items #1 (per-locale content translation), #2 (per-content SEO meta), #3
-> (password reset + transactional email), #4 (menu management), #5 (contact form + email),
-> #6 (GA4/GTM + site verification + basic consent), #7 (auto thumbnails / image processing),
-> #8 (dashboard translation editing UI), #9 (plugin admin UI + runtime toggle + render regions),
-> #10 (caching layer — Redis/memory, event-driven invalidation via `HookRegistry`)** —
-> all live-verified. **The §7 register is now fully ticked**, and **two shared net-new items are
-> done: revision-restore UI** (restore reuses `update` → reversible + sanitized + cache-invalidating;
-> field-level compare panel)**, scheduled publishing** (`scheduledAt` on a DRAFT + a
-> `@nestjs/schedule` minute-interval worker auto-publishes due drafts via `publishDue`; emits
-> `post.published` + `content.changed`)**, and RSS/Atom feeds** (web-only pure builder
-> `lib/seo/feed.ts` → `/feed.xml` + `/atom.xml`, XML-escaped, noindex-filtered, 50-item cap, feed
-> auto-discovery via `alternatesFor`)**, and comment-notification email** (new `comment.submitted`
-> observer event → fault-isolated `CommentMailListener` notifies the moderator via the §7 #3
-> `MailService`; PII-minimized payload; `CommentRepository.create` now returns the row).
-> **The Task 1 feature register + ALL shared net-new are now fully ticked** — only Task 3 (UI §8)
-> and Task 5 (README rewrite) remain. **Read first:**
-> `cmstack-ts/HANDOFF.md` (the Task-1 progress section + "Full stack for LIVE verification"
-> recipe + Gotchas), `cmstack-ts/REFACTOR_PLAN.md` (§2.0 layering, §2.7 observer policy,
-> §7 feature register with #1–#10 checked, §10 invariants), `cmstack-ts/CLAUDE.md`, and the
-> read-only canon `../FEATURE_MATRIX.md` + `../DESIGN_SYSTEM.md` (do NOT edit the canon).
-> The design+plan docs for finished items are in `docs/superpowers/{specs,plans}/`.
+> Working dir `/Users/huseyn0w/Desktop/SWE/cmstack/cmstack-ts`, on branch **`main`** (clean tree,
+> all committed AND pushed to `origin/main`; **519 tests, typecheck + biome clean, coverage gate
+> ≥80% (actual 90.42%), e2e 11/11**). **ALL FIVE ENGAGEMENT TASKS ARE DONE** — Task 1 (feature
+> parity: §7 #1–#10 + the shared net-new revision-restore UI, scheduled publishing, RSS/Atom feeds,
+> comment-notification email), Task 2 (repository layer), Task 3 (UI conformed to the design
+> system, Lighthouse measured), Task 4 (tests + ≥80% gate), Task 5 (README rewritten to the
+> cross-stack structure). All merged to `main` and pushed.
 >
-> **Resume with Task 3 (UI §8)** then **Task 5 (full README rewrite)** — the Task 1 feature register
-> and ALL shared net-new (revision-restore UI, scheduled publishing, RSS/Atom feeds,
-> comment-notification email) are DONE. **Observer note:** §7 #5 wired the first real side effect
-> (`contact.submitted` → mail listener); §7 #10 added four cache-invalidation events
-> (`content.changed`/`settings.theme.changed`/`menu.changed`/`seo.changed`); the
-> comment-notification email (shared net-new) is the next observer consumer. **Cache note:**
-> a new side effect that changes a cached public read should `emit` the matching `*.changed`
-> event (or add a new one + a `CacheInvalidationListener` line) so the cache stays correct.
+> **YOUR JOB NOW: close the remaining cross-stack feature-parity gaps** (operator directive).
+> The full prioritized list with file pointers is in **`HANDOFF.md` → "## Remaining functional
+> parity gaps"** — read it first. In priority order: **(1) media picker inside the Tiptap editor**
+> (toolbar image-insert → media-library modal → `<img>` into the editor; `apps/web/components/
+> admin/rich-text-editor.tsx`; web-only, no migration), **(2) bulk admin list actions**
+> (multi-select + bulk-action bar on posts/pages/categories/comments/users; `DESIGN_SYSTEM.md` §5
+> Tables; needs batch service ops + the canon Tables bulk bar), **(3) related posts** on the post
+> detail (shared-taxonomy; `PostRepository.findRelated` + theme surface), **(4) search scope +
+> multilingual** (extend `apps/api/src/content/search.{service,controller}.ts` FTS from posts-only
+> to posts + pages, scoped to the active locale; keep the bound `$queryRaw` param), then optionally
+> **(5) self-service password change + enforced email verification**, **(6) comment author
+> self-edit**. **Out of v1 scope (do NOT build unless asked):** custom content types, comments on
+> pages, external search engine, custom form builder, GraphQL/tRPC, analytics dashboard.
+>
+> **Read first:** `cmstack-ts/HANDOFF.md` (the new "Remaining functional parity gaps" section +
+> "Full stack for LIVE verification" recipe + Gotchas), `cmstack-ts/REFACTOR_PLAN.md` (§2.0
+> layering, §2.7 observer policy, §10 invariants), `cmstack-ts/CLAUDE.md`, and the read-only canon
+> `../FEATURE_MATRIX.md` + `../DESIGN_SYSTEM.md` (its `ts` status column was refreshed this
+> engagement; **still do NOT edit the Canonical/Target columns or other stacks**). Finished design+
+> plan docs are in `docs/superpowers/{specs,plans}/`.
+>
+> **Observer + cache notes (still apply to any new feature):** real side effects emit on the
+> `HookRegistry` (`contact.submitted`/`comment.submitted` → mail listeners; `post.published` →
+> plugins); a write that changes a cached public read must `emit` the matching `*.changed` event
+> (`content.changed`/`settings.theme.changed`/`menu.changed`/`seo.changed`) — or add a new one +
+> a `CacheInvalidationListener` line — so the §7 #10 cache stays correct. (Search, related-posts
+> and the media list are NOT cached today, so #1–#4 above need no new cache event unless you add
+> caching.)
 >
 > Per-feature loop (proven this session): brainstorm scope if unclear → spec+plan under
 > `docs/superpowers/` → TDD by layer (config schema → prisma migration (additive/reversible)

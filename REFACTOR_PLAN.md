@@ -1,7 +1,14 @@
 # cmstack-ts — Refactor Plan
 
+> **STATUS (2026-06, updated):** this plan is the **point-in-time decision record**. All five
+> engagement tasks it sequences are now **COMPLETE** (Task 1 feature parity §7 #1–#10 + shared
+> net-new · Task 2 repository layer · Task 3 UI · Task 4 tests · Task 5 README), merged to `main`
+> and pushed. For **current status + the remaining feature-parity gaps** (the next phase), read
+> **`HANDOFF.md`** — it supersedes the PENDING/§7/§8 sections below. The architecture (§2),
+> observer policy (§2.7) and invariants (§10) here are still the live conventions.
+
 > **Scope of this document:** the architecture refactor (Task 2) plus the test
-> re-cover (Task 4), with a sequenced register of the remaining feature-parity
+> re-cover (Task 4), with a sequenced register of the feature-parity
 > (Task 1) and UI (Task 3) work. It is the decision record the prompt asks for:
 > each data-access site → chosen pattern → justification → rejected alternatives.
 > Code, comments and identifiers are English; progress notes to the operator are
