@@ -2,7 +2,13 @@
 
 **Updated:** 2026-06-28 — **ALL FIVE ENGAGEMENT TASKS COMPLETE — Task 1 (feature parity §7 #1–#10 + all shared net-new) · Task 2 (repository layer) · Task 3 (UI, measured) · Task 4 (tests) · Task 5 (README). MERGED to `main` (fast-forward) and PUSHED to `origin/main`.** · **Branch:** now on `main` (the work branch `refactor/repository-layer` still points at the same tip).
 **Final state:** 519 tests, typecheck + biome clean, coverage 90.42% (gate ≥80%), e2e 11/11. Measured Lighthouse (mobile): A11y 100 / SEO 100 / BP 96 every public page; Perf home 98, content ~93–94 (web-font LCP under throttle — see §Task 3 #5). README rewritten to the shared cross-stack structure.
-**Next phase (operator directive): close the remaining cross-stack feature-parity gaps** — see **"## Remaining functional parity gaps"** below and the continuation prompt at the end. **Note:** `../FEATURE_MATRIX.md`'s `ts` column was refreshed to reflect this engagement (ts status cells only; Canonical/Target/other-stack columns untouched).
+**Parity-gap phase (2026-06-29): 5 of 6 gaps DONE + PUSHED** — #1 media picker (`1d8c2fa`),
+#2 bulk admin actions (`9271d65`), #3 related posts (`b31a8cf`), #4 search posts+pages/locale
+(`f8fbc12`), #5 password change + email verification (`e657c26`, `6f58e11`). Only #6 (comment
+author self-edit — optional/laravel-only) remains, **deferred by design** (needs authenticated
+commenting wired first — see its entry). **552 tests, typecheck/biome clean, coverage 89.72%
+(gate ≥80%).** **Note:** `../FEATURE_MATRIX.md`'s `ts` column was refreshed earlier (ts status
+cells only; Canonical/Target/other-stack columns untouched).
 
 ## Remaining functional parity gaps (NEXT PHASE — operator directive)
 Cross-checked against the canon `../FEATURE_MATRIX.md` AND the real code (the matrix was a
@@ -91,8 +97,20 @@ remaining gaps vs the richest sibling (laravel). **Suggested order (highest valu
    - **Scoped out (logged):** **enforcement** (blocking actions until verified) is intentionally not
      wired — it risks locking out existing/seed users; introduce it gated/soft when needed. No
      auto-send on register (the user triggers it from `/account`).
-6. **Comment author self-edit** (laravel-only, optional) — author edits/deletes their own
-   comment within a window.
+6. **Comment author self-edit** (laravel-only, optional) — **DEFERRED by design.** Blocked on a
+   prerequisite: the public comment submit (`PublicCommentsController.submit` →
+   `CommentsService.submit`) is **fully anonymous today** — it always stores `authorName`/
+   `authorEmail` from the form and **never sets `Comment.userId`** (the column exists but no row
+   populates it), and the web comment form has no signed-in path. So "author edits their own
+   comment" first needs **authenticated commenting** wired (optional-JWT on submit → set `userId`
+   + snapshot the user's name/email, hide the name/email fields when signed in), which carries its
+   own design choices (edit window length, edit-only-while-PENDING vs always, re-moderate on edit).
+   Only then do the self-edit/delete endpoints (`userId` must match + window) + UI make sense.
+   Left for a deliberate follow-up since it is explicitly optional/laravel-only and is a new
+   sub-feature, not a thin gap. **Sketch:** add `submitAuthenticated` path (or make `submit` read an
+   optional bearer), `CommentRepository.findOwnedById(id, userId)`, `PATCH/DELETE
+   /public/.../comments/:id` (JwtAuthGuard, owner + window check, re-set status PENDING on edit),
+   web "edit/delete" affordances on the commenter's own rows.
 
 **Out of v1 scope per the matrix (do NOT build unless asked):** custom content types,
 comments on pages, external search engine (ES/Algolia), custom form builder, GraphQL/tRPC,
