@@ -4,7 +4,7 @@ import type {
   UserRepository,
   UserWithRole,
 } from '@cmstack-ts/db';
-import { ConflictException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, UnauthorizedException } from '@nestjs/common';
 import type { JwtService } from '@nestjs/jwt';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AccountsService } from './accounts.service';
@@ -175,5 +175,40 @@ describe('AccountsService.oauth', () => {
         providerAccountId: 'g1',
       }),
     );
+  });
+});
+
+describe('AccountsService.changePassword', () => {
+  it('rejects an OAuth-only account that has no password', async () => {
+    users.findByIdWithRole.mockResolvedValue(userRow({ passwordHash: null }));
+    await expect(
+      service.changePassword('u1', { currentPassword: 'x', newPassword: 'newsecret1' }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(users.updatePasswordHash).not.toHaveBeenCalled();
+  });
+
+  it('rejects a wrong current password with 401', async () => {
+    const hash = await passwords.hash('correct-horse');
+    users.findByIdWithRole.mockResolvedValue(userRow({ passwordHash: hash }));
+    await expect(
+      service.changePassword('u1', { currentPassword: 'wrong', newPassword: 'newsecret1' }),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
+    expect(users.updatePasswordHash).not.toHaveBeenCalled();
+  });
+
+  it('stores a new hash when the current password verifies', async () => {
+    const hash = await passwords.hash('correct-horse');
+    users.findByIdWithRole.mockResolvedValue(userRow({ passwordHash: hash }));
+    await service.changePassword('u1', {
+      currentPassword: 'correct-horse',
+      newPassword: 'a-brand-new-secret',
+    });
+    expect(users.updatePasswordHash).toHaveBeenCalledTimes(1);
+    const [id, newHash] = users.updatePasswordHash.mock.calls[0] ?? [];
+    expect(id).toBe('u1');
+    expect(typeof newHash).toBe('string');
+    expect(newHash).not.toBe(hash); // a fresh hash, not the old one
+    // the stored hash verifies against the new password
+    expect(await passwords.verify(newHash as string, 'a-brand-new-secret')).toBe(true);
   });
 });

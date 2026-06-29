@@ -1,10 +1,12 @@
 import {
   type AuthResult,
+  type ChangePasswordInput,
   type LoginInput,
   type OAuthInput,
   type PublicUser,
   type RegisterInput,
   type UpdateAccountInput,
+  changePasswordSchema,
   loginSchema,
   oauthSchema,
   registerSchema,
@@ -61,5 +63,18 @@ export class AccountsController {
     @Body(new ZodValidationPipe(updateAccountSchema)) body: UpdateAccountInput,
   ) {
     return this.accounts.updateProfile(user.id, body);
+  }
+
+  // Self-service password change. Rate-limited to blunt online guessing of the
+  // current password from a stolen session.
+  @Post('me/password')
+  @HttpCode(204)
+  @UseGuards(JwtAuthGuard, ThrottlerGuard)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  async changePassword(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body(new ZodValidationPipe(changePasswordSchema)) body: ChangePasswordInput,
+  ): Promise<void> {
+    await this.accounts.changePassword(user.id, body);
   }
 }

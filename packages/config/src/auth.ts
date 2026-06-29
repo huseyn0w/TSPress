@@ -68,6 +68,13 @@ export const passwordResetConfirmSchema = z.object({
 });
 export type PasswordResetConfirmInput = z.infer<typeof passwordResetConfirmSchema>;
 
+/** Self-service password change for the signed-in user (current + new password). */
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1),
+  newPassword: z.string().min(8, 'Password must be at least 8 characters'),
+});
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
+
 /**
  * Server-to-server OAuth upsert. Called by the web server (Auth.js) after a
  * successful provider sign-in; protected by an internal shared secret so it can

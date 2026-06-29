@@ -33,6 +33,8 @@ export {
   userListQuerySchema,
   type UpdateUserInput,
   updateUserSchema,
+  type ChangePasswordInput,
+  changePasswordSchema,
 } from './auth';
 export {
   contentStatusSchema,

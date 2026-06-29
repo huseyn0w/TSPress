@@ -63,9 +63,22 @@ remaining gaps vs the richest sibling (laravel). **Suggested order (highest valu
    - **Scoped out (logged):** `services` (the `Service` model has no public detail route to link to —
      wire it in when services get a public surface, mirroring pages); per-language FTS stemmers/
      dictionaries (canon rates ts search non-multilingual — only the *content* is locale-scoped).
-5. **Self-service password change** (logged-in `/account`: current+new password → API) and an
-   **enforced email-verification flow** (the field exists; the flow isn't wired). django/laravel
-   have both; lower priority.
+5. **Self-service password change — DONE** (2026-06-29). **Email-verification flow still pending.**
+   - **Password change (DONE):** `changePasswordSchema` (current + new ≥8); `AccountsService.
+     changePassword` loads the user, verifies the current password (Argon2id), rejects OAuth-only
+     accounts (no password → 400) and a wrong current password (401), then stores a fresh hash via
+     the existing `updatePasswordHash`. `POST /auth/me/password` (JwtAuthGuard, **throttled 5/min**,
+     204). Web: a "Security" section on `/account` with a `PasswordEditor` (current/new/confirm,
+     client-side match check, surfaces the API reason) + a `changePassword` server action. **545
+     tests** (+3 service), typecheck/lint clean; **live-verified** end-to-end (wrong current → 401,
+     correct → 204, new password logs in, old rejected → 401, reverted so seed creds stay valid).
+   - **Email-verification flow (PENDING):** the `User.emailVerified` field exists (OAuth users get
+     it stamped at create) but there is no send-verification / confirm-token / enforcement flow for
+     password signups. To wire: mirror the §7 #3 `PasswordResetToken` pattern (a hashed, single-use,
+     TTL'd token table — needs a migration), a `MailService` verification email, request + confirm
+     endpoints, an `/account` "verify email" affordance, and a (non-blocking first) status badge.
+     **Lower priority**; enforcement (blocking actions until verified) risks locking out existing
+     users — introduce it gated/soft.
 6. **Comment author self-edit** (laravel-only, optional) — author edits/deletes their own
    comment within a window.
 

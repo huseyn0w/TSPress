@@ -1,6 +1,7 @@
 import type {
   AuthResult,
   CaslAction,
+  ChangePasswordInput,
   LoginInput,
   OAuthInput,
   Permission,
@@ -18,7 +19,13 @@ import {
   type UserRepository,
   type UserWithRole,
 } from '@cmstack-ts/db';
-import { ConflictException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import type { AuthenticatedUser } from './authenticated-user';
 import { PasswordService } from './password.service';
@@ -122,6 +129,26 @@ export class AccountsService {
     if (input.image !== undefined) data.image = input.image === '' ? null : input.image;
 
     return this.users.updateProfileFields(userId, data);
+  }
+
+  /**
+   * Change the signed-in user's password: verify the current one, then store the
+   * new Argon2id hash. OAuth-only accounts (no password set) are rejected with a
+   * clear message; a wrong current password is a 401.
+   */
+  async changePassword(userId: string, input: ChangePasswordInput): Promise<void> {
+    const user = await this.users.findByIdWithRole(userId);
+    if (!user) throw new UnauthorizedException('You are not signed in.');
+    if (user.passwordHash == null) {
+      throw new BadRequestException(
+        'This account signs in with a provider and has no password to change.',
+      );
+    }
+    const matches = await this.passwords.verify(user.passwordHash, input.currentPassword);
+    if (!matches) throw new UnauthorizedException('Your current password is incorrect.');
+
+    const newHash = await this.passwords.hash(input.newPassword);
+    await this.users.updatePasswordHash(userId, newHash);
   }
 
   private async buildAuthResult(user: UserWithRole): Promise<AuthResult> {

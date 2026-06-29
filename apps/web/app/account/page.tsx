@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { auth } from '../../auth';
 import { apiBaseUrl } from '../lib/api';
+import { PasswordEditor } from './password-editor';
 import { ProfileEditor } from './profile-editor';
 import { SignOutButton } from './sign-out-button';
 
@@ -120,6 +121,21 @@ export default async function AccountPage() {
               View public profile →
             </Link>
           </p>
+        </section>
+
+        <section style={{ marginBottom: '2rem' }}>
+          <h2
+            style={{
+              fontSize: 13,
+              letterSpacing: '0.15em',
+              textTransform: 'uppercase',
+              color: 'var(--muted)',
+              margin: '0 0 0.75rem',
+            }}
+          >
+            Security
+          </h2>
+          <PasswordEditor />
         </section>
 
         {user.role && (
