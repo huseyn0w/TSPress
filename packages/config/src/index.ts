@@ -35,6 +35,8 @@ export {
   updateUserSchema,
   type ChangePasswordInput,
   changePasswordSchema,
+  type EmailVerificationConfirmInput,
+  emailVerificationConfirmSchema,
 } from './auth';
 export {
   contentStatusSchema,

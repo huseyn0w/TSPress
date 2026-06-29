@@ -72,13 +72,25 @@ remaining gaps vs the richest sibling (laravel). **Suggested order (highest valu
      client-side match check, surfaces the API reason) + a `changePassword` server action. **545
      tests** (+3 service), typecheck/lint clean; **live-verified** end-to-end (wrong current → 401,
      correct → 204, new password logs in, old rejected → 401, reverted so seed creds stay valid).
-   - **Email-verification flow (PENDING):** the `User.emailVerified` field exists (OAuth users get
-     it stamped at create) but there is no send-verification / confirm-token / enforcement flow for
-     password signups. To wire: mirror the §7 #3 `PasswordResetToken` pattern (a hashed, single-use,
-     TTL'd token table — needs a migration), a `MailService` verification email, request + confirm
-     endpoints, an `/account` "verify email" affordance, and a (non-blocking first) status badge.
-     **Lower priority**; enforcement (blocking actions until verified) risks locking out existing
-     users — introduce it gated/soft.
+   - **Email-verification flow — DONE** (2026-06-29). Mirrors the §7 #3 password-reset pattern.
+     New `EmailVerificationToken` model (additive migration `20260629082849_email_verification`,
+     same shape as `PasswordResetToken`: hashed, single-use, TTL'd) + `EmailVerificationToken
+     Repository`; `UserRepository.setEmailVerified`. `EmailVerificationService`: `request(userId)`
+     issues a token + emails a link (**no-op if already verified** — a verified user can't be
+     spammed; only the SHA-256 hash is stored), `confirm(token)` stamps `User.emailVerified` if the
+     token is valid/unused/unexpired. `POST /auth/me/verify-email` (JwtAuthGuard, throttled, 202) +
+     public `POST /auth/verify-email/confirm` (throttled, 200). Pure `emailVerificationEmail`
+     builder (HTML-escaped). `publicUserSchema` gained `emailVerified` (surfaced via `toPublicUser`
+     + `me`). Web: public `/verify-email?token=` page (auto-confirms client-side, added to
+     middleware `PANEL_PREFIXES`) + an `/account` Security status ("✓ verified" or a "Send
+     verification email" button → `sendVerificationEmail` action). `EMAIL_VERIFICATION_TTL_MINUTES`
+     (default 1440) in `.env.example`. **552 tests** (+7 service), typecheck/lint clean, coverage
+     89.72%; **live-verified** end-to-end (null → request 202 → emailed token → confirm 200 →
+     `emailVerified` stamped → replay 400; re-request on a verified user sends no new email; web
+     `/verify-email` renders).
+   - **Scoped out (logged):** **enforcement** (blocking actions until verified) is intentionally not
+     wired — it risks locking out existing/seed users; introduce it gated/soft when needed. No
+     auto-send on register (the user triggers it from `/account`).
 6. **Comment author self-edit** (laravel-only, optional) — author edits/deletes their own
    comment within a window.
 

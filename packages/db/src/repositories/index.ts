@@ -18,6 +18,7 @@ export * from './comment.repository';
 export * from './search.repository';
 export * from './user.repository';
 export * from './password-reset-token.repository';
+export * from './email-verification-token.repository';
 export * from './account.repository';
 export * from './role.repository';
 export * from './menu.repository';

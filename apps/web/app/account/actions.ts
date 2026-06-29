@@ -32,6 +32,23 @@ export async function updateAccount(input: unknown): Promise<ActionResult> {
   }
 }
 
+export async function sendVerificationEmail(): Promise<ActionResult> {
+  const session = await auth();
+  if (!session?.accessToken) return { ok: false, error: 'You are not signed in.' };
+
+  try {
+    const res = await fetch(`${apiBaseUrl}/auth/me/verify-email`, {
+      method: 'POST',
+      cache: 'no-store',
+      headers: { Authorization: `Bearer ${session.accessToken}` },
+    });
+    if (res.status === 202) return { ok: true };
+    return { ok: false, error: 'Could not send the verification email.' };
+  } catch {
+    return { ok: false, error: 'Could not send the verification email.' };
+  }
+}
+
 export async function changePassword(input: unknown): Promise<ActionResult> {
   const parsed = changePasswordSchema.safeParse(input);
   if (!parsed.success) {

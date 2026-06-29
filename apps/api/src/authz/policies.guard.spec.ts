@@ -24,6 +24,7 @@ const admin: AuthenticatedUser = {
   email: 'admin@cmstack-ts.local',
   name: 'Admin',
   image: null,
+  emailVerified: null,
   role: { name: 'Administrator', permissions: [{ action: 'manage', subject: 'all' }] },
   permissions: [{ action: 'manage', subject: 'all' }],
 };
@@ -33,6 +34,7 @@ const member: AuthenticatedUser = {
   email: 'member@cmstack-ts.local',
   name: 'Member',
   image: null,
+  emailVerified: null,
   role: { name: 'Member', permissions: [] },
   permissions: [],
 };

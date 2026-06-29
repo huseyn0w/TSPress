@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { auth } from '../../auth';
 import { apiBaseUrl } from '../lib/api';
+import { EmailVerification } from './email-verification';
 import { PasswordEditor } from './password-editor';
 import { ProfileEditor } from './profile-editor';
 import { SignOutButton } from './sign-out-button';
@@ -109,6 +110,9 @@ export default async function AccountPage() {
             Profile
           </h2>
           <Row label="Email" value={user.email} />
+          <div style={{ marginTop: '0.75rem' }}>
+            <EmailVerification verified={user.emailVerified !== null} />
+          </div>
           <Row label="Name" value={user.name ?? 'Not set'} />
           <div style={{ marginTop: '1rem' }}>
             <ProfileEditor initialName={user.name ?? ''} initialBio={bio} />

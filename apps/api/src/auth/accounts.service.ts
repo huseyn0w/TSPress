@@ -162,6 +162,7 @@ export class AccountsService {
       email: user.email,
       name: user.name,
       image: user.image,
+      emailVerified: user.emailVerified ? user.emailVerified.toISOString() : null,
       role: user.role ? { name: user.role.name, permissions: this.flattenPermissions(user) } : null,
     };
   }

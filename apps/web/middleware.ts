@@ -13,6 +13,7 @@ const PANEL_PREFIXES = [
   '/signup',
   '/forgot-password',
   '/reset-password',
+  '/verify-email',
   '/health',
 ];
 const isPanel = (pathname: string) =>

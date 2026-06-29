@@ -52,7 +52,14 @@ export class AccountsController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   me(@CurrentUser() user: AuthenticatedUser): PublicUser {
-    return { id: user.id, email: user.email, name: user.name, image: user.image, role: user.role };
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      image: user.image,
+      emailVerified: user.emailVerified,
+      role: user.role,
+    };
   }
 
   // Self-service profile edit (name / bio / avatar) for the signed-in user.

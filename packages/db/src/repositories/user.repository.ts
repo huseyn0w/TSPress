@@ -53,6 +53,8 @@ export interface UserRepository {
   updateProfileFields(id: string, data: ProfileFieldsData): Promise<UserPublicFields>;
   /** Set a new password hash (password reset). */
   updatePasswordHash(id: string, passwordHash: string): Promise<void>;
+  /** Stamp the email as verified at `when` (email-verification confirm). */
+  setEmailVerified(id: string, when: Date): Promise<void>;
   listAndCount(filter: UserListFilter): Promise<{ items: UserWithRoleSummary[]; total: number }>;
   findByIdSummary(id: string): Promise<UserWithRoleSummary | null>;
   updateAdmin(id: string, data: AdminUserUpdateData): Promise<UserWithRoleSummary>;
@@ -111,6 +113,10 @@ export class PrismaUserRepository extends PrismaCrudRepository implements UserRe
 
   async updatePasswordHash(id: string, passwordHash: string): Promise<void> {
     await this.prisma.user.update({ where: { id }, data: { passwordHash } });
+  }
+
+  async setEmailVerified(id: string, when: Date): Promise<void> {
+    await this.prisma.user.update({ where: { id }, data: { emailVerified: when } });
   }
 
   async listAndCount(filter: UserListFilter): Promise<{

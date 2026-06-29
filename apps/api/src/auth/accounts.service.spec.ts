@@ -53,6 +53,7 @@ beforeEach(() => {
     createWithRoleAndAccount: vi.fn(),
     updateProfileFields: vi.fn(),
     updatePasswordHash: vi.fn(),
+    setEmailVerified: vi.fn(),
     listAndCount: vi.fn(),
     findByIdSummary: vi.fn(),
     updateAdmin: vi.fn(),

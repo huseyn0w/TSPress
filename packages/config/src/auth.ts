@@ -34,6 +34,8 @@ export const publicUserSchema = z.object({
   email: z.string().email(),
   name: z.string().nullable(),
   image: z.string().nullable(),
+  /** ISO timestamp when the email was verified, or null if not yet verified. */
+  emailVerified: z.string().datetime().nullable(),
   role: publicRoleSchema.nullable(),
 });
 export type PublicUser = z.infer<typeof publicUserSchema>;
@@ -74,6 +76,12 @@ export const changePasswordSchema = z.object({
   newPassword: z.string().min(8, 'Password must be at least 8 characters'),
 });
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
+
+/** Complete email verification with the emailed token. */
+export const emailVerificationConfirmSchema = z.object({
+  token: z.string().min(1),
+});
+export type EmailVerificationConfirmInput = z.infer<typeof emailVerificationConfirmSchema>;
 
 /**
  * Server-to-server OAuth upsert. Called by the web server (Auth.js) after a
