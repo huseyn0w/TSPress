@@ -1,6 +1,8 @@
 'use server';
 
 import { apiSend } from '@/lib/admin/api';
+import { type BulkSummary, summarizeBulk } from '@/lib/admin/bulk';
+import { runBulk } from '@/lib/admin/run-bulk';
 import type { CreateTagInput, TermTranslationInput, UpdateTagInput } from '@cmstack-ts/config';
 import { revalidatePath } from 'next/cache';
 
@@ -38,6 +40,16 @@ export async function deleteTagAction(id: string): Promise<ActionResult> {
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : 'Failed to delete tag' };
   }
+}
+
+/** Delete many tags by looping the single-item endpoint (CASL-gated per item). */
+export async function bulkDeleteTagsAction(ids: string[]): Promise<ActionResult<BulkSummary>> {
+  if (ids.length === 0) return { ok: false, error: 'No tags selected.' };
+  const results = await runBulk(ids, (id) => apiSend('DELETE', `/tags/${id}`));
+  revalidatePath('/admin/tags');
+  // Deleting a tag removes its chip from public posts.
+  revalidatePath('/', 'layout');
+  return { ok: true, data: summarizeBulk(results) };
 }
 
 export async function upsertTagTranslationAction(

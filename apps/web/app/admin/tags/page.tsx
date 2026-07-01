@@ -1,14 +1,7 @@
 import { Button } from '@/components/ui/button';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { apiGet } from '@/lib/admin/api';
 import type { TagView } from '@/types/content';
+import { TagsBulkTable } from './tags-bulk-table';
 import { TagsClient } from './tags-client';
 
 export const dynamic = 'force-dynamic';
@@ -54,32 +47,7 @@ export default async function TagsPage() {
           <p className="text-sm text-muted-foreground">No tags yet.</p>
         </div>
       ) : (
-        <div className="border border-border rounded-lg bg-card overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Slug</TableHead>
-                <TableHead className="w-24 text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {tags.map((tag) => (
-                <TableRow key={tag.id}>
-                  <TableCell>
-                    <span className="font-medium text-foreground">{tag.name}</span>
-                  </TableCell>
-                  <TableCell>
-                    <span className="font-mono text-xs text-muted-foreground">{tag.slug}</span>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <TagsClient mode="edit" tag={tag} />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <TagsBulkTable tags={tags} />
       )}
     </div>
   );

@@ -11,6 +11,18 @@ coverage ~89.7% (gate ≥80%), e2e 11/11.** Two additive reversible migrations t
 `../FEATURE_MATRIX.md`'s `ts` column was refreshed (ts status cells only; Canonical/Target/
 other-stack columns untouched).
 
+**Fast-follow (2026-07-01): Category/Tag bulk-delete — DONE + committed.** Completes the
+bulk-actions parity from gap #2 (was logged as the trivial fast-follow). Web-only, no new API
+surface: `bulkDelete{Categories,Tags}Action` loop the existing single-item `DELETE` endpoint via
+`runBulk` (`Promise.allSettled` → per-item isolation, each CASL-gated + `term.changed` cache
+flush reused). New `categories-bulk-table.tsx` / `tags-bulk-table.tsx` add the leading checkbox
+column + tri-state select-all + sticky `BulkBar` (reusing `useRowSelection`/`bulk.ts`), replacing
+the inline tables on `/admin/categories` + `/admin/tags`. `BulkBar` + `bulkResultMessage` gained an
+optional `nounPlural` (fixes "categorys" → "categories"; backward-compatible, +1 unit test).
+**586 tests, typecheck/lint clean, e2e 11/11**; live-verified (fan-out: 2 valid DELETE → 204,
+bogus id → 404 isolated, both removed; admin pages compile → 307). **Users bulk-delete stays
+deferred by design** (self-deletion guard + low row counts). Adversarial review: 0 HIGH/MED.
+
 **Fast-follow (2026-07-01): Category/Tag name translation — DONE + committed.** The last
 genuine multilingual parity gap (logged as scoped-out under §7 #1/#8). Mirrors the
 `PostTranslation` pattern, name-only: new `CategoryTranslation`/`TagTranslation` models

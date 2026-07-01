@@ -26,6 +26,8 @@ export interface BulkAction {
 interface BulkBarProps {
   count: number;
   noun: string;
+  /** Irregular plural ("category" → "categories"); defaults to `noun + "s"`. */
+  nounPlural?: string;
   actions: BulkAction[];
   onClear: () => void;
   isPending?: boolean;
@@ -35,7 +37,7 @@ interface BulkBarProps {
  * Sticky action bar shown when one or more rows are selected. The live region
  * announces the selection count to assistive tech (canon §5 Tables bulk bar).
  */
-export function BulkBar({ count, noun, actions, onClear, isPending }: BulkBarProps) {
+export function BulkBar({ count, noun, nounPlural, actions, onClear, isPending }: BulkBarProps) {
   const [confirming, setConfirming] = useState<BulkAction | null>(null);
 
   function handleClick(action: BulkAction) {
@@ -53,8 +55,7 @@ export function BulkBar({ count, noun, actions, onClear, isPending }: BulkBarPro
         className="sticky bottom-4 z-10 mt-4 flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 shadow-md"
       >
         <p aria-live="polite" className="font-mono text-xs text-muted-foreground tabular-nums">
-          {count} {noun}
-          {count === 1 ? '' : 's'} selected
+          {count} {count === 1 ? noun : (nounPlural ?? `${noun}s`)} selected
         </p>
         <div className="ml-auto flex flex-wrap items-center gap-2">
           {actions.map((action) => (

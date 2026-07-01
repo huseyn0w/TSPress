@@ -30,11 +30,18 @@ export function summarizeBulk(results: BulkItemResult[]): BulkSummary {
 
 /**
  * Human toast message for a finished bulk run. `verb` is the past-tense action
- * ("deleted", "published"); `noun` is the singular item name ("post").
+ * ("deleted", "published"); `noun` is the singular item name ("post"). Pass
+ * `nounPlural` for irregular plurals ("category" → "categories"); it defaults to
+ * `noun + "s"`.
  */
-export function bulkResultMessage(summary: BulkSummary, verb: string, noun: string): string {
+export function bulkResultMessage(
+  summary: BulkSummary,
+  verb: string,
+  noun: string,
+  nounPlural = `${noun}s`,
+): string {
   const { succeeded, failed } = summary;
-  const items = (n: number) => `${n} ${noun}${n === 1 ? '' : 's'}`;
+  const items = (n: number) => `${n} ${n === 1 ? noun : nounPlural}`;
   if (failed === 0) return `${items(succeeded)} ${verb}`;
   if (succeeded === 0) return `Failed to ${verb.replace(/ed$/, '')} ${items(failed)}`;
   return `${items(succeeded)} ${verb}, ${failed} failed`;

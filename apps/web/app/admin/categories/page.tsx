@@ -1,14 +1,7 @@
 import { Button } from '@/components/ui/button';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { apiGet } from '@/lib/admin/api';
 import type { CategoryView } from '@/types/content';
+import { CategoriesBulkTable } from './categories-bulk-table';
 import { CategoriesClient } from './categories-client';
 
 export const dynamic = 'force-dynamic';
@@ -55,47 +48,7 @@ export default async function CategoriesPage() {
           <p className="text-sm text-muted-foreground">No categories yet.</p>
         </div>
       ) : (
-        <div className="border border-border rounded-lg bg-card overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Slug</TableHead>
-                <TableHead>Parent</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead className="w-24 text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {categories.map((cat) => {
-                const parent = categories.find((c) => c.id === cat.parentId);
-                return (
-                  <TableRow key={cat.id}>
-                    <TableCell>
-                      <span className="font-medium text-foreground">{cat.name}</span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="font-mono text-xs text-muted-foreground">{cat.slug}</span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm text-muted-foreground">
-                        {parent ? parent.name : '—'}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm text-muted-foreground truncate max-w-xs block">
-                        {cat.description ?? '—'}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <CategoriesClient categories={categories} mode="edit" category={cat} />
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
+        <CategoriesBulkTable categories={categories} />
       )}
     </div>
   );

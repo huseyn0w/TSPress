@@ -48,6 +48,15 @@ describe('bulkResultMessage', () => {
       '2 posts restored, 1 failed',
     );
   });
+
+  it('uses an irregular plural when given, and the singular for a count of 1', () => {
+    expect(
+      bulkResultMessage({ succeeded: 3, failed: 0 }, 'deleted', 'category', 'categories'),
+    ).toBe('3 categories deleted');
+    expect(
+      bulkResultMessage({ succeeded: 1, failed: 0 }, 'deleted', 'category', 'categories'),
+    ).toBe('1 category deleted');
+  });
 });
 
 describe('toggleSelection', () => {
