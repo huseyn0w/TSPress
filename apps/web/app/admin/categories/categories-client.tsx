@@ -3,8 +3,14 @@
 import {
   createCategoryAction,
   deleteCategoryAction,
+  deleteCategoryTranslationAction,
   updateCategoryAction,
+  upsertCategoryTranslationAction,
 } from '@/app/admin/categories/actions';
+import {
+  OVERRIDE_LOCALES,
+  TermTranslationFields,
+} from '@/components/admin/term-translation-fields';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -33,6 +39,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { diffTermTranslations, seedTermTranslations } from '@/lib/admin/term-translations';
 import type { CategoryView } from '@/types/content';
 import { Loader2, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { type ReactNode, useState, useTransition } from 'react';
@@ -54,6 +61,8 @@ export function CategoriesClient({ categories, mode, category, trigger }: Catego
   const [slug, setSlug] = useState(category?.slug ?? '');
   const [description, setDescription] = useState(category?.description ?? '');
   const [parentId, setParentId] = useState<string>(category?.parentId ?? '');
+  const seededTranslations = seedTermTranslations(category?.translations ?? [], OVERRIDE_LOCALES);
+  const [translations, setTranslations] = useState<Record<string, string>>(seededTranslations);
 
   const parentOptions = categories.filter((c) => c.id !== category?.id);
 
@@ -62,6 +71,20 @@ export function CategoriesClient({ categories, mode, category, trigger }: Catego
     setSlug(category?.slug ?? '');
     setDescription(category?.description ?? '');
     setParentId(category?.parentId ?? '');
+    setTranslations(seedTermTranslations(category?.translations ?? [], OVERRIDE_LOCALES));
+  }
+
+  /** Persist any changed per-locale name overrides. Returns an error message or null. */
+  async function saveTranslations(id: string): Promise<string | null> {
+    const ops = diffTermTranslations(seededTranslations, translations, OVERRIDE_LOCALES);
+    for (const op of ops) {
+      const res =
+        op.action === 'upsert'
+          ? await upsertCategoryTranslationAction(id, op.locale, { name: op.name })
+          : await deleteCategoryTranslationAction(id, op.locale);
+      if (!res.ok) return res.error;
+    }
+    return null;
   }
 
   function handleSubmit() {
@@ -84,12 +107,17 @@ export function CategoriesClient({ categories, mode, category, trigger }: Catego
         }
       } else if (category) {
         const result = await updateCategoryAction(category.id, input);
-        if (result.ok) {
-          toast.success('Category updated');
-          setFormOpen(false);
-        } else {
+        if (!result.ok) {
           toast.error(result.error);
+          return;
         }
+        const translationError = await saveTranslations(category.id);
+        if (translationError) {
+          toast.error(translationError);
+          return;
+        }
+        toast.success('Category updated');
+        setFormOpen(false);
       }
     });
   }
@@ -186,6 +214,15 @@ export function CategoriesClient({ categories, mode, category, trigger }: Catego
                 </SelectContent>
               </Select>
             </div>
+          )}
+          {mode === 'edit' && (
+            <TermTranslationFields
+              values={translations}
+              onChange={(locale, value) =>
+                setTranslations((prev) => ({ ...prev, [locale]: value }))
+              }
+              basePlaceholder={name}
+            />
           )}
         </div>
         <DialogFooter>

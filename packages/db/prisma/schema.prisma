@@ -221,27 +221,59 @@ model PageTranslation {
 }
 
 model Category {
-  id          String     @id @default(cuid())
-  name        String
-  slug        String     @unique
-  description String?
-  parentId    String?
-  parent      Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
-  children    Category[] @relation("CategoryTree")
-  posts       Post[]     @relation("PostCategories")
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id           String                @id @default(cuid())
+  name         String
+  slug         String                @unique
+  description  String?
+  parentId     String?
+  parent       Category?             @relation("CategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children     Category[]            @relation("CategoryTree")
+  posts        Post[]                @relation("PostCategories")
+  translations CategoryTranslation[]
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
 
   @@index([parentId])
 }
 
+/// Per-locale translation of a Category name. The base Category row holds the
+/// default locale (en); only non-default locales get a row. `name` is nullable
+/// so a missing value falls back to the base at read time (see localizeContent).
+model CategoryTranslation {
+  id         String   @id @default(cuid())
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  locale     String
+  name       String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([categoryId, locale])
+  @@index([locale])
+}
+
 model Tag {
+  id           String           @id @default(cuid())
+  name         String
+  slug         String           @unique
+  posts        Post[]           @relation("PostTags")
+  translations TagTranslation[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+}
+
+/// Per-locale translation of a Tag name (see CategoryTranslation).
+model TagTranslation {
   id        String   @id @default(cuid())
-  name      String
-  slug      String   @unique
-  posts     Post[]   @relation("PostTags")
+  tagId     String
+  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  locale    String
+  name      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([tagId, locale])
+  @@index([locale])
 }
 
 /// An immutable snapshot of a Post or Page captured before each update, enabling

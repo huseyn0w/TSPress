@@ -54,6 +54,12 @@ export interface ActionMap {
    * namespace. `slug` is best-effort (absent on delete-by-id paths).
    */
   'content.changed': { type: 'post' | 'page'; id: string; slug?: string };
+  /**
+   * Fired after a taxonomy term (Category/Tag) name or its per-locale translation
+   * changes. Term names surface only as post chips, so the caching layer flushes
+   * the POSTS namespace to re-render localized post reads.
+   */
+  'term.changed': { termType: 'category' | 'tag'; id: string };
   /** Fired after the active theme changes. Flushes the settings cache. */
   'settings.theme.changed': Record<string, never>;
   /** Fired after any menu/item/structure/translation write. Flushes the menu cache. */

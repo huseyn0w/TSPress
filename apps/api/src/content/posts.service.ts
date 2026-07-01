@@ -416,7 +416,16 @@ export class PostsService {
     return error instanceof Error ? error : new Error('Unknown error');
   }
 
-  private toSummary(post: PostWithRelations): PostSummary {
+  /**
+   * The term name for the current read: the locale override when a localized read
+   * joined one (0-or-1 row), otherwise the base name. Absent on default-locale
+   * reads, so the base name is used verbatim.
+   */
+  private termName(term: { name: string; translations?: { name: string | null }[] }): string {
+    return term.translations?.[0]?.name ?? term.name;
+  }
+
+  private toSummary(post: LocalizedPost): PostSummary {
     return {
       id: post.id,
       title: post.title,
@@ -429,14 +438,14 @@ export class PostsService {
       author: post.author
         ? { id: post.author.id, name: post.author.name, image: post.author.image }
         : null,
-      categories: post.categories.map((c) => ({ id: c.id, name: c.name, slug: c.slug })),
-      tags: post.tags.map((t) => ({ id: t.id, name: t.name, slug: t.slug })),
+      categories: post.categories.map((c) => ({ id: c.id, name: this.termName(c), slug: c.slug })),
+      tags: post.tags.map((t) => ({ id: t.id, name: this.termName(t), slug: t.slug })),
       createdAt: post.createdAt.toISOString(),
       updatedAt: post.updatedAt.toISOString(),
     };
   }
 
-  private toDetail(post: PostWithRelations, translations: PostTranslation[]): PostDetail {
+  private toDetail(post: LocalizedPost, translations: PostTranslation[]): PostDetail {
     return {
       ...this.toSummary(post),
       content: post.content,

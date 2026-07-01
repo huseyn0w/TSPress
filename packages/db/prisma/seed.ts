@@ -382,6 +382,40 @@ async function seedTranslations() {
       });
     }
   }
+
+  // Per-locale taxonomy term names: only a couple, so untranslated terms fall
+  // back to the base name on /de and /ru (the behaviour under test).
+  const categoryTranslations: Record<string, { de: string; ru: string }> = {
+    guides: { de: 'Anleitungen', ru: 'Руководства' },
+    announcements: { de: 'Ankündigungen', ru: 'Анонсы' },
+  };
+  for (const [slug, names] of Object.entries(categoryTranslations)) {
+    const category = await prisma.category.findUnique({ where: { slug } });
+    if (!category) continue;
+    for (const locale of ['de', 'ru'] as const) {
+      await prisma.categoryTranslation.upsert({
+        where: { categoryId_locale: { categoryId: category.id, locale } },
+        create: { categoryId: category.id, locale, name: names[locale] },
+        update: { name: names[locale] },
+      });
+    }
+  }
+
+  const tagTranslations: Record<string, { de: string; ru: string }> = {
+    ai: { de: 'KI', ru: 'ИИ' },
+    themes: { de: 'Themes', ru: 'Темы' },
+  };
+  for (const [slug, names] of Object.entries(tagTranslations)) {
+    const tag = await prisma.tag.findUnique({ where: { slug } });
+    if (!tag) continue;
+    for (const locale of ['de', 'ru'] as const) {
+      await prisma.tagTranslation.upsert({
+        where: { tagId_locale: { tagId: tag.id, locale } },
+        create: { tagId: tag.id, locale, name: names[locale] },
+        update: { name: names[locale] },
+      });
+    }
+  }
 }
 
 /**

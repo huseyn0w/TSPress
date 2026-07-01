@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createPostSchema, scheduleLabel } from './content';
+import { createPostSchema, scheduleLabel, termTranslationInputSchema } from './content';
 
 const NOW = new Date('2026-06-28T12:00:00.000Z');
 
@@ -12,6 +12,21 @@ describe('createPostSchema scheduledAt', () => {
   it('accepts null and absent', () => {
     expect(createPostSchema.parse({ title: 'T', scheduledAt: null }).scheduledAt).toBeNull();
     expect(createPostSchema.parse({ title: 'T' }).scheduledAt).toBeUndefined();
+  });
+});
+
+describe('termTranslationInputSchema', () => {
+  it('accepts a name override and trims it', () => {
+    expect(termTranslationInputSchema.parse({ name: '  Anleitungen ' })).toEqual({
+      name: 'Anleitungen',
+    });
+  });
+  it('accepts an empty input (clears the translation)', () => {
+    expect(termTranslationInputSchema.parse({})).toEqual({});
+  });
+  it('rejects a blank or over-long name', () => {
+    expect(termTranslationInputSchema.safeParse({ name: '   ' }).success).toBe(false);
+    expect(termTranslationInputSchema.safeParse({ name: 'x'.repeat(121) }).success).toBe(false);
   });
 });
 

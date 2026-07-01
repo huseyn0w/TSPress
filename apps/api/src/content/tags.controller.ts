@@ -1,7 +1,10 @@
 import {
   type CreateTagInput,
+  type TermTranslationInput,
   type UpdateTagInput,
   createTagSchema,
+  localeSchema,
+  termTranslationInputSchema,
   updateTagSchema,
 } from '@cmstack-ts/config';
 import {
@@ -13,6 +16,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -51,6 +55,27 @@ export class TagsController {
     @Body(new ZodValidationPipe(updateTagSchema)) body: UpdateTagInput,
   ): Promise<TagView> {
     return this.tags.update(id, body);
+  }
+
+  @Put(':id/translations/:locale')
+  @HttpCode(204)
+  @CheckPolicies((ability) => ability.can('update', 'Tag'))
+  async upsertTranslation(
+    @Param('id') id: string,
+    @Param('locale', new ZodValidationPipe(localeSchema)) locale: string,
+    @Body(new ZodValidationPipe(termTranslationInputSchema)) body: TermTranslationInput,
+  ): Promise<void> {
+    await this.tags.upsertTranslation(id, locale, body);
+  }
+
+  @Delete(':id/translations/:locale')
+  @HttpCode(204)
+  @CheckPolicies((ability) => ability.can('update', 'Tag'))
+  async deleteTranslation(
+    @Param('id') id: string,
+    @Param('locale', new ZodValidationPipe(localeSchema)) locale: string,
+  ): Promise<void> {
+    await this.tags.deleteTranslation(id, locale);
   }
 
   @Delete(':id')

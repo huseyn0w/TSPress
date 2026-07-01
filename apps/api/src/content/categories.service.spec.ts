@@ -2,6 +2,7 @@ import type { Category, CategoryRepository } from '@cmstack-ts/db';
 import { Prisma } from '@cmstack-ts/db';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { type Mock, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { HookRegistry } from '../plugins/hook-registry';
 import { CategoriesService } from './categories.service';
 
 function row(over: Partial<Category> = {}): Category {
@@ -18,6 +19,7 @@ function row(over: Partial<Category> = {}): Category {
 }
 
 let categories: Record<keyof CategoryRepository, Mock>;
+let hooks: { emit: Mock };
 let service: CategoriesService;
 
 beforeEach(() => {
@@ -28,10 +30,16 @@ beforeEach(() => {
     list: vi.fn(),
     update: vi.fn(),
     findIdBySlug: vi.fn(),
+    upsertTranslation: vi.fn(),
+    deleteTranslation: vi.fn(),
     exists: vi.fn(),
     hardDelete: vi.fn(),
   };
-  service = new CategoriesService(categories as unknown as CategoryRepository);
+  hooks = { emit: vi.fn().mockResolvedValue(undefined) };
+  service = new CategoriesService(
+    categories as unknown as CategoryRepository,
+    hooks as unknown as HookRegistry,
+  );
 });
 
 describe('CategoriesService create', () => {
@@ -94,9 +102,58 @@ describe('CategoriesService update', () => {
 });
 
 describe('CategoriesService remove', () => {
-  it('checks existence then hard-deletes', async () => {
+  it('checks existence then hard-deletes and flushes the term cache', async () => {
     categories.exists.mockResolvedValue(true);
     await service.remove('c1');
     expect(categories.hardDelete).toHaveBeenCalledWith('c1');
+    expect(hooks.emit).toHaveBeenCalledWith('term.changed', { termType: 'category', id: 'c1' });
+  });
+});
+
+describe('CategoriesService update emits term.changed only on a name change', () => {
+  it('emits when the name changes', async () => {
+    categories.findById.mockResolvedValue(row());
+    categories.update.mockResolvedValue(row({ name: 'Renamed' }));
+    await service.update('c1', { name: 'Renamed' });
+    expect(hooks.emit).toHaveBeenCalledWith('term.changed', { termType: 'category', id: 'c1' });
+  });
+
+  it('does not emit when only the slug/description change', async () => {
+    categories.findById.mockResolvedValue(row());
+    categories.findIdBySlug.mockResolvedValue(null);
+    categories.update.mockResolvedValue(row());
+    await service.update('c1', { slug: 'new-slug' });
+    expect(hooks.emit).not.toHaveBeenCalled();
+  });
+});
+
+describe('CategoriesService translations', () => {
+  it('upserts a non-empty name override and flushes the cache', async () => {
+    categories.exists.mockResolvedValue(true);
+    await service.upsertTranslation('c1', 'de', { name: 'Anleitungen' });
+    expect(categories.upsertTranslation).toHaveBeenCalledWith('c1', 'de', { name: 'Anleitungen' });
+    expect(hooks.emit).toHaveBeenCalledWith('term.changed', { termType: 'category', id: 'c1' });
+  });
+
+  it('an empty name clears the translation instead of storing it', async () => {
+    categories.exists.mockResolvedValue(true);
+    await service.upsertTranslation('c1', 'de', {});
+    expect(categories.upsertTranslation).not.toHaveBeenCalled();
+    expect(categories.deleteTranslation).toHaveBeenCalledWith('c1', 'de');
+  });
+
+  it('throws NotFound when the category is absent', async () => {
+    categories.exists.mockResolvedValue(false);
+    await expect(service.upsertTranslation('ghost', 'de', { name: 'x' })).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+  });
+
+  it('deleting an absent translation (P2025) is a no-op, not a 404', async () => {
+    categories.exists.mockResolvedValue(true);
+    categories.deleteTranslation.mockRejectedValue(
+      new Prisma.PrismaClientKnownRequestError('gone', { code: 'P2025', clientVersion: '6' }),
+    );
+    await expect(service.deleteTranslation('c1', 'de')).resolves.toBeUndefined();
   });
 });

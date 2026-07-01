@@ -137,6 +137,15 @@ describe('PrismaPostRepository localization', () => {
     expect(include.translations).toEqual({ where: { locale: 'de' } });
   });
 
+  it("findPublicBySlug with a locale also joins that locale's category/tag name overrides", async () => {
+    const { repo, post } = postRepo();
+    post.findFirst.mockResolvedValue(null);
+    await repo.findPublicBySlug('s', 'de');
+    const include = post.findFirst.mock.calls[0]?.[0]?.include;
+    expect(include.categories).toEqual({ include: { translations: { where: { locale: 'de' } } } });
+    expect(include.tags).toEqual({ include: { translations: { where: { locale: 'de' } } } });
+  });
+
   it("listAndCount with a locale joins that locale's translations", async () => {
     const { repo, post } = postRepo();
     post.findMany.mockResolvedValue([]);

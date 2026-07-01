@@ -11,6 +11,29 @@ coverage ~89.7% (gate ≥80%), e2e 11/11.** Two additive reversible migrations t
 `../FEATURE_MATRIX.md`'s `ts` column was refreshed (ts status cells only; Canonical/Target/
 other-stack columns untouched).
 
+**Fast-follow (2026-07-01): Category/Tag name translation — DONE + committed.** The last
+genuine multilingual parity gap (logged as scoped-out under §7 #1/#8). Mirrors the
+`PostTranslation` pattern, name-only: new `CategoryTranslation`/`TagTranslation` models
+(additive migration `20260701203109_term_translations`); `termTranslationInputSchema`/
+`termTranslationSchema` in `@cmstack-ts/config`; category/tag repos gain `upsert/
+deleteTranslation` + `list()`/`findById` include translations; **`localizedPostInclude(locale)`
+now joins each category/tag's locale-filtered name override** so `PostsService.toSummary`
+overlays the term name (base `postInclude` untouched → default-locale reads byte-identical);
+CASL-gated `PUT/DELETE /{categories,tags}/:id/translations/:locale` (`update Category`/`Tag`);
+web admin edit dialogs get compact per-locale **name** inputs (`TermTranslationFields` +
+`diffTermTranslations` helper, unit-tested) saving via new server actions; public chips
+localize with per-field fallback (no web render change — API returns the localized name). New
+**`term.changed`** observer event (+ `CacheInvalidationListener` line) flushes the POSTS cache
+on a term rename/translation write (also fixes the pre-existing base-rename staleness). Seed
+adds de/ru names for guides/announcements + ai/themes. **585 tests, typecheck/lint clean,
+coverage 89.39% (gate ≥80%), e2e 11/11**; live-verified (de/ru chips localize on list+detail,
+junk locale → base, admin PUT 204 → immediate public reflect via cache flush → DELETE → base
+fallback, bad locale 400, unauth 401; SSR `/de/blog` renders Ankündigungen/Anleitungen).
+Adversarial self-review: 0 HIGH/MED (byte-identical default read, repos never catch P2002/P2025,
+plain-text name, cache-flush verified, per-field fallback); 1 LOW (admin term list always fetches
+translations — negligible). **Scoped out (logged):** Category description translation (no public
+surface); per-locale slugs; category/tag archive pages; machine translation.
+
 ## Remaining functional parity gaps (NEXT PHASE — operator directive)
 Cross-checked against the canon `../FEATURE_MATRIX.md` AND the real code (the matrix was a
 stale pre-Task-1 snapshot; almost all its `ts` ❌/⚠️ are now DONE). These are the genuine

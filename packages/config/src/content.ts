@@ -136,6 +136,23 @@ export type PostTranslation = z.infer<typeof postTranslationSchema>;
 export const pageTranslationSchema = postTranslationSchema.omit({ excerpt: true });
 export type PageTranslation = z.infer<typeof pageTranslationSchema>;
 
+/**
+ * A per-locale override of a taxonomy term (Category or Tag) — name only. An
+ * absent/empty name is "no override" (falls back to the base name); an entirely
+ * empty input clears the translation (the service deletes the row). Shared by
+ * both Category and Tag (a term is a term).
+ */
+export const termTranslationInputSchema = z.object({
+  name: z.string().trim().min(1).max(120).optional(),
+});
+export type TermTranslationInput = z.infer<typeof termTranslationInputSchema>;
+
+export const termTranslationSchema = z.object({
+  locale: z.string(),
+  name: z.string().nullable(),
+});
+export type TermTranslation = z.infer<typeof termTranslationSchema>;
+
 // --- Output shapes (consumed by the web app) --------------------------------
 
 export const contentAuthorSchema = z.object({

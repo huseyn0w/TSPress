@@ -1,7 +1,11 @@
 'use server';
 
 import { apiSend } from '@/lib/admin/api';
-import type { CreateCategoryInput, UpdateCategoryInput } from '@cmstack-ts/config';
+import type {
+  CreateCategoryInput,
+  TermTranslationInput,
+  UpdateCategoryInput,
+} from '@cmstack-ts/config';
 import { revalidatePath } from 'next/cache';
 
 type ActionResult<T = undefined> = T extends undefined
@@ -40,5 +44,40 @@ export async function deleteCategoryAction(id: string): Promise<ActionResult> {
     return { ok: true };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : 'Failed to delete category' };
+  }
+}
+
+export async function upsertCategoryTranslationAction(
+  id: string,
+  locale: string,
+  input: TermTranslationInput,
+): Promise<ActionResult> {
+  try {
+    await apiSend('PUT', `/categories/${id}/translations/${locale}`, input);
+    revalidatePath('/admin/categories');
+    revalidatePath('/', 'layout');
+    return { ok: true };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : 'Failed to save translation',
+    };
+  }
+}
+
+export async function deleteCategoryTranslationAction(
+  id: string,
+  locale: string,
+): Promise<ActionResult> {
+  try {
+    await apiSend('DELETE', `/categories/${id}/translations/${locale}`);
+    revalidatePath('/admin/categories');
+    revalidatePath('/', 'layout');
+    return { ok: true };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : 'Failed to clear translation',
+    };
   }
 }

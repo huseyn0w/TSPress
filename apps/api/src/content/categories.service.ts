@@ -1,11 +1,18 @@
-import type { CreateCategoryInput, UpdateCategoryInput } from '@cmstack-ts/config';
+import type {
+  CreateCategoryInput,
+  TermTranslation,
+  TermTranslationInput,
+  UpdateCategoryInput,
+} from '@cmstack-ts/config';
 import {
   CATEGORY_REPOSITORY,
   type CategoryRepository,
   type CategoryUpdateData,
+  type CategoryWithTranslations,
   Prisma,
 } from '@cmstack-ts/db';
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { HookRegistry } from '../plugins/hook-registry';
 import { slugify } from './slug';
 
 export interface CategoryView {
@@ -14,13 +21,17 @@ export interface CategoryView {
   slug: string;
   description: string | null;
   parentId: string | null;
+  translations: TermTranslation[];
   createdAt: string;
   updatedAt: string;
 }
 
 @Injectable()
 export class CategoriesService {
-  constructor(@Inject(CATEGORY_REPOSITORY) private readonly categories: CategoryRepository) {}
+  constructor(
+    @Inject(CATEGORY_REPOSITORY) private readonly categories: CategoryRepository,
+    private readonly hooks: HookRegistry,
+  ) {}
 
   async create(input: CreateCategoryInput): Promise<CategoryView> {
     const slug = await this.uniqueSlug(input.slug ?? slugify(input.name));
@@ -63,6 +74,10 @@ export class CategoriesService {
 
     try {
       const category = await this.categories.update(id, data);
+      // A base-name change alters the chip shown on posts (default locale) → flush.
+      if (input.name !== undefined) {
+        await this.hooks.emit('term.changed', { termType: 'category', id });
+      }
       return this.toView(category);
     } catch (error) {
       throw this.mapError(error);
@@ -83,6 +98,35 @@ export class CategoriesService {
   async remove(id: string): Promise<void> {
     if (!(await this.categories.exists(id))) throw new NotFoundException('Category not found.');
     await this.categories.hardDelete(id);
+    // The removed category's chips vanish from posts → flush.
+    await this.hooks.emit('term.changed', { termType: 'category', id });
+  }
+
+  /** Create or replace a category's name translation for a non-default locale. */
+  async upsertTranslation(id: string, locale: string, input: TermTranslationInput): Promise<void> {
+    if (!(await this.categories.exists(id))) throw new NotFoundException('Category not found.');
+    // An empty name is "no override" (falls back to the base) → clear the row.
+    if (!input.name) {
+      await this.deleteTranslation(id, locale);
+      return;
+    }
+    await this.categories.upsertTranslation(id, locale, { name: input.name });
+    await this.hooks.emit('term.changed', { termType: 'category', id });
+  }
+
+  /** Remove a category's translation for a locale (idempotent). */
+  async deleteTranslation(id: string, locale: string): Promise<void> {
+    if (!(await this.categories.exists(id))) throw new NotFoundException('Category not found.');
+    try {
+      await this.categories.deleteTranslation(id, locale);
+    } catch (error) {
+      // Deleting an absent translation is a no-op, not a 404.
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+        return;
+      }
+      throw error;
+    }
+    await this.hooks.emit('term.changed', { termType: 'category', id });
   }
 
   private async uniqueSlug(desired: string, excludeId?: string): Promise<string> {
@@ -109,6 +153,7 @@ export class CategoriesService {
     slug: string;
     description: string | null;
     parentId: string | null;
+    translations?: CategoryWithTranslations['translations'];
     createdAt: Date;
     updatedAt: Date;
   }): CategoryView {
@@ -118,6 +163,7 @@ export class CategoriesService {
       slug: category.slug,
       description: category.description,
       parentId: category.parentId,
+      translations: (category.translations ?? []).map((t) => ({ locale: t.locale, name: t.name })),
       createdAt: category.createdAt.toISOString(),
       updatedAt: category.updatedAt.toISOString(),
     };

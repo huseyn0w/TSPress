@@ -294,6 +294,27 @@ describe('PostsService meta + localization', () => {
     expect(detail.translations).toEqual([]); // public detail does not leak the raw rows
   });
 
+  it('overlays localized category/tag names, falling back to base when absent', async () => {
+    posts.findPublicBySlug.mockResolvedValue({
+      ...postRow({
+        status: 'PUBLISHED',
+        categories: [
+          { id: 'c1', name: 'Guides', slug: 'guides', translations: [{ name: 'Anleitungen' }] },
+          { id: 'c2', name: 'News', slug: 'news', translations: [] },
+        ] as never,
+        tags: [
+          { id: 't1', name: 'Featured', slug: 'featured', translations: [{ name: 'Empfohlen' }] },
+        ] as never,
+      }),
+    });
+    const detail = await service.findPublicBySlug('title', 'de');
+    expect(detail.categories).toEqual([
+      { id: 'c1', name: 'Anleitungen', slug: 'guides' }, // overlaid
+      { id: 'c2', name: 'News', slug: 'news' }, // no row -> base
+    ]);
+    expect(detail.tags).toEqual([{ id: 't1', name: 'Empfohlen', slug: 'featured' }]);
+  });
+
   it('public list overlays each item for the requested locale', async () => {
     posts.listAndCount.mockResolvedValue({
       items: [

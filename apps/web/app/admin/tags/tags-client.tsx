@@ -1,6 +1,16 @@
 'use client';
 
-import { createTagAction, deleteTagAction, updateTagAction } from '@/app/admin/tags/actions';
+import {
+  createTagAction,
+  deleteTagAction,
+  deleteTagTranslationAction,
+  updateTagAction,
+  upsertTagTranslationAction,
+} from '@/app/admin/tags/actions';
+import {
+  OVERRIDE_LOCALES,
+  TermTranslationFields,
+} from '@/components/admin/term-translation-fields';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -21,6 +31,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { diffTermTranslations, seedTermTranslations } from '@/lib/admin/term-translations';
 import type { TagView } from '@/types/content';
 import { Loader2, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { type ReactNode, useState, useTransition } from 'react';
@@ -39,10 +50,26 @@ export function TagsClient({ mode, tag, trigger }: TagsClientProps) {
 
   const [name, setName] = useState(tag?.name ?? '');
   const [slug, setSlug] = useState(tag?.slug ?? '');
+  const seededTranslations = seedTermTranslations(tag?.translations ?? [], OVERRIDE_LOCALES);
+  const [translations, setTranslations] = useState<Record<string, string>>(seededTranslations);
 
   function resetForm() {
     setName(tag?.name ?? '');
     setSlug(tag?.slug ?? '');
+    setTranslations(seedTermTranslations(tag?.translations ?? [], OVERRIDE_LOCALES));
+  }
+
+  /** Persist any changed per-locale name overrides. Returns an error message or null. */
+  async function saveTranslations(id: string): Promise<string | null> {
+    const ops = diffTermTranslations(seededTranslations, translations, OVERRIDE_LOCALES);
+    for (const op of ops) {
+      const res =
+        op.action === 'upsert'
+          ? await upsertTagTranslationAction(id, op.locale, { name: op.name })
+          : await deleteTagTranslationAction(id, op.locale);
+      if (!res.ok) return res.error;
+    }
+    return null;
   }
 
   function handleSubmit() {
@@ -64,12 +91,17 @@ export function TagsClient({ mode, tag, trigger }: TagsClientProps) {
         }
       } else if (tag) {
         const result = await updateTagAction(tag.id, input);
-        if (result.ok) {
-          toast.success('Tag updated');
-          setFormOpen(false);
-        } else {
+        if (!result.ok) {
           toast.error(result.error);
+          return;
         }
+        const translationError = await saveTranslations(tag.id);
+        if (translationError) {
+          toast.error(translationError);
+          return;
+        }
+        toast.success('Tag updated');
+        setFormOpen(false);
       }
     });
   }
@@ -133,6 +165,15 @@ export function TagsClient({ mode, tag, trigger }: TagsClientProps) {
               className="font-mono text-xs"
             />
           </div>
+          {mode === 'edit' && (
+            <TermTranslationFields
+              values={translations}
+              onChange={(locale, value) =>
+                setTranslations((prev) => ({ ...prev, [locale]: value }))
+              }
+              basePlaceholder={name}
+            />
+          )}
         </div>
         <DialogFooter>
           <DialogClose asChild>

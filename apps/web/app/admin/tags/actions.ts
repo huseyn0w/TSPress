@@ -1,7 +1,7 @@
 'use server';
 
 import { apiSend } from '@/lib/admin/api';
-import type { CreateTagInput, UpdateTagInput } from '@cmstack-ts/config';
+import type { CreateTagInput, TermTranslationInput, UpdateTagInput } from '@cmstack-ts/config';
 import { revalidatePath } from 'next/cache';
 
 type ActionResult<T = undefined> = T extends undefined
@@ -37,5 +37,34 @@ export async function deleteTagAction(id: string): Promise<ActionResult> {
     return { ok: true };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : 'Failed to delete tag' };
+  }
+}
+
+export async function upsertTagTranslationAction(
+  id: string,
+  locale: string,
+  input: TermTranslationInput,
+): Promise<ActionResult> {
+  try {
+    await apiSend('PUT', `/tags/${id}/translations/${locale}`, input);
+    revalidatePath('/admin/tags');
+    revalidatePath('/', 'layout');
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Failed to save translation' };
+  }
+}
+
+export async function deleteTagTranslationAction(
+  id: string,
+  locale: string,
+): Promise<ActionResult> {
+  try {
+    await apiSend('DELETE', `/tags/${id}/translations/${locale}`);
+    revalidatePath('/admin/tags');
+    revalidatePath('/', 'layout');
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Failed to clear translation' };
   }
 }

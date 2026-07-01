@@ -24,6 +24,12 @@ describe('CacheInvalidationListener', () => {
     expect(cache.invalidate).toHaveBeenCalledWith(CACHE_NS.PAGES);
   });
 
+  it('flushes the posts namespace on a term change (chips live on posts)', async () => {
+    const { cache, hooks } = setup();
+    await hooks.emit('term.changed', { termType: 'category', id: 'c1' });
+    expect(cache.invalidate).toHaveBeenCalledWith(CACHE_NS.POSTS);
+  });
+
   it('flushes settings, menus and seo on their events', async () => {
     const { cache, hooks } = setup();
     await hooks.emit('settings.theme.changed', {});

@@ -1,7 +1,10 @@
 import {
   type CreateCategoryInput,
+  type TermTranslationInput,
   type UpdateCategoryInput,
   createCategorySchema,
+  localeSchema,
+  termTranslationInputSchema,
   updateCategorySchema,
 } from '@cmstack-ts/config';
 import {
@@ -13,6 +16,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -53,6 +57,27 @@ export class CategoriesController {
     @Body(new ZodValidationPipe(updateCategorySchema)) body: UpdateCategoryInput,
   ): Promise<CategoryView> {
     return this.categories.update(id, body);
+  }
+
+  @Put(':id/translations/:locale')
+  @HttpCode(204)
+  @CheckPolicies((ability) => ability.can('update', 'Category'))
+  async upsertTranslation(
+    @Param('id') id: string,
+    @Param('locale', new ZodValidationPipe(localeSchema)) locale: string,
+    @Body(new ZodValidationPipe(termTranslationInputSchema)) body: TermTranslationInput,
+  ): Promise<void> {
+    await this.categories.upsertTranslation(id, locale, body);
+  }
+
+  @Delete(':id/translations/:locale')
+  @HttpCode(204)
+  @CheckPolicies((ability) => ability.can('update', 'Category'))
+  async deleteTranslation(
+    @Param('id') id: string,
+    @Param('locale', new ZodValidationPipe(localeSchema)) locale: string,
+  ): Promise<void> {
+    await this.categories.deleteTranslation(id, locale);
   }
 
   @Delete(':id')

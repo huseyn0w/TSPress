@@ -1,19 +1,35 @@
-import type { CreateTagInput, UpdateTagInput } from '@cmstack-ts/config';
-import { TAG_REPOSITORY, type TagRepository, type TagUpdateData } from '@cmstack-ts/db';
+import type {
+  CreateTagInput,
+  TermTranslation,
+  TermTranslationInput,
+  UpdateTagInput,
+} from '@cmstack-ts/config';
+import {
+  Prisma,
+  TAG_REPOSITORY,
+  type TagRepository,
+  type TagUpdateData,
+  type TagWithTranslations,
+} from '@cmstack-ts/db';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { HookRegistry } from '../plugins/hook-registry';
 import { slugify } from './slug';
 
 export interface TagView {
   id: string;
   name: string;
   slug: string;
+  translations: TermTranslation[];
   createdAt: string;
   updatedAt: string;
 }
 
 @Injectable()
 export class TagsService {
-  constructor(@Inject(TAG_REPOSITORY) private readonly tags: TagRepository) {}
+  constructor(
+    @Inject(TAG_REPOSITORY) private readonly tags: TagRepository,
+    private readonly hooks: HookRegistry,
+  ) {}
 
   async create(input: CreateTagInput): Promise<TagView> {
     const slug = await this.uniqueSlug(input.slug ?? slugify(input.name));
@@ -30,6 +46,9 @@ export class TagsService {
     if (input.slug !== undefined) data.slug = await this.uniqueSlug(input.slug, id);
 
     const tag = await this.tags.update(id, data);
+    if (input.name !== undefined) {
+      await this.hooks.emit('term.changed', { termType: 'tag', id });
+    }
     return this.toView(tag);
   }
 
@@ -47,6 +66,32 @@ export class TagsService {
   async remove(id: string): Promise<void> {
     if (!(await this.tags.exists(id))) throw new NotFoundException('Tag not found.');
     await this.tags.hardDelete(id);
+    await this.hooks.emit('term.changed', { termType: 'tag', id });
+  }
+
+  /** Create or replace a tag's name translation for a non-default locale. */
+  async upsertTranslation(id: string, locale: string, input: TermTranslationInput): Promise<void> {
+    if (!(await this.tags.exists(id))) throw new NotFoundException('Tag not found.');
+    if (!input.name) {
+      await this.deleteTranslation(id, locale);
+      return;
+    }
+    await this.tags.upsertTranslation(id, locale, { name: input.name });
+    await this.hooks.emit('term.changed', { termType: 'tag', id });
+  }
+
+  /** Remove a tag's translation for a locale (idempotent). */
+  async deleteTranslation(id: string, locale: string): Promise<void> {
+    if (!(await this.tags.exists(id))) throw new NotFoundException('Tag not found.');
+    try {
+      await this.tags.deleteTranslation(id, locale);
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+        return;
+      }
+      throw error;
+    }
+    await this.hooks.emit('term.changed', { termType: 'tag', id });
   }
 
   private async uniqueSlug(desired: string, excludeId?: string): Promise<string> {
@@ -64,6 +109,7 @@ export class TagsService {
     id: string;
     name: string;
     slug: string;
+    translations?: TagWithTranslations['translations'];
     createdAt: Date;
     updatedAt: Date;
   }): TagView {
@@ -71,6 +117,7 @@ export class TagsService {
       id: tag.id,
       name: tag.name,
       slug: tag.slug,
+      translations: (tag.translations ?? []).map((t) => ({ locale: t.locale, name: t.name })),
       createdAt: tag.createdAt.toISOString(),
       updatedAt: tag.updatedAt.toISOString(),
     };

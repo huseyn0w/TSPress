@@ -6,15 +6,39 @@ import { PrismaTagRepository } from './tag.repository';
 describe('PrismaTagRepository', () => {
   function make() {
     const tag = { create: vi.fn(), findUnique: vi.fn(), findMany: vi.fn(), update: vi.fn() };
-    const prisma = { tag } as unknown as PrismaClient;
-    return { repo: new PrismaTagRepository(prisma), tag };
+    const tagTranslation = { upsert: vi.fn(), delete: vi.fn() };
+    const prisma = { tag, tagTranslation } as unknown as PrismaClient;
+    return { repo: new PrismaTagRepository(prisma), tag, tagTranslation };
   }
 
-  it('list() orders by name ascending', async () => {
+  it('list() orders by name ascending and includes translations', async () => {
     const { repo, tag } = make();
     tag.findMany.mockResolvedValue([]);
     await repo.list();
-    expect(tag.findMany).toHaveBeenCalledWith({ orderBy: { name: 'asc' } });
+    expect(tag.findMany).toHaveBeenCalledWith({
+      orderBy: { name: 'asc' },
+      include: { translations: true },
+    });
+  });
+
+  it('upsertTranslation() full-row replaces name (absent → null)', async () => {
+    const { repo, tagTranslation } = make();
+    tagTranslation.upsert.mockResolvedValue({});
+    await repo.upsertTranslation('t1', 'de', {});
+    expect(tagTranslation.upsert).toHaveBeenCalledWith({
+      where: { tagId_locale: { tagId: 't1', locale: 'de' } },
+      create: { tagId: 't1', locale: 'de', name: null },
+      update: { name: null },
+    });
+  });
+
+  it('deleteTranslation() targets the composite key (never catches P2025)', async () => {
+    const { repo, tagTranslation } = make();
+    tagTranslation.delete.mockResolvedValue({});
+    await repo.deleteTranslation('t1', 'ru');
+    expect(tagTranslation.delete).toHaveBeenCalledWith({
+      where: { tagId_locale: { tagId: 't1', locale: 'ru' } },
+    });
   });
 
   it('findIdBySlug() selects only the id', async () => {
@@ -41,15 +65,39 @@ describe('PrismaTagRepository', () => {
 describe('PrismaCategoryRepository', () => {
   function make() {
     const category = { create: vi.fn(), findUnique: vi.fn(), findMany: vi.fn(), update: vi.fn() };
-    const prisma = { category } as unknown as PrismaClient;
-    return { repo: new PrismaCategoryRepository(prisma), category };
+    const categoryTranslation = { upsert: vi.fn(), delete: vi.fn() };
+    const prisma = { category, categoryTranslation } as unknown as PrismaClient;
+    return { repo: new PrismaCategoryRepository(prisma), category, categoryTranslation };
   }
 
-  it('list() orders by name ascending', async () => {
+  it('list() orders by name ascending and includes translations', async () => {
     const { repo, category } = make();
     category.findMany.mockResolvedValue([]);
     await repo.list();
-    expect(category.findMany).toHaveBeenCalledWith({ orderBy: { name: 'asc' } });
+    expect(category.findMany).toHaveBeenCalledWith({
+      orderBy: { name: 'asc' },
+      include: { translations: true },
+    });
+  });
+
+  it('upsertTranslation() full-row replaces name (absent → null)', async () => {
+    const { repo, categoryTranslation } = make();
+    categoryTranslation.upsert.mockResolvedValue({});
+    await repo.upsertTranslation('c1', 'de', { name: 'Anleitungen' });
+    expect(categoryTranslation.upsert).toHaveBeenCalledWith({
+      where: { categoryId_locale: { categoryId: 'c1', locale: 'de' } },
+      create: { categoryId: 'c1', locale: 'de', name: 'Anleitungen' },
+      update: { name: 'Anleitungen' },
+    });
+  });
+
+  it('deleteTranslation() targets the composite key', async () => {
+    const { repo, categoryTranslation } = make();
+    categoryTranslation.delete.mockResolvedValue({});
+    await repo.deleteTranslation('c1', 'ru');
+    expect(categoryTranslation.delete).toHaveBeenCalledWith({
+      where: { categoryId_locale: { categoryId: 'c1', locale: 'ru' } },
+    });
   });
 
   it('update() forwards a scalar parentId (unchecked update shape)', async () => {

@@ -11,22 +11,39 @@ export type PostWithRelations = Prisma.PostGetPayload<{ include: typeof postIncl
 
 /**
  * Include for a localized read: the base relations plus, when `locale` is given,
- * just that locale's translation row. With no locale the include is exactly
+ * just that locale's translation row — for the post AND for each category/tag
+ * (so term names localize too). With no locale the include is exactly
  * {@link postInclude} (the default-locale read is byte-identical to before).
  */
 export function localizedPostInclude(locale?: string): Prisma.PostInclude {
-  return locale ? { ...postInclude, translations: { where: { locale } } } : postInclude;
+  if (!locale) return postInclude;
+  return {
+    author: true,
+    categories: { include: { translations: { where: { locale } } } },
+    tags: { include: { translations: { where: { locale } } } },
+    translations: { where: { locale } },
+  };
 }
 
 export type PostTranslationRow = Prisma.PostTranslationGetPayload<Record<string, never>>;
+
+/** A locale-filtered term name override carried on a localized post read (0-or-1 row). */
+export type TermTranslationRow = { name: string | null };
+type LocalizedTerm<T> = T & { translations?: TermTranslationRow[] };
 
 /**
  * A post with its relations and, when a localized read requested them, the
  * translation rows. `translations` is the locale-filtered set (0-or-1 row) for a
  * public read, or every row for the admin edit view; it is absent for the
- * default-locale (base-only) read so that path stays byte-identical.
+ * default-locale (base-only) read so that path stays byte-identical. On a
+ * localized read each category/tag additionally carries its own locale-filtered
+ * name override (optional, absent on the default-locale read).
  */
-export type LocalizedPost = PostWithRelations & { translations?: PostTranslationRow[] };
+export type LocalizedPost = Omit<PostWithRelations, 'categories' | 'tags'> & {
+  categories: LocalizedTerm<PostWithRelations['categories'][number]>[];
+  tags: LocalizedTerm<PostWithRelations['tags'][number]>[];
+  translations?: PostTranslationRow[];
+};
 
 /** The per-locale fields a translation write defines (see {@link PostRepository.upsertTranslation}). */
 export type PostTranslationData = {

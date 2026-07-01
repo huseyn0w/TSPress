@@ -19,6 +19,8 @@ export class CacheInvalidationListener implements OnModuleInit {
     this.hooks.addAction('content.changed', (p) =>
       this.cache.invalidate(p.type === 'post' ? CACHE_NS.POSTS : CACHE_NS.PAGES),
     );
+    // Term names surface only as post chips → flush the posts namespace.
+    this.hooks.addAction('term.changed', () => this.cache.invalidate(CACHE_NS.POSTS));
     this.hooks.addAction('settings.theme.changed', () => this.cache.invalidate(CACHE_NS.SETTINGS));
     this.hooks.addAction('menu.changed', () => this.cache.invalidate(CACHE_NS.MENUS));
     this.hooks.addAction('seo.changed', () => this.cache.invalidate(CACHE_NS.SEO));
