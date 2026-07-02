@@ -148,6 +148,23 @@ describe('PostsService.update', () => {
     );
   });
 
+  it('clears excerpt/meta/canonical when null is sent (field-clearing), but leaves absent fields untouched', async () => {
+    posts.findActiveById.mockResolvedValue(postRow({ excerpt: 'old', metaTitle: 'old meta' }));
+    posts.update.mockResolvedValue(postRow());
+    await service.update(
+      'p1',
+      { excerpt: null, metaTitle: null, metaDescription: null, canonicalUrl: null },
+      'u1',
+    );
+    const data = posts.update.mock.calls[0]?.[1];
+    expect(data.excerpt).toBeNull();
+    expect(data.metaTitle).toBeNull();
+    expect(data.metaDescription).toBeNull();
+    expect(data.canonicalUrl).toBeNull();
+    // A field not sent at all is not in the update payload (unchanged).
+    expect('title' in data).toBe(false);
+  });
+
   it('stamps publishedAt on first publish only, and fires the hook on the transition', async () => {
     posts.findActiveById.mockResolvedValue(postRow({ status: 'DRAFT', publishedAt: null }));
     posts.update.mockResolvedValue(postRow({ status: 'PUBLISHED' }));

@@ -35,12 +35,14 @@ const idList = z.array(z.string().min(1));
 export const createPostSchema = z.object({
   title: z.string().trim().min(1).max(200),
   slug: slugSchema.optional(),
-  excerpt: z.string().trim().max(500).optional(),
+  // Nullable so the admin form can CLEAR the field (null = set to empty); an
+  // absent/undefined field leaves the stored value unchanged on update.
+  excerpt: z.string().trim().max(500).nullable().optional(),
   content: z.string().default(''),
   status: contentStatusSchema.optional(),
-  metaTitle: z.string().trim().max(200).optional(),
-  metaDescription: z.string().trim().max(300).optional(),
-  canonicalUrl: z.string().trim().url().max(500).optional(),
+  metaTitle: z.string().trim().max(200).nullable().optional(),
+  metaDescription: z.string().trim().max(300).nullable().optional(),
+  canonicalUrl: z.string().trim().url().max(500).nullable().optional(),
   noindex: z.boolean().optional(),
   scheduledAt: z.string().datetime().nullable().optional(),
   categoryIds: idList.optional(),
@@ -69,9 +71,10 @@ export const createPageSchema = z.object({
   slug: slugSchema.optional(),
   content: z.string().default(''),
   status: contentStatusSchema.optional(),
-  metaTitle: z.string().trim().max(200).optional(),
-  metaDescription: z.string().trim().max(300).optional(),
-  canonicalUrl: z.string().trim().url().max(500).optional(),
+  // Nullable so the admin form can CLEAR the field (see createPostSchema).
+  metaTitle: z.string().trim().max(200).nullable().optional(),
+  metaDescription: z.string().trim().max(300).nullable().optional(),
+  canonicalUrl: z.string().trim().url().max(500).nullable().optional(),
   noindex: z.boolean().optional(),
   scheduledAt: z.string().datetime().nullable().optional(),
 });

@@ -43,12 +43,12 @@ interface PostFormProps {
   createAction?: (input: {
     title: string;
     slug?: string;
-    excerpt?: string;
+    excerpt?: string | null;
     content: string;
     status?: 'DRAFT' | 'PUBLISHED';
-    metaTitle?: string;
-    metaDescription?: string;
-    canonicalUrl?: string;
+    metaTitle?: string | null;
+    metaDescription?: string | null;
+    canonicalUrl?: string | null;
     noindex?: boolean;
     scheduledAt?: string | null;
     categoryIds?: string[];
@@ -59,12 +59,12 @@ interface PostFormProps {
     input: {
       title?: string;
       slug?: string;
-      excerpt?: string;
+      excerpt?: string | null;
       content?: string;
       status?: 'DRAFT' | 'PUBLISHED';
-      metaTitle?: string;
-      metaDescription?: string;
-      canonicalUrl?: string;
+      metaTitle?: string | null;
+      metaDescription?: string | null;
+      canonicalUrl?: string | null;
       noindex?: boolean;
       scheduledAt?: string | null;
       categoryIds?: string[];
@@ -128,12 +128,14 @@ export function PostForm({ categories, tags, post, createAction, updateAction }:
     const input = {
       title: title.trim(),
       slug: slug.trim() || undefined,
-      excerpt: excerpt.trim() || undefined,
+      // Send null (not undefined) for emptied optional fields so an edit CLEARS
+      // them — undefined would leave the stored value unchanged.
+      excerpt: excerpt.trim() || null,
       content,
       status: targetStatus,
-      metaTitle: metaTitle.trim() || undefined,
-      metaDescription: metaDescription.trim() || undefined,
-      canonicalUrl: canonicalUrl.trim() || undefined,
+      metaTitle: metaTitle.trim() || null,
+      metaDescription: metaDescription.trim() || null,
+      canonicalUrl: canonicalUrl.trim() || null,
       noindex,
       scheduledAt: fromDateTimeLocalValue(scheduledAt),
       categoryIds: selectedCategoryIds,

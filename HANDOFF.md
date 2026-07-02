@@ -11,6 +11,18 @@ coverage ~89.7% (gate ≥80%), e2e 11/11.** Two additive reversible migrations t
 `../FEATURE_MATRIX.md`'s `ts` column was refreshed (ts status cells only; Canonical/Target/
 other-stack columns untouched).
 
+**Fix (2026-07-02): admin field-clearing (§7 #2 known limitation) — DONE + committed.** The
+logged defect where clearing an existing excerpt/metaTitle/metaDescription/canonicalUrl via the
+admin post/page form was a no-op (the form sent `undefined` → the service skipped the field).
+Fix: those optional text fields are now `.nullable()` in `create{Post,Page}Schema` (updates
+inherit via `.partial()`), and the forms send **`null`** (not `undefined`) for an emptied field.
+The services already mapped `null → clear` (`input.x ?? null` on create; `if (x !== undefined)
+data.x = x ?? null` on update), so **no service change** — an absent field still means "unchanged",
+`null` means "clear". Slug still sends `undefined` (empty = keep/auto-regenerate, never cleared).
+**590 tests, typecheck/lint clean**; live-verified (PATCH `{excerpt:null,metaTitle:null}` → 200
+clears both to null; a title-only PATCH leaves metaTitle intact → no regression). Backward-
+compatible (MCP/API callers sending `undefined` or omitting are unaffected).
+
 **Fast-follow (2026-07-01): Category/Tag bulk-delete — DONE + committed.** Completes the
 bulk-actions parity from gap #2 (was logged as the trivial fast-follow). Web-only, no new API
 surface: `bulkDelete{Categories,Tags}Action` loop the existing single-item `DELETE` endpoint via

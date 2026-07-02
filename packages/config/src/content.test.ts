@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { createPostSchema, scheduleLabel, termTranslationInputSchema } from './content';
+import {
+  createPostSchema,
+  scheduleLabel,
+  termTranslationInputSchema,
+  updatePostSchema,
+} from './content';
 
 const NOW = new Date('2026-06-28T12:00:00.000Z');
 
@@ -12,6 +17,37 @@ describe('createPostSchema scheduledAt', () => {
   it('accepts null and absent', () => {
     expect(createPostSchema.parse({ title: 'T', scheduledAt: null }).scheduledAt).toBeNull();
     expect(createPostSchema.parse({ title: 'T' }).scheduledAt).toBeUndefined();
+  });
+});
+
+describe('clearable optional fields accept null (field-clearing)', () => {
+  it('accepts null for excerpt/meta/canonical on create and update', () => {
+    const parsed = updatePostSchema.parse({
+      excerpt: null,
+      metaTitle: null,
+      metaDescription: null,
+      canonicalUrl: null,
+    });
+    expect(parsed).toEqual({
+      excerpt: null,
+      metaTitle: null,
+      metaDescription: null,
+      canonicalUrl: null,
+    });
+  });
+
+  it('still distinguishes absent (unchanged) from null (clear)', () => {
+    expect(updatePostSchema.parse({}).excerpt).toBeUndefined();
+    expect(updatePostSchema.parse({ excerpt: null }).excerpt).toBeNull();
+  });
+
+  it('a non-empty canonical URL still validates as a URL', () => {
+    expect(createPostSchema.safeParse({ title: 'T', canonicalUrl: 'not-a-url' }).success).toBe(
+      false,
+    );
+    expect(
+      createPostSchema.safeParse({ title: 'T', canonicalUrl: 'https://x.test/a' }).success,
+    ).toBe(true);
   });
 });
 

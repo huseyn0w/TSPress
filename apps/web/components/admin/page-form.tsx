@@ -41,9 +41,9 @@ interface PageFormProps {
     slug?: string;
     content: string;
     status?: 'DRAFT' | 'PUBLISHED';
-    metaTitle?: string;
-    metaDescription?: string;
-    canonicalUrl?: string;
+    metaTitle?: string | null;
+    metaDescription?: string | null;
+    canonicalUrl?: string | null;
     noindex?: boolean;
     scheduledAt?: string | null;
   }) => Promise<CreateResult>;
@@ -54,9 +54,9 @@ interface PageFormProps {
       slug?: string;
       content?: string;
       status?: 'DRAFT' | 'PUBLISHED';
-      metaTitle?: string;
-      metaDescription?: string;
-      canonicalUrl?: string;
+      metaTitle?: string | null;
+      metaDescription?: string | null;
+      canonicalUrl?: string | null;
       noindex?: boolean;
       scheduledAt?: string | null;
     },
@@ -105,9 +105,10 @@ export function PageForm({ page, createAction, updateAction }: PageFormProps) {
       slug: slug.trim() || undefined,
       content,
       status: targetStatus,
-      metaTitle: metaTitle.trim() || undefined,
-      metaDescription: metaDescription.trim() || undefined,
-      canonicalUrl: canonicalUrl.trim() || undefined,
+      // Send null (not undefined) for emptied optional fields so an edit CLEARS them.
+      metaTitle: metaTitle.trim() || null,
+      metaDescription: metaDescription.trim() || null,
+      canonicalUrl: canonicalUrl.trim() || null,
       noindex,
       scheduledAt: fromDateTimeLocalValue(scheduledAt),
     };
